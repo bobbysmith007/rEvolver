@@ -34,8 +34,6 @@
   (call-next-method))
 
 
-
-
 (defmethod schedule-turn ((cr creature) (world world) ticks)
   (let ((tick-number-to-insert (+ ticks (tick-number world))))
     (flet ((scan (q)

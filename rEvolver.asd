@@ -15,7 +15,8 @@
   :components
   ((:module :src
     :components ((:file "packages")
-                 (:file "Creature" :depends-on ("packages" "rEvolver"))
+                 (:file "Creature" :depends-on ("packages" "rEvolver" "map"))
+		 (:file "map" :depends-on ("packages"))
                  (:file "rEvolver" :depends-on ("packages"))
                  (:file "World" :depends-on ("packages" "rEvolver")))))
   :depends-on ())
