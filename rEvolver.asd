@@ -10,7 +10,7 @@
 (defsystem :rEvolver
   :description "Playing around with genetic algorithms."
   :author "Nathan Bird <birdman@acceleration.net>"
-  :licence "GPL"
+  :licence "GPL (or talk to me)"
   :version "0.1"
   :components
   ((:module :src
