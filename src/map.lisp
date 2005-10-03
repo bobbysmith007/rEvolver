@@ -13,6 +13,22 @@
 (defgeneric inspect-map (rEvolver-map x y)
   (:documentation "Get a location describing a point on the map."))
 
+(defgeneric east-of ( rEvolver-map location)
+  (:method ((m rEvolver-map) (l location))
+	   (inspect-map m (1+ x) y)))
+
+(defgeneric west-of ( rEvolver-map location)
+  (:method ((m rEvolver-map) (l location))
+	   (inspect-map m (1- x) y)))
+
+(defgeneric north-of ( rEvolver-map location)
+  (:method ((m rEvolver-map) (l location))
+	   (inspect-map m x (1+ y))))
+
+(defgeneric south-of ( rEvolver-map location)
+  (:method ((m rEvolver-map) (l location))
+	   (inspect-map m x (1- y))))
+
 (defmethod drop-random-energy ((m rEvolver-map) frequency energy-to-add-max/spot )
   (dotimes (n (* frequency (x-size m) (y-size m)))
 	(let ((l (inspect-map m (random (x-size m)) (random (y-size m))))
