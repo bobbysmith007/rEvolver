@@ -6,8 +6,8 @@
   (:documentation "A location on a map."))
 
 (defclass rEvolver-map ()
-  ((x-size :initarg :x-size :initform 40 :accessor x-size)
-   (y-size :initarg :y-size :initform 40 :accessor y-size))
+  ((x-size :initarg :x-size :accessor x-size)
+   (y-size :initarg :y-size :accessor y-size))
   (:documentation "Generic map interface."))
 
 (defgeneric inspect-map (rEvolver-map x y)
@@ -33,7 +33,8 @@
   (dotimes (n (* frequency (x-size m) (y-size m)))
 	(let ((l (inspect-map m (random (x-size m)) (random (y-size m))))
 	      (e (random energy-to-add-max/spot)))
-	  (setf (energy l) (+ e (energy l))))))
+	  (setf (energy l) (+ e (energy l)))))
+  m)
 
 (defclass 2d-array-map (rEvolver-map)
   ((array)))
