@@ -1,5 +1,4 @@
 (in-package :rEvolver)
-(defvariable *world* )
 
 (defparameter +initial-creature-count+ 50
   "The number of random creatures to initially populate the world with.")
@@ -16,5 +15,5 @@
     (drop-random-energy m .3 100)
     (setf *world* (make-instance 'world :map m))))
 
-(defun add-some-creatures ((n +initial-creature-count+))
-  )
+(make-new-world)
+

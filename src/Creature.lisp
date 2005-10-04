@@ -5,8 +5,13 @@
 
 
 (defclass creature ()
-  ((energy-level :reader energy :initform 0)
-   (position :reader position :initarg :position)))
+  ((energy-level :accessor energy :initform 0)
+   (position :reader position :initarg :position)
+   (world :reader world :initarg :world)
+   (turn-action)))
+
+(defmethod use-energy ((creature creature) energy)
+  (decf )) 
 
 (defmethod add-creature ((creature creature) (location location))
   "add a creature to a location."
@@ -16,26 +21,32 @@
   "Take a creature out of a location."
   (remove creature location :test #'eq))
 
-;;;;Functions available for a creature
-
-(defgeneric energy-level (creature )
-  (:documentation "How much energy does the creature currently have."))
 
 ;;;; Define-creature-method is a macro to create a method
 ;;;; specialized on a type of creature
-(defmacro define-creature-op (name lambda-list &key documentation energy action)
+(defmacro define-creature-op (name lambda-list &key documentation energy action ticks)
   "Ease in the creation of operations a creature can perform.
 	For now I'm thinking this will mean having it specialized on a creature."
-  (push '(creature creature) lambda-list)
-  (let ((doc (when (stringp (first body)) (pop body))))
-    `(defmethod ,name ,lambda-list ,doc ,@body)))
-
+    ;;get the name of the symbol in the creatures package
+  (let ((fn-name (intern (string name) :rEvolver.creature))
+	(creature (gensym "creature")))
+    `(defun ,name (,creature ,@lambda-list)
+      ,documentation
+      (schedule #'(lambda ()
+		    )
+       (world ,creature)
+       ,ticks)
+    ))
+  )
+  
+  
 (define-creature-op look ((direction nil))
   "Examine the location the creature is currently standing at if the location
 	is null, or look in the specified direction.")
 
 (define-creature-op move (direction)
   :documentation "Move the creature in a specified direction."
+  :ticks 10
   :action (let ((l (position creature))
 		(dirfn (symbol-function (intern (concatenate 'string (string direction) "-OF")))))
 	    (remove-creature creature l) 

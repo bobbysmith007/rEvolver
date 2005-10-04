@@ -9,7 +9,7 @@
 (defgeneric advance-time (ticker)
   (:documentation "Move time forward for a ticked object."))
 
-(defmethod advance-time (ticker)
+(defmethod advance-time ((tiycker ticker))
   (incf (tick-number ticker)))
 
 (defgeneric add (creature world)
@@ -28,7 +28,7 @@
 		  (push action actions))
   tl)
 
-(defun schedule (action queue tick)
+(defmethod schedule (action queue tick)
   (labels ((scan (q)
 	   (cond
 	     ((null q)
