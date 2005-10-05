@@ -18,7 +18,10 @@
 		  (when (and queue (= (tick-number (first queue)) current-tick))
 		    (format T "At tick(~a) = ~a~%" (tick-number (first queue)) (length (actions (first queue))))
 		    (dolist (action (actions (pop queue)))
-		      (funcall action))))
+		      (handler-case (funcall action)
+			('dead () nil)
+			('escape () nill)
+			(T () nil)))))
   (call-next-method))
 
 

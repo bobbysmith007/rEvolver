@@ -17,3 +17,5 @@
 
 (make-new-world)
 
+
+(defvar *Creature1* (make-instance 'Creature ))

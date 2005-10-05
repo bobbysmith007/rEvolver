@@ -6,12 +6,13 @@
 
 (defclass creature ()
   ((energy-level :accessor energy :initform 0)
-   (position :reader position :initarg :position)
+   (location :reader location :initarg :location)
    (world :reader world :initarg :world)
    (turn-action)))
 
 (defmethod use-energy ((creature creature) energy)
-  (decf )) 
+  (when (>= 0 (decf (energy-level creature) energy))
+    (signal 'dead))) 
 
 (defmethod add-creature ((creature creature) (location location))
   "add a creature to a location."
@@ -22,8 +23,6 @@
   (remove creature location :test #'eq))
 
 
-;;;; Define-creature-method is a macro to create a method
-;;;; specialized on a type of creature
 (defmacro define-creature-op (name lambda-list &key documentation energy action ticks)
   "Ease in the creation of operations a creature can perform.
 	For now I'm thinking this will mean having it specialized on a creature."
@@ -33,12 +32,18 @@
     `(defun ,name (,creature ,@lambda-list)
       ,documentation
       (schedule #'(lambda ()
+		    ,@action
+		    (use-energy ,creature ,energy )
 		    )
        (world ,creature)
        ,ticks)
     ))
   )
-  
+
+
+;;;; Define-creature-method is a macro to create a method
+;;;; specialized on a type of creature
+ 
   
 (define-creature-op look ((direction nil))
   "Examine the location the creature is currently standing at if the location
@@ -47,12 +52,24 @@
 (define-creature-op move (direction)
   :documentation "Move the creature in a specified direction."
   :ticks 10
-  :action (let ((l (position creature))
+  :action (let ((l (location creature))
 		(dirfn (symbol-function (intern (concatenate 'string (string direction) "-OF")))))
 	    (remove-creature creature l) 
 	    (add-creature creature (funcall dirfn l))
 	    creature)
-  :energy ((* (energy-level creature) +movement-energy-ratio+)))
+  :energy (* (energy-level creature) +movement-energy-ratio+))
+
+(defmethod move ((creature creature) direction)
+  "Move the creature."
+  (schedule #'(lambda ()
+		(let ((l (location creature))
+		      (dirfn (symbol-function (intern (concatenate 'string (string direction) "-OF")))))
+		  (remove-creature creature l)
+		  (add-creature creature (funcall dirfn l)))
+		(use-energy creature (* (energy-level creature) +movement-energy-ratio+)))
+	    (world creature)
+	    10)
+  (signal 'escape))
 
 (define-creature-op feed ()
   "Feed from the energy source at the current location.")
