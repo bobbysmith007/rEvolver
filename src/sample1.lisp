@@ -15,11 +15,21 @@
     (drop-random-energy m .3 100)
     (setf *world* (make-instance 'world :map m))))
 
+
+(defun random-location ()
+  (let ((m (world-map *world*)))
+    (inspect-map m (random (x-size m)) (random (y-size m)))))
+
 (make-new-world)
 
-(defvar *Creature1* (make-instance 'Creature ))
+(defvar *Creature1* ())
+(setf *Creature1* (make-instance 'Creature :energy 128 :world *world* :location (random-location)))
 
-(schedule #'(lambda () (format T "About to escape:") (signal 'escape)) *world* 1)
-(schedule #'(lambda () (format T "DIE! ") (signal 'dead :creature *Creature1*)) *world* 2)
+(setf (decision-fn *creature1*)
+      (let ()
+      #'(lambda ()
+	  (let ((*current-creature* *Creature1*))
+	    (declare (special *current-creature*))
+	    (move 'east)))))
 
-(advance-time *world*)
+(schedule #'(lambda () (funcall (decision-fn *creature1*))) (world *creature1*) 1)

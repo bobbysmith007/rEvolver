@@ -5,10 +5,10 @@
 
 
 (defclass creature ()
-  ((energy :accessor energy :initform 0)
-   (location :reader creature.location :initarg :location)
+  ((energy :accessor energy :initform 0 :initarg :energy)
+   (location :reader location :initarg :location)
    (world :reader world :initarg :world)
-   (turn-action)))
+   (decision-fn :accessor decision-fn)))
 
 (define-condition dead ()
   ((creature :initarg :creature :accessor creature)))
@@ -60,15 +60,21 @@
 ;	    creature)
 ;  :energy (* (energy creature) +movement-energy-ratio+))
 
-(defmethod move ((creature creature) direction)
+(defun move (direction)
   "Move the creature."
+  (declare (special *current-creature*))
   (schedule #'(lambda ()
-		(let ((l (location creature))
-		      (dirfn (symbol-function (intern (concatenate 'string (string direction) "-OF")))))
-		  (remove-creature creature l)
-		  ;;before we add them to the new location use the energy (which might kill them)
-		  (use-energy creature (* (energy creature) +movement-energy-ratio+))
-		  (add-creature creature (funcall dirfn l))))
+		;get a new lexical binding for the creature
+		(let ((creature *current-creature*)) 
+		  (let ((l (location creature))
+			(dirfn (symbol-function (intern (concatenate 'string (string direction) "-OF")))))
+		    (remove-creature creature l)
+		    (format *log* "Moving: Left ~a..." l)
+		    ;;before we add them to the new location use the energy (which might kill them)
+		    (use-energy creature (* (energy creature) +movement-energy-ratio+))
+		    (add-creature creature (funcall dirfn l))
+		    (format *log* "Now in ~a.~%")))
+		(schedule #'(lambda () (funcall (decision-fn creature))) (world creature) 1))
 	    (world creature)
 	    10)
   (signal 'escape))

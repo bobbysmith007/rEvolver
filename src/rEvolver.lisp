@@ -50,6 +50,6 @@
   (format *log* "At tick(~a) count = ~a~%" (tick-number tick-list) (length (actions tick-list)))
   (dolist (action (actions tick-list))
     (handler-case (funcall action)
-      ('dead (cr) (format *log* "Dead: ~a~%" (creature cr)))
-      ('escape () (format *log* "escape~%"))
+      (dead (cr) (format *log* "Dead: ~a~%" (creature cr)))
+      (escape () (format *log* "escape~%"))
       (T () nil))))
