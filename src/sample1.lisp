@@ -17,5 +17,9 @@
 
 (make-new-world)
 
-
 (defvar *Creature1* (make-instance 'Creature ))
+
+(schedule #'(lambda () (format T "About to escape:") (signal 'escape)) *world* 1)
+(schedule #'(lambda () (format T "DIE! ") (signal 'dead :creature *Creature1*)) *world* 2)
+
+(advance-time *world*)

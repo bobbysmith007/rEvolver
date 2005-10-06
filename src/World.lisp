@@ -16,12 +16,7 @@
 		  ;;if the next element in the queue is for this tick,
 		  ;; then take it off the front and process each creature
 		  (when (and queue (= (tick-number (first queue)) current-tick))
-		    (format T "At tick(~a) = ~a~%" (tick-number (first queue)) (length (actions (first queue))))
-		    (dolist (action (actions (pop queue)))
-		      (handler-case (funcall action)
-			('dead () nil)
-			('escape () nill)
-			(T () nil)))))
+		    (execute (pop queue))))
   (call-next-method))
 
 

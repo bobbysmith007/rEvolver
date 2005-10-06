@@ -1,5 +1,7 @@
 (in-package :rEvolver)
 
+(defvar *log* T)
+
 (defclass ticker ()
   ((tick-number
     :initarg :tick-number
@@ -9,13 +11,11 @@
 (defgeneric advance-time (ticker)
   (:documentation "Move time forward for a ticked object."))
 
-(defmethod advance-time ((tiycker ticker))
+(defmethod advance-time ((ticker ticker))
   (incf (tick-number ticker)))
 
 (defgeneric add (creature world)
   (:documentation "Add a creature to a world."))
-
-
 
 (defclass tick-list (ticker)
   ((actions-list :initform '()
@@ -41,3 +41,15 @@
 	     (T
 	      (cons (push-tl action (make-instance 'tick-list :tick-number tick)) q)))))
     (scan queue)))
+
+(define-condition escape ()
+  ()
+  (:documentation "A condition for escaping out of the "))
+
+(defmethod execute ((tick-list tick-list))
+  (format *log* "At tick(~a) count = ~a~%" (tick-number tick-list) (length (actions tick-list)))
+  (dolist (action (actions tick-list))
+    (handler-case (funcall action)
+      ('dead (cr) (format *log* "Dead: ~a~%" (creature cr)))
+      ('escape () (format *log* "escape~%"))
+      (T () nil))))
