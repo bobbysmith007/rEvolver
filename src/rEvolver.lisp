@@ -51,5 +51,5 @@
   (dolist (action (actions tick-list))
     (handler-case (funcall action)
       (dead (cr) (format *log* "Dead: ~a~%" (creature cr)))
-      (escape () (format *log* "escape~%"))
-      (T () nil))))
+      (escape () (format *log* "escaped!~%"))
+      )))

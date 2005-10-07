@@ -2,9 +2,10 @@
 
 (defclass location ()
   ((energy :initarg :energy :accessor energy :initform 0)
-   (creatures :initform nil :reader creatures)
+   (creatures :initform nil :accessor creatures)
    (x :initarg :x :reader x)
-   (y :initarg :y :reader y))
+   (y :initarg :y :reader y)
+   (rEvolver-map :initarg :rEvolver-map :reader rEvolver-map))
   (:documentation "A location on a map."))
 
 (defmethod print-object ((location location) stream)
@@ -22,21 +23,21 @@
 (defgeneric inspect-map (rEvolver-map x y)
   (:documentation "Get a location describing a point on the map."))
 
-(defgeneric east-of ( rEvolver-map location)
-  (:method ((m rEvolver-map) (l location))
-	   (inspect-map m (1+ (x l)) (y l))))
+(defgeneric east-of (location)
+  (:method ((l location))
+	   (inspect-map (revolver-map l) (1+ (x l)) (y l))))
 
-(defgeneric west-of ( rEvolver-map location)
-  (:method ((m rEvolver-map) (l location))
-	   (inspect-map m (1- (x l)) (y l))))
+(defgeneric west-of (location)
+  (:method ((l location))
+	   (inspect-map (revolver-map l) (1- (x l)) (y l))))
 
-(defgeneric north-of ( rEvolver-map location)
-  (:method ((m rEvolver-map) (l location))
-	   (inspect-map m (x l) (1+ (y l)))))
+(defgeneric north-of (location)
+  (:method ((l location))
+	   (inspect-map (revolver-map l) (x l) (1+ (y l)))))
 
-(defgeneric south-of ( rEvolver-map location)
-  (:method ((m rEvolver-map) (l location))
-	   (inspect-map m (x l) (1- (y l)))))
+(defgeneric south-of (location)
+  (:method ((l location))
+	   (inspect-map (revolver-map l) (x l) (1- (y l)))))
 
 (defmethod drop-random-energy ((m rEvolver-map) frequency energy-to-add-max/spot )
   (dotimes (n (* frequency (x-size m) (y-size m)))
@@ -57,5 +58,5 @@
     (let ((x (mod x x-size))
 	  (y (mod y y-size)))
       (if (null (aref array x y))
-	  (setf (aref array x y) (make-instance 'location :x x :y y))
+	  (setf (aref array x y) (make-instance 'location :x x :y y :rEvolver-map m))
 	  (aref array x y)))))

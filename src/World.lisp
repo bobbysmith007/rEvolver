@@ -21,5 +21,5 @@
 
 
 (defmethod schedule (action (w world) ticks-from-now)
-  (format T "Scheduling an action in the world. ~a~%" (+ ticks-from-now (tick-number w)))
+  (format T "Scheduling an action in the world. Tick: ~a~%" (+ ticks-from-now (tick-number w)))
   (setf (queue w) (schedule action (queue w) (+ ticks-from-now (tick-number w)))))
