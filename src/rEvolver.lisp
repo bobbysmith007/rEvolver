@@ -1,6 +1,6 @@
 (in-package :rEvolver)
 
-(defvar *log* T)
+
 
 (defclass ticker ()
   ((tick-number
@@ -47,9 +47,9 @@
   (:documentation "A condition for escaping out of the "))
 
 (defmethod execute ((tick-list tick-list))
-  (format *log* "At tick(~a) count = ~a~%" (tick-number tick-list) (length (actions tick-list)))
+  (format-log "At tick(~a) count = ~a~%" (tick-number tick-list) (length (actions tick-list)))
   (dolist (action (actions tick-list))
     (handler-case (funcall action)
-      (dead (cr) (format *log* "Dead: ~a~%" (creature cr)))
-      (escape () (format *log* "escaped!~%"))
+      (dead (cr) (format-log "Dead: ~a~%" (creature cr)))
+      (escape () (format-log "escaped!~%"))
       )))

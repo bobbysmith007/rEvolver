@@ -28,10 +28,10 @@
 (setf (decision-fn *creature1*)
       (let ((cr *Creature1*))
 	#'(lambda ()
-	    (format *log* "In the decision function: ")
+	    (format-log "In the decision function: ")
 	    (let ((*current-creature* cr))
 	      (declare (special *current-creature*))
-	      (format *log* "About to call (move 'east) for creature: ~a~%" *current-creature*)
+	      (format-log "About to call (move 'east) for creature: ~a~%" *current-creature*)
 	      (move 'east)))))
 
 (schedule #'(lambda () (funcall (decision-fn *creature1*))) (world *creature1*) 1)
