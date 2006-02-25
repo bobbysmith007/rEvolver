@@ -2,5 +2,5 @@
 
 ;;it's my package ;-)
 (defpackage :rEvolver
-  (:use :common-lisp))
+  (:use :common-lisp :net.acceleration.data-structures.trees))
 

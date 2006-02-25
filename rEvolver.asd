@@ -10,7 +10,7 @@
 (defsystem :rEvolver
   :description "Playing around with genetic algorithms."
   :author "Nathan Bird <birdman@acceleration.net>"
-  :licence "GPL (or talk to me)"
+  :licence "LGPL (or talk to me)"
   :version "0.1"
   :components
   ((:module :src
@@ -19,4 +19,4 @@
 		 (:file "map" :depends-on ("packages"))
                  (:file "rEvolver" :depends-on ("packages"))
                  (:file "World" :depends-on ("packages" "rEvolver")))))
-  :depends-on ())
+  :depends-on (:adwcodebase))

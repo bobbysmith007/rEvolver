@@ -17,39 +17,17 @@
 (defgeneric add (creature world)
   (:documentation "Add a creature to a world."))
 
-(defclass tick-list (ticker)
-  ((actions-list :initform '()
-		  :accessor actions
-		  :documentation "The lambda functions to be run at any given tick.")))
-
-(defmethod push-tl (action (tl tick-list))
-  "Push a creature onto a tick-list and return the tick-list"
-  (with-accessors ((actions actions)) tl
-		  (push action actions))
-  tl)
-
 (defmethod schedule (action queue tick)
-  (labels ((scan (q)
-	   (cond
-	     ((null q)
-	      (list (push-tl action (make-instance 'tick-list :tick-number tick))))
-	     ((= tick (tick-number (first q)))
-	      (push-tl action (first q))
-	      q)
-	     ((> tick (tick-number (first q)))
-	      (cons (first q) (scan (rest q))))
-	     (T
-	      (cons (push-tl action (make-instance 'tick-list :tick-number tick)) q)))))
-    (scan queue)))
+  (meld queue (make-instance 'leftist-tree-node :key tick  :data action)))
 
 (define-condition escape ()
   ()
   (:documentation "A condition for escaping out of the "))
 
 (defmethod execute ((tick-list tick-list))
-  (format-log "At tick(~a) count = ~a~%" (tick-number tick-list) (length (actions tick-list)))
+  (format *log* "At tick(~a) count = ~a~%" (tick-number tick-list) (length (actions tick-list)))
   (dolist (action (actions tick-list))
     (handler-case (funcall action)
-      (dead (cr) (format-log "Dead: ~a~%" (creature cr)))
-      (escape () (format-log "escaped!~%"))
+      (dead (cr) (format *log* "Dead: ~a~%" (creature cr)))
+      (escape () (format *log* "escaped!~%"))
       )))
