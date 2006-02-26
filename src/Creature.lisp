@@ -10,6 +10,9 @@
    (world :reader world :initarg :world)
    (decision-fn :accessor decision-fn)))
 
+(defmethod die ((creature creature))
+  (when (location creature)))
+
 (define-condition dead ()
   ((creature :initarg :creature :accessor creature)))
 
@@ -32,30 +35,23 @@
 (defun move (direction)
   "Move the creature."
   (declare (special *current-creature*))
-   ;get a new lexical binding for the creature
+   ;get a new (unique) lexical binding for the creature.
   (let ((creature *current-creature*))
-    (format-log "Scheduling a move for: ~a~%" creature)
+    
     (schedule (domove creature direction)
 	      (world creature)
 	      1)
-    (format-log "About to escape...~%")
     (signal 'escape)))
 
 (defun domove (creature direction)
   #'(lambda ()
-      (format-log "Starting to move: ")
       (let ((l (location creature))
 	    (dirfn (symbol-function (intern (concatenate 'string (string direction) "-OF")))))
-	(format-log "moving: (location ~a) (dirfn ~a)~%" l dirfn)
 	(remove-creature creature l)
-	(format-log "Moving: Left ~a..." l)
 	;;before we add them to the new location use the energy (which might kill them)
 	(use-energy creature (* (energy creature) +movement-energy-ratio+))
-	(format-log "Creature depleted: ~a~%" creature)
 	(let ((l (funcall dirfn l)))
-	  (format-log "Found the next square: ~a~%" l)
-	  (add-creature creature l)
-	  (format-log "Now in ~a.~%" l)))
+	  (add-creature creature l)))
       (schedule #'(lambda () (funcall (decision-fn creature))) (world creature) 1)))
 
 ;(defmacro define-creature-op (name lambda-list &key documentation energy action ticks)

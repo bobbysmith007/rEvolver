@@ -13,7 +13,8 @@
 
 (defmethod advance-time ((world world))
   "Advance a world a tick by advancing any creatures for that tick."
-  (format T "Advancing the world from tick: ~a~%" (tick-number world))
+  (format-log "Advancing the world from tick: ~a~%" (tick-number world))
+  (call-next-method)
   (with-accessors ((current-tick tick-number) (queue queue)) world
 		  ;;if the next element in the queue is for this tick,
 		  ;; then take it off the front and process each creature
@@ -28,8 +29,7 @@
 			  (let ((time (key current-node))
 				(action (data current-node)))
 			    (execute-1 (time action)))
-			  ))))
-  )
+			  )))))
 
 
 (defmethod schedule (action (w world) ticks-from-now)
