@@ -31,7 +31,6 @@
   (setf (location creature) nil))
 
 
-
 (defun move (direction)
   "Move the creature."
   (declare (special *current-creature*))
