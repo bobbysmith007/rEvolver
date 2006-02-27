@@ -14,9 +14,12 @@
 ; cdr
 ; car
 
-; atomp
-; funp
-; listp
+; atom?
+; lambda?
+; list?
+; null?
+; node?
+; 
 
 ; nil
 
@@ -27,30 +30,35 @@
 ;;; A grammer specification for the DNA language
 ;;; Expression : (alist of Constrainer notes)  are constrainer 
 (defparameter Creature-DNA-1
-  '(
+  '((?Start -> ?Expression)
     (?Expression -> (
-		    (lambda ?Symbol ?Expression => lambda)
-		    (gamma ?Expression $((type . lambda))
+		    ;function defintion and application 
+		    (lambda ?Symbol ?Expression => lambda $ ((type . lambda)))
+		    (gamma ?Expression $ ((type . lambda))
 			   ?Expression => gamma)
-
-		    (cons ?Expression ?Expression => cons)
+		    ;list
+		    (cons ?Expression ?Expression => cons $ ((type . 'list)))
 		    (cdr ?Expression $ ((type . 'list)) => cdr)
 		    (car ?Expression $ ((type . 'list)) => car)
 
-		    (tag ?Expression $ ((doc . "Connects a type to a value to a val"))
-			 ?Expression => tag)
-		    (type ?Expression => type)
-		    (value ?Expression => value)
-		     
+
+		    ;boolean 
 		    (or ?Expression ?Expression => or)
 		    (if ?Expression ?Expression ?Expression => if)
-		    (not ?Expression => not)
+		    (not ?Expression => not $ ((type . 'boolean)))
+		     
 		    ;predicates
-		    (equal? ?Expression ?Expression => equal)
+		    (equal? ?Expression ?Expression => equal $ ((type . 'boolean)))
+		    (type? ?Expression ?Types => type? $ ((type . 'boolean)))
 
-		    (move ?Expression $ ((type .  (equal? null ?value))) => move)
-		    (energy? ?Expression $ ((type . node)) => energy?)
+		    ;Environment 
+		    (move ?Expression $ ((type . 'node)) => move)
+		    (energy? ?Expression $ ((type . 'node)) => energy?)
+		    (feed ?Expression $ ((type . 'node)) => feed)
+
+		    ;Symbols
 		    (nil => nil)
+		    (t => t)
 		    (?Type ) 
 		    )
      
@@ -60,8 +68,7 @@
 	      (list => list)
 	      (atom => atom)
 	      (number => number)
-		
-	      )
+	       )
      )
     (?Symbol -> ((gensym => 'gensym)
 		 (*gened-sym* => '*gened-sym*)))
@@ -71,15 +78,44 @@
   (mapcar
    (lambda (grammer-spec)
      (cons (car grammer-spec)
-	   (mapcar
-	    (lambda (right-part)
-	      (let ((loc (position '=> right-part )))
-		(if loc
-		    (cons (subseq right-part 0 loc)
-			  (subseq right-part (1+ loc) (length right-part)))
-		    right-part )))
-	    (caddr grammer-spec))))
+	   (let ((rewrites-into (caddr grammer-spec)))
+	   (if (listp rewrites-into)
+	       (mapcar
+		(lambda (right-part)
+		  (let ((loc (position '=> right-part )))
+		    (if loc
+			(cons (subseq right-part 0 loc)
+			      (subseq right-part (1+ loc) (length right-part)))
+			right-part )))
+		rewrites-into)
+	       rewrites-into))))
    grammer)
   )
 
-(defun create-interpretter (processed-grammer))
+(defun get-rewrite-tokens (rewrites-to)
+  (if (atom rewrites-to) rewrites-to
+      (let ((fun (car rewrites-to))
+	    (left-to-process (cdr rewrites-to)))
+	(loop for elem = (car left-to-process)
+	      for next-elem = (or (cadr left-to-process) 'end)
+	      when elem collect
+	      (if (eq '$ next-elem) ;;if we have constraints get them
+		  (prog1
+		    (cons elem
+			  (caddr left-to-process))
+		    (setf left-to-process (cdddr left-to-process)))
+		  (prog1
+		    elem
+		    (setf left-to-process (cdr left-to-process))))
+	      into defs
+	      unless elem do (return (cons fun defs)))
+	    )))
+
+(defun generate-tree (processed-grammer rewrite-rule &optional output)
+  (let* ((possibilities (assoc rewrite-rule processed-grammer))
+	 (chosen (pick-possibility possibilities))
+	 (rewrite-tokens (get-rewrite-tokens chosen)))
+    
+    
+    )
+  )
