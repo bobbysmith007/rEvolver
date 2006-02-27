@@ -30,6 +30,7 @@
 (defgeneric adjacent-p (node1 node2)
   (:documentation "Are two nodes adjacent. I.E. is there an arc from node1 to node2."))
 
+
 (defclass 2d-array-map (rEvolver-map)
   ((x-size :initarg :x-size :accessor x-size)
    (y-size :initarg :y-size :accessor y-size)

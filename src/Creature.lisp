@@ -1,8 +1,7 @@
 (in-package :rEvolver)
 
-(defparameter +possible-creatures+ '())
 (defparameter +movement-energy-ratio+ 1/10)
-
+(defparameter +movement-time+ 10)
 
 (defclass creature ()
   ((energy :accessor energy :initform 0 :initarg :energy)
@@ -40,27 +39,24 @@
   (setf (node creature) nil))
 
 
-(defun move (direction)
+(defun move (&optional node)
   "Move the creature."
   (declare (special *current-creature*))
-   ;get a new (unique) lexical binding for the creature.
+  ;get a new (unique) lexical binding for the creature.
+  ;we need to be able to lexically close on creature.
   (let ((creature *current-creature*))
+    ;;before we move them to the new node use the energy (which might kill them)
+    (use-energy creature (* (energy creature) +movement-energy-ratio+))  
+
+    (remove-creature creature (node creature))
+
+    ;;if the creature didn't specify then pick a random direction.
+    (add-creature creature (or node
+			       (random-elt (adjacent-nodes-of (node creature)))))
     
-    (schedule (domove creature direction)
-	      (world creature)
-	      1)
+    (schedule #'(lambda () (creature-eval creature)) (world creature) +movement-time+)
     (signal 'escape)))
 
-(defun domove (creature direction)
-  #'(lambda ()
-      (let ((l (node creature))
-	    (dirfn (symbol-function (intern (concatenate 'string (string direction) "-OF")))))
-	(remove-creature creature l)
-	;;before we add them to the new node use the energy (which might kill them)
-	(use-energy creature (* (energy creature) +movement-energy-ratio+))
-	(let ((l (funcall dirfn l)))
-	  (add-creature creature l)))
-      (schedule #'(lambda () (funcall (decision-fn creature))) (world creature) 1)))
 
 ;(defmacro define-creature-op (name lambda-list &key documentation energy action ticks)
 ;  "Ease in the creation of operations a creature can perform.
