@@ -1,6 +1,9 @@
 (in-package :rEvolver)
 
-
+;;;;Define the loggers we will be using
+(deflogger rlogger ()
+  :level +dribble+
+  :appender (make-instance 'brief-stream-log-appender :stream t))
 
 (defclass ticker ()
   ((tick-number
