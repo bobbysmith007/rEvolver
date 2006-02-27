@@ -24,6 +24,11 @@
 (defgeneric drop-random-energy (map frequency energy-to-add-max/spot)
   (:documentation "Drop a bunch of energy on a map"))
 
+(defgeneric adjacent-nodes-of (node)
+  (:documentation "What nodes are adjacent to the given node."))
+
+(defgeneric adjacent-p (node1 node2)
+  (:documentation "Are two nodes adjacent. I.E. is there an arc from node1 to node2."))
 
 (defclass 2d-array-map (rEvolver-map)
   ((x-size :initarg :x-size :accessor x-size)
@@ -64,3 +69,17 @@
   m)
 
 
+(defmethod adjacent-nodes-of ((node 2d-node))
+  (with-slots (x y revolver-map) node 
+    (list (find-node-xy revolver-map (1- x) y)
+	  (find-node-xy revolver-map (1+ x) y)
+	  (find-node-xy revolver-map x (1- y))
+	  (find-node-xy revolver-map x (1+ y))
+	  (find-node-xy revolver-map (1+ x) (1+ y))
+	  (find-node-xy revolver-map (1+ x) (1- y))
+	  (find-node-xy revolver-map (1- x) (1+ y))
+	  (find-node-xy revolver-map (1- x) (1- y)))))
+
+(defmethod adjacent-p ((node1 2d-node) (node2 2d-node))
+  (and (<= (abs (- (x node1) (x node2))) 1)
+       (<= (abs (- (y node1) (y node2))) 1)))

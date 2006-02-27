@@ -7,7 +7,9 @@
 	   #:node
 	   #:find-node-xy
 	   #:random-node
-	   #:drop-random-energy))
+	   #:drop-random-energy
+	   #:adjacent-nodes-of
+	   #:adjacent-p))
 
 (defpackage :rEvolver
   (:use :common-lisp
