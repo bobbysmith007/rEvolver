@@ -33,28 +33,28 @@
   '((?Start -> ?Expression)
     (?Expression -> (
 		    ;function defintion and application 
-		    (lambda ?Symbol ?Expression => lambda $ ((type . lambda)))
-		    (gamma ?Expression $ ((type . lambda))
+		    (lambda ?Symbol ?Expression =>  (lambda (type . lambda)))
+		    (gamma  (?Expression (type . lambda))
 			   ?Expression => gamma)
 		    ;list
-		    (cons ?Expression ?Expression => cons $ ((type . 'list)))
-		    (cdr ?Expression $ ((type . 'list)) => cdr)
-		    (car ?Expression $ ((type . 'list)) => car)
+		    (cons ?Expression ?Expression => (cons (type . 'list)))
+		    (cdr (?Expression (type . 'list)) => cdr)
+		    (car (?Expression (type . 'list)) => car)
 
 
 		    ;boolean 
 		    (or ?Expression ?Expression => or)
 		    (if ?Expression ?Expression ?Expression => if)
-		    (not ?Expression => not $ ((type . 'boolean)))
+		    (not ?Expression => (not (type . 'boolean)))
 		     
 		    ;predicates
-		    (equal? ?Expression ?Expression => equal $ ((type . 'boolean)))
-		    (type? ?Expression ?Types => type? $ ((type . 'boolean)))
+		    (equal? ?Expression ?Expression => (equal (type . 'boolean)))
+		    (type? ?Expression ?Types =>  (type? (type . 'boolean)))
 
 		    ;Environment 
-		    (move ?Expression $ ((type . 'node)) => move)
-		    (energy? ?Expression $ ((type . 'node)) => energy?)
-		    (feed ?Expression $ ((type . 'node)) => feed)
+		    (move (?Expression (type . 'node)) => move)
+		    (energy? (?Expression (type . 'node)) => energy?)
+		    (feed  (?Expression (type . 'node)) => feed)
 
 		    ;Symbols
 		    (nil => nil)
