@@ -6,12 +6,12 @@
 
 (defclass creature ()
   ((energy :accessor energy :initform 0 :initarg :energy)
-   (location :accessor location :initarg :location)
+   (node :accessor node :initarg :node)
    (world :reader world :initarg :world)
    (decision-fn :accessor decision-fn)))
 
 (defmethod die ((creature creature))
-  (when (location creature)))
+  (when (node creature)))
 
 (define-condition dead ()
   ((creature :initarg :creature :accessor creature)))
@@ -20,15 +20,15 @@
   (when (>= 0 (decf (energy creature) amount))
     (signal 'dead :creature creature)))
 
-(defmethod add-creature ((creature creature) (location location))
-  "add a creature to a location."
-  (push creature (creatures location))
-  (setf (location creature) location))
+(defmethod add-creature ((creature creature) (node node))
+  "add a creature to a node."
+  (push creature (creatures node))
+  (setf (node creature) node))
 
-(defmethod remove-creature ((creature creature) (location location))
-  "Take a creature out of a location."
-  (delete creature (creatures location) :test #'eq)
-  (setf (location creature) nil))
+(defmethod remove-creature ((creature creature) (node node))
+  "Take a creature out of a node."
+  (delete creature (creatures node) :test #'eq)
+  (setf (node creature) nil))
 
 
 (defun move (direction)
@@ -44,10 +44,10 @@
 
 (defun domove (creature direction)
   #'(lambda ()
-      (let ((l (location creature))
+      (let ((l (node creature))
 	    (dirfn (symbol-function (intern (concatenate 'string (string direction) "-OF")))))
 	(remove-creature creature l)
-	;;before we add them to the new location use the energy (which might kill them)
+	;;before we add them to the new node use the energy (which might kill them)
 	(use-energy creature (* (energy creature) +movement-energy-ratio+))
 	(let ((l (funcall dirfn l)))
 	  (add-creature creature l)))
@@ -74,13 +74,13 @@
  
   
 ;(define-creature-op look ((direction nil))
-;  "Examine the location the creature is currently standing at if the location
+;  "Examine the node the creature is currently standing at if the node
 ;	is null, or look in the specified direction.")
 
 ;(define-creature-op move (direction)
 ;  :documentation "Move the creature in a specified direction."
 ;  :ticks 10
-;  :action (let ((l (location creature))
+;  :action (let ((l (node creature))
 ;		(dirfn (symbol-function (intern (concatenate 'string (string direction) "-OF")))))
 ;	    (remove-creature creature l) 
 ;	    (add-creature creature (funcall dirfn l))
@@ -89,7 +89,7 @@
 
 
 ;(define-creature-op feed ()
-;  "Feed from the energy source at the current location.")
+;  "Feed from the energy source at the current node.")
 
 ;(define-creature-op reproduce ()
 ;  "Creature reproduction.")
