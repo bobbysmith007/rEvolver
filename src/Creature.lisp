@@ -15,7 +15,12 @@
    ))
 
 (defmethod die ((creature creature))
-  (when (node creature)))
+  (when (node creature)
+    (rlogger.info "[~a] Creature died: ~a"
+		  (tick-number (world creature))
+		  creature)
+    (remove-creature creature (node creature)))
+  creature)
 
 (define-condition dead ()
   ((creature :initarg :creature :accessor creature)))
