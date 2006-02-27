@@ -5,6 +5,7 @@
   :level +dribble+
   :appender (make-instance 'brief-stream-log-appender :stream t))
 
+;;;; Ticker is everything in the system that keeps track of time.
 (defclass ticker ()
   ((tick-number
     :initarg :tick-number
@@ -28,8 +29,10 @@
   (:documentation "A condition for escaping out of the "))
 
 (defmethod execute-1 (tick action)
-  (format *log* "At tick(~a) action = ~a~%" tick action)
-  (handler-case (funcall action)
-    (dead (cr) (format *log* "Dead: ~a~%" (creature cr)))
-    (escape () (format *log* "escaped!~%"))
-    ))
+  (rlogger.info "[~a] Starting action: ~a" tick action)
+  ;round about here we will be invoking the interpreter
+  
+; (handler-case (funcall action)
+;    (dead (cr) (rlogger.debug "Dead: ~a" (creature cr)))
+;    (escape () (rlogger.debug "escaped!~%")))
+  )
