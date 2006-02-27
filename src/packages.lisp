@@ -1,6 +1,20 @@
 (in-package "COMMON-LISP-USER")
 
-;;it's my package ;-)
+(defpackage :rEvolver.map
+    (:use :common-lisp)
+  (:export #:rEvolver-map
+	   #:2d-array-map
+	   #:node
+	   #:find-node-xy
+	   #:random-node
+	   #:drop-random-energy))
+
 (defpackage :rEvolver
-  (:use :common-lisp :net.acceleration.data-structures.trees :arnesi))
+  (:use :common-lisp
+	:net.acceleration.data-structures.trees
+	:arnesi
+	:rEvolver.map))
+
+
+
 
