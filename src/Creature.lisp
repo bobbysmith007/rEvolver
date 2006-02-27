@@ -8,7 +8,11 @@
   ((energy :accessor energy :initform 0 :initarg :energy)
    (node :accessor node :initarg :node)
    (world :reader world :initarg :world)
-   (decision-fn :accessor decision-fn)))
+   (decision-fn :accessor decision-fn)
+   ;;we're eventually going to be storing CSE runtime info here.
+   stack
+   input
+   ))
 
 (defmethod die ((creature creature))
   (when (node creature)))
