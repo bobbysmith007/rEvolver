@@ -19,4 +19,4 @@
 		 (:file "map" :depends-on ("packages"))
                  (:file "rEvolver" :depends-on ("packages"))
                  (:file "World" :depends-on ("packages" "rEvolver")))))
-  :depends-on (:adwcodebase))
+  :depends-on (:adwcodebase :arnesi))

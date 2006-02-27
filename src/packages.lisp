@@ -2,5 +2,5 @@
 
 ;;it's my package ;-)
 (defpackage :rEvolver
-  (:use :common-lisp :net.acceleration.data-structures.trees))
+  (:use :common-lisp :net.acceleration.data-structures.trees :arnesi))
 
