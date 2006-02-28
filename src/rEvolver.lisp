@@ -21,18 +21,12 @@
 (defgeneric add (creature world)
   (:documentation "Add a creature to a world."))
 
-(defmethod schedule (action queue tick)
-  (meld queue (make-instance 'leftist-tree-node :key tick  :data action)))
-
 (define-condition escape ()
   ()
   (:documentation "A condition for escaping out of the "))
 
-(defmethod execute-1 (tick action)
-  (rlogger.info "[~a] Starting action: ~a" tick action)
-  ;round about here we will be invoking the interpreter
-  
+
 ; (handler-case (funcall action)
 ;    (dead (cr) (rlogger.debug "Dead: ~a" (creature cr)))
 ;    (escape () (rlogger.debug "escaped!~%")))
-  )
+  
