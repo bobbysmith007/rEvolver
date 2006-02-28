@@ -39,67 +39,21 @@
   (setf (node creature) nil))
 
 
-(defun move (&optional node)
+(defmethod move ((creature creature) &optional node)
   "Move the creature."
-  (declare (special *current-creature*))
   ;get a new (unique) lexical binding for the creature.
   ;we need to be able to lexically close on creature.
-  (let ((creature *current-creature*))
-    ;;before we move them to the new node use the energy (which might kill them)
-    (use-energy creature (* (energy creature) +movement-energy-ratio+))  
-
-    (remove-creature creature (node creature))
-
-    ;;if the creature didn't specify then pick a random direction.
-    (add-creature creature (or node
-			       (random-elt (adjacent-nodes-of (node creature)))))
-    
-    (schedule #'(lambda () (creature-eval creature)) (world creature) +movement-time+)
-    (signal 'escape)))
-
-
-;(defmacro define-creature-op (name lambda-list &key documentation energy action ticks)
-;  "Ease in the creation of operations a creature can perform.
-;	For now I'm thinking this will mean having it specialized on a creature."
-;    ;;get the name of the symbol in the creatures package
-;  (let ((fn-name (intern (string name) :rEvolver.creature))
-;	(creature (gensym "creature")))
-;    `(defun ,name (,creature ,@lambda-list)
-;      ,documentation
-;      (schedule #'(lambda ()
-;		    ,@action
-;		    (use-energy ,creature ,energy )
-;		    )
-;       (world ,creature)
-;       ,ticks))))
-
-
-;;;; Define-creature-method is a macro to create a method
-;;;; specialized on a type of creature
- 
   
-;(define-creature-op look ((direction nil))
-;  "Examine the node the creature is currently standing at if the node
-;	is null, or look in the specified direction.")
-
-;(define-creature-op move (direction)
-;  :documentation "Move the creature in a specified direction."
-;  :ticks 10
-;  :action (let ((l (node creature))
-;		(dirfn (symbol-function (intern (concatenate 'string (string direction) "-OF")))))
-;	    (remove-creature creature l) 
-;	    (add-creature creature (funcall dirfn l))
-;	    creature)
-;  :energy (* (energy creature) +movement-energy-ratio+))
-
-
-;(define-creature-op feed ()
-;  "Feed from the energy source at the current node.")
-
-;(define-creature-op reproduce ()
-;  "Creature reproduction.")
-
+  ;;before we move them to the new node use the energy (which might kill them)
+  (use-energy creature (* (energy creature) +movement-energy-ratio+))  
+  
+  (remove-creature creature (node creature))
+  
+  ;;if the creature didn't specify then pick a random direction.
+  (add-creature creature (or node
+			     (random-elt (adjacent-nodes-of (node creature)))))
+  (suspend creature +movement-time+))
 
 
 (defmethod print-object ((cr creature) stream)
-  (format stream "(Creature :Energy ~a)" (energy cr)))
+  (format stream "#<(Creature :Energy ~a)>" (energy cr)))
