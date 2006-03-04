@@ -15,88 +15,116 @@
 (defun pop-control-op (control)
   (pop (car control)))
 
-(defstruct closure
+(defstruct (closure (:constructor make-lambda (name control)))
   environment
   name
   control)
 
+
+;;a frame is an evaluation of an environment. aka stack-frame, function call
 (defstruct (frame (:constructor make-frame
-				(control environment &optional previous-frame)))
+				(control environment previous)))
   control
   environment
-  previous-frame)
+  previous)
 
-(defun make-interpreter (tree primary-environment &optional beta-reduction-cost)
-  "Takes a standardized tree and returns a function that when invoked will
- commence interpret the tree in the primary environment. Reinnvokng the
- returned function will restart the interpretation."
-  (let ((control (build-contrl-structures tree)))
-    (lambda ()
-      (start-CSE-machine control
-			'()
-			primary-environment
-			beta-reduction-cost))))
+(defun make-frame-from-closure (closure value &optional previous)
+  (make-frame (closure-control closure)
+	       (env-push (closure-name closure) value (closure-environment closure))
+	       previous))
+
+(defun peek-op (frame)
+  (first (frame-control frame)))
+
+(defun pop-op (frame)
+  (let ((control (frame-control frame)))
+    (setf (frame-control frame) (rest control))
+    (first control)))
+
 
 (define-condition interrupt ()
   (continuation))
 (define-condition unbound-name (error)
   (name environment))
 
-(defun start-CSE-machine (control stack environment beta-reduction-cost)
-  (labels ((build-rator-continuation ()
-	     ;;the continuation function is just push 
+(defun start-CSE-machine (frame stack beta-reduction-cost)
+  (labels ((new-frame (closure val)
+	     (setf frame (make-frame-from-closure closure val frame)))
+	   (pop-frame ()
+	     "Return to a previous frame, if there isn't one then we are finished
+		and return the top of the stack upward."
+	     (prog1 frame
+	       (setf frame (frame-previous frame))
+	       (unless frame
+		 (return-from start-CSE-machine
+		   (values (first stack)
+			   (rest stack))))))
+	   
+	   (push-stack (val)
+	     (setf stack (cons val stack)))
+	   (pop-stack ()
+	     (prog1 (first stack)
+	       (setf stack (rest stack))))
+	   (frame-lookup (key)
+	     (lookup key (frame-environment frame)))
+	   
+	   (build-rator-continuation ()
+	     "Make a continuation that will push the return value onto the stack
+		and continue processing."
 	     (lambda (val)
-	       (start-CSE-machine control
-			  (cons val stack)
-			  environment
-			  beta-reduction-cost)))
+	       (start-CSE-machine frame
+				  (cons val stack)
+				  beta-reduction-cost)))
+	   
 	   (handle-interrupt (interrupt)
-	     (funcall (slot-value interrupt 'continuation)
-		      (build-rator-continuation))
-	     (return-from start-CSE-machine)))
+	     "Interrupt the current machine by calling the interrupt's continutation
+		passing it the interpreter continuation and finally returning it's value to the top.
+		the result up to the whomever originally invoked the machine."
+	     (return-from start-CSE-machine
+	       (funcall (slot-value interrupt 'continuation)
+			(build-rator-continuation)))))
 
     (handler-bind ((interrupt #'handle-interrupt))
-      
-      (loop while control ;;when there is no l
-	do ;(break "Top of loop")
-	(if (null (top control))
-	       ;;cse rule 5
-	       (progn (pop control)
-		      (pop environment))
-	       
-	       (let ((op (pop-control-op control)))
-		 (cond
-		   
-		   ;;cse rule 2
-		   ((closure-p op)
-		    (setf (closure-environment op) environment)
-		    (push op stack))
-		   
-		   ((eq op 'gamma)
-		    (let* ((rator (pop stack))
-			   (rand (pop stack)))
-		      (if (closure-p rator)
-			;;cse rule 4
-			(progn
-			  (push (closure-control rator) control)
-			  (push (cons (closure-name rator) rand) closure-environment))
-			;;cse rule 3
-			;;if rator here gets #'interrupt-interpreter/cc here, it's allright
-			(if (functionp rator)
-			    (push (funcall rator rand) stack)
-			    (error "We didn't have a function ~a ~a" rator rand)))))
+      (loop 
+	do 
+	(if (null (peek-op frame))
+	    ;;cse rule 5, exit an environment.
+	    (pop-frame)
+	    
+	    (let ((op (pop-op frame)))
+	      (cond
+		
+		;;cse rule 2 stack a lambda
+		((closure-p op)
+		 (setf (closure-environment op) (frame-environment frame))
+		 (push-stack op))
+		
+		((eq op 'gamma)
+		 (let* ((rator (pop-stack))
+			(rand (pop-stack)))
+		   (cond ((closure-p rator)
+			  ;;cse rule 4 apply lambda
+			  (new-frame rator rand))
+			 ;;cse rule 3 apply rator
+			 ;;if rator here gets #'interrupt-interpreter/cc here, it's allright
+			 ;;the push will be handled by the build-rator-continuation stuff.
+			 ((functionp rator)
+			  (push-stack (funcall rator rand)))
+			 (T (error "We didn't have a function ~a ~a" rator rand)))))
 
-		   ;; CSE Rule 1
 		   ((numberp op)
-		    (push op stack))
-		   ((symbolp op)
-		    (let ((obj (lookup op environment)))
-		       (push obj stack)
-		       ))
+		    (push-stack op))
 		   
-		   (T (error "Unkwown operation on the control ~a" op)))))
-	finally (return (top stack))
-	))))
+		   ;; CSE Rule 1 Stack a name
+		   ((symbolp op)
+		    (let ((obj (frame-lookup op)))
+		      (unless obj
+			(break "Environment lookup failed. Key: ~a  Frame: ~a"
+			       op
+			       frame))
+		      (push-stack obj)))
+		   
+		   (T (error "Unkwown operation on the control ~a" op)))))))))
 
 
 
@@ -105,30 +133,50 @@
  running interpreter. The argument cont(inuation) should be a function of one
  argument. The function is called, passing in the interpreter continuation.
 That continuation may then be saved off somewhere. Will return the result back
-up to whoever originally invoked the interpreter.")
+up to whoever originally invoked the interpreter."
+  cont)
 
 
-
+(defun make-interpreter (tree primary-environment &optional beta-reduction-cost)
+  "Takes a standardized tree and returns a function that when invoked will
+ commence interpret the tree in the primary environment. Reinnvokng the
+ returned function will restart the interpretation."
+  (let ((frame (make-frame tree primary-environment nil)))
+    (lambda ()
+      (start-CSE-machine frame
+			'()
+			beta-reduction-cost))))
 
 (defparameter +ST+ '(gamma
 		     (lambda x (gamma (gamma + 1)
 				      x))
 		     3))
-(defparameter +CTRL+ `( (3
-			 ,(make-closure :name 'x
-					:control '(x 1 + gamma gamma))
-			 gamma)))
-(defparameter +PE+ (env-push '+ #'(lambda (x)
-				    (lambda (y) (+ x y)))
-			     (env-push
-			      '- #'(lambda (x)
-				     (lambda (y) (- x y)))
-			      nil)))
+
+(defparameter +CTRL1+ `(3 ,(make-lambda 'x '(x 1 + gamma gamma)) gamma))
+
+(defparameter +CTRL2+ `(6 5 ,(make-lambda 'x
+				(list (make-lambda 'w
+						   '(w x + gamma gamma))))
+			gamma gamma))
+(defparameter +CTRL3+ `(7
+			,(make-lambda 'z
+				      '(z 2 * gamma gamma))
+			gamma
+			,(make-lambda 'x
+				      `(x
+					,(make-lambda 'w
+						      '(w neg gamma))
+					gamma 1 + gamma gamma))
+			gamma))
+
+(defparameter +PE+ `((+ . ,#'(lambda (x)
+			       (lambda (y) (+ x y))))
+		     (- . ,#'(lambda (x)
+			       (lambda (y) (- x y))))
+		     (neg . ,#'(lambda (x)
+				 (- x)))
+		     (* . ,#'(lambda (x)
+			       (lambda (y) (* x y))))))
 
 
 
-`(6 5 ,(make-closure :name 'x
-		     :control (list (make-closure :name 'w
-					    :control '(w x + gamma gamma))))
-  gamma gamma
-  )
