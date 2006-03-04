@@ -43,7 +43,7 @@
 
 
 (define-condition interrupt ()
-  (continuation))
+  ((continuation :initarg :continuation)))
 (define-condition unbound-name (error)
   (name environment))
 
@@ -134,7 +134,8 @@
  argument. The function is called, passing in the interpreter continuation.
 That continuation may then be saved off somewhere. Will return the result back
 up to whoever originally invoked the interpreter."
-  cont)
+  
+  (signal 'interrupt :continuation cont ))
 
 
 (defun make-interpreter (tree primary-environment &optional beta-reduction-cost)
@@ -169,6 +170,13 @@ up to whoever originally invoked the interpreter."
 					gamma 1 + gamma gamma))
 			gamma))
 
+(defparameter +CTRLk+ `(6 5 ,(make-lambda 'x
+				`(,(make-lambda 'w
+						'(w x + gamma gamma))
+				  print-and-pause
+				  gamma))
+			gamma gamma))
+
 (defparameter +PE+ `((+ . ,#'(lambda (x)
 			       (lambda (y) (+ x y))))
 		     (- . ,#'(lambda (x)
@@ -176,7 +184,12 @@ up to whoever originally invoked the interpreter."
 		     (neg . ,#'(lambda (x)
 				 (- x)))
 		     (* . ,#'(lambda (x)
-			       (lambda (y) (* x y))))))
+			       (lambda (y) (* x y))))
+		     (print-and-pause . ,#'(lambda (x)
+					     (interrupt-interpreter/cc
+					      (lambda (k)
+						(print x)
+						(lambda () (funcall k x))))))))
 
 
 
