@@ -2,7 +2,9 @@
 
 (defpackage :CSE
     (:use :common-lisp)
-  (:export #:interpret))
+  (:shadow #:eval)
+  (:export #:make-interpreter
+	   #:interrupt-interpreter/cc))
 
 (defpackage :rEvolver.map
     (:use :common-lisp)

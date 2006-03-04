@@ -15,6 +15,7 @@
   :components
   ((:module :src
     :components ((:file "packages")
+		 (:file "interpreter" :depends-on ("packages"))
                  (:file "Creature" :depends-on ("packages" "rEvolver" "map"))
 		 (:file "map" :depends-on ("packages"))
                  (:file "rEvolver" :depends-on ("packages"))
