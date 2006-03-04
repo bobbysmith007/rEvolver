@@ -10,7 +10,8 @@
   (creature)) 
 (define-condition suspend (interpreter-signal)
   (reason duration)) 
-(define-condition death (interpreter-signal)
+(define-condition dead (interpreter-signal)
+  "He's dead jim"
   (cause))
 (define-condition stop (interpreter-signal)
   (return-val))

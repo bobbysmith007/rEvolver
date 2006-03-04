@@ -1,5 +1,9 @@
 (in-package "COMMON-LISP-USER")
 
+(defpackage :CSE
+    (:use :common-lisp)
+  (:export #:interpret))
+
 (defpackage :rEvolver.map
     (:use :common-lisp)
   (:export #:rEvolver-map
@@ -16,7 +20,6 @@
 	:net.acceleration.data-structures.trees
 	:arnesi
 	:rEvolver.map))
-
 
 
 
