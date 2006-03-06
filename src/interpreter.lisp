@@ -9,26 +9,28 @@
 (defun env-push (key datum environment)
   (acons key datum environment))
 
-(defun top (stack)
-  (first stack))
-
-(defun pop-control-op (control)
-  (pop (car control)))
-
 (defstruct (closure (:constructor make-lambda (name control)))
+  "A closure needs to keep track of the variable name, the function body (control)
+ and what environment it is closed. Since right now this object is created as an
+ unclosed function that is later fixed to an environment the contstructor only
+ takes the name and control."
   environment
   name
   control)
 
 
-;;a frame is an evaluation of an environment. aka stack-frame, function call
 (defstruct (frame (:constructor make-frame
 				(control environment previous)))
+  "a frame is an evaluation of some code in an environment.
+	aka stack-frame, function call"
   control
   environment
   previous)
 
 (defun make-frame-from-closure (closure value &optional previous)
+  "Most of the new frames are going to be created when we evaluate a closed fun.
+This function creates a new frame that will evaluate the body of the closure,
+with the environment it was closed to plus the name+argument pair."
   (make-frame (closure-control closure)
 	       (env-push (closure-name closure) value (closure-environment closure))
 	       previous))
