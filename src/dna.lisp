@@ -5,79 +5,19 @@
 ;;(?RightPart -> name ?rewrite-name ?rewrite-name => (write-part))
 ;;(?rewrite-name -> )
 
-(defparameter *depth-bound* 10
+(defparameter +depth-bound+ 10
   "the depth at which tree generation terminates")
 
-;;; A grammer specification for the DNA language
-(defparameter Creature-DNA-1
-
-  '((?Start -> ?Expression)
-    (?Expression ->
-     (;function defintion and application 
-      (lambda ?Symbol ?Expression =>  (lambda (type . lambda)))
-      (gamma  (?Expression (type . lambda))
-			   ?Expression => gamma)
-      ;list
-      (cons ?Expression ?Expression => (cons (type . list)))
-      (cdr (?Expression (type . 'list)) => cdr)
-      (car (?Expression (type . 'list)) => car)
-
-      
-      ;boolean 
-      (or ?Expression ?Expression => or)
-      (if ?Expression ?Expression ?Expression => if)
-      (not ?Expression => (not (type . 'boolean)))
-		     
-      ;predicates
-      (equal? ?Expression ?Expression => (equal (type . boolean)))
-      (type? ?Expression ?Type =>  (eq (type . boolean)))
-      
-;Environment
-;(move (?Expression (type . 'node) (return . )) => move)
-;(energy? (?Expression (type . 'node) (return . boolean)) => energy?)
-;(feed  (?Expression (type . 'node)) => feed)
-;(look (?Expression (type . 'node)) => look)  
-
-      (?Terminal)
-      
-		    
-      ))
-    (?Type ->
-     ((node => node)
-      (function => function)
-      (list => list)
-      (atom => atom)
-      (number => number)
-      ))
-    
-    (?Symbol ->
-     ((gensym => gensym)
-      (*gened-sym* => *gened-sym*)))
-    
-    (?Terminal ->
-     ((nil => nil)
-      (t => t)
-      (*gened-sym* => *gened-sym*)
-      ;Environment
-      (move => move)
-      (energy? => energy?)
-      (feed => feed)
-      
-      (?Type)))
-    ))
-
-
-
-(defun process-grammer-definition (grammer)
+(defun process-grammar-definition (grammar)
   "Removes the arrows and makes them nice nested a-lists.
 TODO: This should probably actually make some sort of struct rather than rediculously nested lists
    (?name . ( (rewrite) (rewrite) ...)) 
    (rewrite . (right-part . write-part)) "
   
   (mapcar
-   (lambda (grammer-spec)
-     (cons (car grammer-spec)
-	   (let ((rewrites-into (caddr grammer-spec)))
+   (lambda (grammar-spec)
+     (cons (car grammar-spec)
+	   (let ((rewrites-into (caddr grammar-spec)))
 	   (if (listp rewrites-into)
 	       (mapcar
 		(lambda (right-part)
@@ -88,7 +28,7 @@ TODO: This should probably actually make some sort of struct rather than redicul
 			right-part )))
 		rewrites-into)
 	       rewrites-into))))
-   grammer)
+   grammar)
   )
 
 
@@ -116,8 +56,8 @@ TODO: This should probably actually make some sort of struct rather than redicul
 	(car write-part)
 	write-part)))
 
-(defun possibilities (processed-grammer rewrite-name) 
-  (cdr (assoc rewrite-name processed-grammer)))
+(defun possibilities (processed-grammar rewrite-name) 
+  (cdr (assoc rewrite-name processed-grammar)))
 
 (defun rewrite-node-name (val)
   "gets the name of the rewrite node"
@@ -127,23 +67,22 @@ TODO: This should probably actually make some sort of struct rather than redicul
 
 (defun pick-possibility (list current-depth)
   (when list
-	(adwutils::get-random-element list)))
+	(random-elt list)))
 
-(defun get-child-nodes (processed-grammer rewrite-tokens current-depth)
+(defun get-child-nodes (processed-grammar rewrite-tokens current-depth)
   (mapcar
    (lambda (new-expansion)
-     (generate-tree processed-grammer (rewrite-node-name new-expansion) (1+ current-depth)))
+     (generate-tree processed-grammar (rewrite-node-name new-expansion) (1- current-depth)))
    rewrite-tokens))
 
 
-(defun generate-tree (processed-grammer rewrite-name &optional (current-depth 0))
-  (declare (optimize (debug 3))
-	   (special *depth-bound*))
+(defun generate-tree (processed-grammar rewrite-name &optional (current-depth +depth-bound+))
+  (declare (optimize (debug 3)))
   
     (let* (;get all of the rewrite possibilities of the rule
-	   (possibilities (if (= *depth-bound* current-depth)
-			      (possibilities processed-grammer '?Terminal)
-			      (possibilities processed-grammer rewrite-name)))	 
+	   (possibilities (if (= 0 current-depth)
+			      (possibilities processed-grammar '?Terminal)
+			      (possibilities processed-grammar rewrite-name)))	 
 	   (chosen (pick-possibility possibilities current-depth))
 	   
 	   ;; Get all the expansions for this rewrite
@@ -153,7 +92,7 @@ TODO: This should probably actually make some sort of struct rather than redicul
 	   (write-name (rewrite-node-name write-part))
 	   
 	   ;; get all the subtrees neccessary for this
-	   (child-nodes (get-child-nodes processed-grammer rewrite-tokens current-depth)))
+	   (child-nodes (get-child-nodes processed-grammar rewrite-tokens current-depth)))
       
       (format T "~%------~%chosen:~a ~%" chosen)      
       (format T "rewrite-tokens:~a ~%" rewrite-tokens)
@@ -169,3 +108,64 @@ TODO: This should probably actually make some sort of struct rather than redicul
 		    (car child-nodes)))
 	    write-name)
       ))
+
+
+;;; A grammar specification for the DNA language
+(defparameter Creature-DNA-1
+  (process-grammar-definition
+   '((?Start -> ?Expression)
+     (?Expression ->
+      (;function defintion and application 
+       (lambda ?Symbol ?Expression =>  (lambda (type . lambda)))
+       (gamma  (?Expression (type . lambda))
+	       ?Expression => gamma)
+					;list
+       (cons ?Expression ?Expression => (cons (type . list)))
+       (cdr (?Expression (type . 'list)) => cdr)
+       (car (?Expression (type . 'list)) => car)
+
+       
+					;boolean 
+       (or ?Expression ?Expression => or)
+       (if ?Expression ?Expression ?Expression => if)
+       (not ?Expression => (not (type . 'boolean)))
+       
+					;predicates
+       (equal? ?Expression ?Expression => (equal (type . boolean)))
+       (type? ?Expression ?Type =>  (eq (type . boolean)))
+       
+;Environment
+;(move (?Expression (type . 'node) (return . )) => move)
+;(energy? (?Expression (type . 'node) (return . boolean)) => energy?)
+;(feed  (?Expression (type . 'node)) => feed)
+;(look (?Expression (type . 'node)) => look)  
+       
+       (?Terminal)
+       
+       
+       ))
+     (?Type ->
+      ((node => node)
+       (function => function)
+      (list => list)
+       (atom => atom)
+       (number => number)
+       ))
+     
+     (?Symbol ->
+      ((gensym => gensym)
+       (*gened-sym* => *gened-sym*)))
+     
+     (?Terminal ->
+      ((nil => nil)
+       (t => t)
+       (*gened-sym* => *gened-sym*)
+      ;Environment
+       (move => move)
+       (energy? => energy?)
+       (feed => feed)
+       
+       (?Type)))
+     )))
+
+
