@@ -2,7 +2,7 @@
 
 (defclass node ()
   ((energy :initarg :energy :accessor energy :initform 0)
-   (creatures :initform nil :accessor creatures)
+   (creatures :initform nil :accessor creatures-of)
    (rEvolver-map :initarg :rEvolver-map :reader rEvolver-map))
   (:documentation "A location on a map."))
 
