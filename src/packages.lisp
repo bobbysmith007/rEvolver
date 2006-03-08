@@ -21,6 +21,7 @@
 
 (defpackage :rEvolver
   (:use :common-lisp
+	:net.acceleration.utils
 	:net.acceleration.data-structures.trees
 	:arnesi
 	:rEvolver.map
