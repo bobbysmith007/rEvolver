@@ -66,11 +66,15 @@
 			  (interrupt-interpreter/cc
 			   (lambda (k)
 			     ;;before we move them to the new node use the energy (which might kill them)
-			     (use-energy creature (* (energy creature) +movement-energy-ratio+))  
+			     (use-energy creature
+					 (* (energy creature)
+					    +movement-energy-ratio+))  
 			     (remove-creature creature (node creature))
 			     ;;if the creature didn't specify then pick a random direction.
-			     (add-creature creature (or node
-							(random-elt (adjacent-nodes-of (node creature)))))
+			     (add-creature creature
+					   (or node
+					       (random-elt (adjacent-nodes-of
+							    (node creature)))))
 			     (schedule k (world creature) +movement-time+)))))
       (addenv 'dna:feed (curry ()
 			  (interrupt-interpreter/cc
