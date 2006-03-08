@@ -11,6 +11,8 @@
   (:export #:rEvolver-map
 	   #:2d-array-map
 	   #:node
+	   #:creatures-of
+	   #:take-all-energy
 	   #:find-node-xy
 	   #:random-node
 	   #:drop-random-energy
