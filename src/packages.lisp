@@ -30,6 +30,9 @@
 
 (defpackage :revolver.dna
     (:nicknames :dna)
+  (:use :common-lisp
+	:net.acceleration.utils
+	)
     (:export
      #:move
      #:feed

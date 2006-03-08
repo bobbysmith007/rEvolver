@@ -1,11 +1,11 @@
-(in-package :rEvolver)
+(in-package :dna)
 
 ;;(?A -> (list ?Rewrite))
 ;;(?Rewrite -> ({attrib-block-1} [cond] {attrib-block-2} : (?RightPart)))
 ;;(?RightPart -> name ?rewrite-name ?rewrite-name => (write-part))
 ;;(?rewrite-name -> )
 
-(defparameter +depth-bound+ 5
+(defparameter +depth-bound+ 10
   "the depth at which tree generation terminates")
 
 (defun process-grammar-definition (grammar)
@@ -81,7 +81,7 @@ TODO: This should probably actually make some sort of struct rather than redicul
 	      (car (push (gensym) symbol-table)))
 	     ((eq new-sub-tree '*gened-sym*)
 	      (or (random-elt symbol-table)
-		  (when (eq '?Symbol new-expansion)
+		  (when (eq '?symbol new-expansion)
 		      (gensym))))
 	     (T new-sub-tree))))
    rewrite-tokens))
@@ -165,7 +165,6 @@ TODO: This should probably actually make some sort of struct rather than redicul
        (car ?Expression
 	    =>
 	    (gamma car ?Expression))
-
        
 	;boolean 
        (or ?Expression ?Expression
