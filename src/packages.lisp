@@ -2,9 +2,9 @@
 
 (defpackage :CSE
     (:use :common-lisp)
-  (:shadow #:eval)
   (:export #:make-interpreter
-	   #:interrupt-interpreter/cc))
+	   #:interrupt-interpreter/cc
+	   #:env-push))
 
 (defpackage :rEvolver.map
     (:use :common-lisp)
@@ -26,6 +26,7 @@
 
 
 (defpackage :revolver.dna
+    (:nicknames :dna)
     (:export
      #:move
      #:feed
