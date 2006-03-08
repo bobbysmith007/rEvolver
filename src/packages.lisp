@@ -21,7 +21,21 @@
   (:use :common-lisp
 	:net.acceleration.data-structures.trees
 	:arnesi
-	:rEvolver.map))
+	:rEvolver.map
+	:CSE))
 
 
-
+(defpackage :revolver.dna
+    (:export
+     #:move
+     #:feed
+     #:energy?
+     #:cons
+     #:car
+     #:cdr
+     #:or
+     #:if
+     #:not
+     #:eq
+     #:equal
+     ))
