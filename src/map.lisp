@@ -30,6 +30,12 @@
 (defgeneric adjacent-p (node1 node2)
   (:documentation "Are two nodes adjacent. I.E. is there an arc from node1 to node2."))
 
+(defgeneric take-all-energy (node)
+  (:documentation "Remove all the energy from a node, returning how much there was.")
+  (:method ((node node) )
+	   (prog1 (energy node)
+	     (setf (energy node) 0))))
+
 
 (defclass 2d-array-map (rEvolver-map)
   ((x-size :initarg :x-size :accessor x-size)
@@ -40,8 +46,7 @@
   (with-slots (array x-size y-size) m
     (setf array (make-array (list x-size y-size)
 			    :initial-element nil
-			    :adjustable nil)))
-  )
+			    :adjustable nil))))
 
 
 (defclass 2d-node (node)
