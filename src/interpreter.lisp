@@ -140,11 +140,13 @@ up to whoever originally invoked the interpreter."
   (signal 'interrupt :continuation cont ))
 
 
-(defun make-interpreter (tree primary-environment &optional beta-reduction-cost)
+(defun make-interpreter (standardized-tree primary-environment &optional beta-reduction-cost)
   "Takes a standardized tree and returns a function that when invoked will
  commence interpret the tree in the primary environment. Reinnvokng the
  returned function will restart the interpretation."
-  (let ((frame (make-frame tree primary-environment nil)))
+  (let* ((flattened (flattener standardized-tree))
+	 (frame (make-frame flattened
+			    primary-environment nil)))
     (lambda ()
       (start-CSE-machine frame
 			'()
