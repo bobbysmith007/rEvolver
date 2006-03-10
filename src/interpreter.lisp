@@ -150,10 +150,6 @@ up to whoever originally invoked the interpreter."
 			'()
 			beta-reduction-cost))))
 
-(defparameter +ST+ '(gamma
-		     (lambda x (gamma (gamma + 1)
-				      x))
-		     3))
 
 (defparameter +CTRL1+ `(3 ,(make-lambda 'x '(x 1 + gamma gamma)) gamma))
 
@@ -194,3 +190,32 @@ up to whoever originally invoked the interpreter."
 						(lambda () (funcall k x))))))))
 
 
+
+
+(defun lchild (tree)
+  (second tree))
+(defun rchild (tree)
+  (third tree))
+(defun root (tree)
+  (first tree))
+
+(defun flattener (tree)
+  (labels ((rflat (tree )
+	     (if (listp tree)
+		 (let ((node (root tree)))
+		   (cond
+		     ((eq node 'lambda)
+		      (list (make-lambda (lchild tree) (rflat (rchild tree)))))
+		     ((eq node 'gamma)
+		      (append (rflat (rchild tree))
+			      (rflat (lchild tree))
+			      '(gamma)))
+		     (T (error "Found node ~a internally on a standardized tree." node))))
+		 (list tree))))
+    (rflat tree )))
+
+
+(defparameter +ST+ '(gamma
+		     (lambda x (gamma (gamma + 1)
+				      x))
+		     3))
