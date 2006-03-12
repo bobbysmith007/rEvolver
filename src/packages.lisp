@@ -19,14 +19,6 @@
 	   #:adjacent-nodes-of
 	   #:adjacent-p))
 
-(defpackage :rEvolver
-  (:use :common-lisp
-	:net.acceleration.utils
-	:net.acceleration.data-structures.trees
-	:arnesi
-	:rEvolver.map
-	:CSE))
-
 
 (defpackage :revolver.dna
     (:nicknames :dna)
@@ -34,6 +26,10 @@
 	:net.acceleration.utils
 	)
     (:export
+     #:generate-tree
+     #:creature-DNA-1
+     #:gamma
+     #:lambda
      #:move
      #:feed
      #:energy?
@@ -45,4 +41,17 @@
      #:not
      #:eq
      #:equal
+     #:?start
+     
      ))
+
+(defpackage :rEvolver
+  (:use :common-lisp
+	:net.acceleration.utils
+	:net.acceleration.data-structures.trees
+	:arnesi
+	:rEvolver.map
+	:CSE)
+  (:import-from :dna #:generate-tree #:creature-DNA-1))
+
+

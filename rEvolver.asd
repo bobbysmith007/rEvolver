@@ -19,5 +19,6 @@
                  (:file "Creature" :depends-on ("packages" "rEvolver" "map"))
 		 (:file "map" :depends-on ("packages"))
                  (:file "rEvolver" :depends-on ("packages"))
-                 (:file "World" :depends-on ("packages" "rEvolver")))))
+                 (:file "dna" :depends-on ("packages" "rEvolver"))
+		 (:file "World" :depends-on ("packages" "rEvolver")))))
   :depends-on (:arnesi :adwcodebase))

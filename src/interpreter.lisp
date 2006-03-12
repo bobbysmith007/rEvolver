@@ -192,8 +192,6 @@ up to whoever originally invoked the interpreter."
 						(lambda () (funcall k x))))))))
 
 
-
-
 (defun lchild (tree)
   (second tree))
 (defun rchild (tree)
@@ -203,12 +201,16 @@ up to whoever originally invoked the interpreter."
 
 (defun flattener (tree)
   (labels ((rflat (tree )
-	     (if (listp tree)
+	     (if (and tree (listp tree))
 		 (let ((node (root tree)))
 		   (cond
-		     ((eq node 'lambda)
+		     ((listp node)
+		      (append (rflat (rchild tree))
+			      (rflat (lchild tree))
+			      (rflat node)))
+		     ((eq node 'dna:lambda)
 		      (list (make-lambda (lchild tree) (rflat (rchild tree)))))
-		     ((eq node 'gamma)
+		     ((eq node 'dna:gamma)
 		      (append (rflat (rchild tree))
 			      (rflat (lchild tree))
 			      '(gamma)))

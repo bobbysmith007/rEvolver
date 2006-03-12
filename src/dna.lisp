@@ -80,6 +80,7 @@ TODO: This should probably actually make some sort of struct rather than redicul
        (cond ((eq new-sub-tree 'gensym)
 	      (car (push (gensym) symbol-table)))
 	     ((eq new-sub-tree '*gened-sym*)
+	      ;; When we have gensym
 	      (or (random-elt symbol-table)
 		  (when (eq '?symbol new-expansion)
 		      (gensym))))
@@ -126,8 +127,11 @@ TODO: This should probably actually make some sort of struct rather than redicul
 	   	   
 	   ;; get all the subtrees neccessary for this
 	   (child-nodes (get-child-nodes processed-grammar rewrite-tokens current-depth symbol-table) )
-	   (write-tree (if (atom write-part) write-part
-			   (depth-first-expression-replace write-part rewrite-tokens child-nodes))))
+	   (write-tree (or (if (atom write-part) write-part
+			       (depth-first-expression-replace write-part rewrite-tokens child-nodes))
+			   (if  (listp child-nodes)
+				(car child-nodes)
+				child-nodes))))
       
 ;      (format T "~%------~%chosen:~a ~%" chosen)      
 ;      (format T "rewrite-tokens:~a ~%" rewrite-tokens)
