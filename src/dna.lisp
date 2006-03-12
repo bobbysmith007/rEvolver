@@ -231,3 +231,31 @@ TODO: This should probably actually make some sort of struct rather than redicul
      )))
 
 
+;(defmacro defenvfn ((&rest params) &body bod)
+;  (labels ((build-lambdas (param-list)
+;	     (when param-list
+;	       `(lambda (,(car param-list))
+;		 ,@(if (cdr param-list)
+;		      (list (build-lambdas (cdr param-list)))
+;		      nil)))))
+;    (build-lambdas params)))
+;'(defenv (x y) (+ x y))
+
+(defmacro bin-op ((param1 param2) &body bod)
+  `(lambda (,param1) (lambda (,param2) ,@bod) ))
+
+(defparameter +primary-environment+
+  `((feed     . ,(lambda (node) (feed node)))
+    (energy?  . ,(lambda (node) (energy? node)))
+    (look?    . ,(lambda (node) (look? node)))
+    (move     . ,(lambda (node) (move node)))
+
+    (or       . ,(bin-op (x y) (or x y)))
+    (equal    . ,(bin-op (x y) (equal x y)))
+    (eq       . ,(bin-op (x y) (eq x y)))
+    (not      . ,(lambda (x) (not x)))
+    
+    (cons     . ,(bin-op (x y) (cons x y)))
+    (car      . ,(lambda (x) (car x)))
+    (cdr      . ,(lambda (x) (cdr x)))))
+
