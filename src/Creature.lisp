@@ -7,11 +7,16 @@
 
 (defclass creature ()
   ((energy :accessor energy :initform 0 :initarg :energy)
-   (node :accessor node :initarg :node)
+   (node :accessor node )
    (world :reader world :initarg :world)
-   (dna :initarg :dna :initform (generate-tree))
+   (dna :accessor dna-of :initarg :dna :initform (generate-tree))
    current-machine-state
    ))
+
+(defmethod initialize-instance :after ((creature creature) &rest slots
+				       &key node
+				       &allow-other-keys)
+  (add-creature creature node))
 
 (defmethod die ((creature creature))
   (rlogger.info "[~a] Creature died: ~a"

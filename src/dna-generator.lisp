@@ -111,7 +111,7 @@ TODO: This should probably actually make some sort of struct rather than redicul
 
 
 (defun generate-tree (&optional (processed-grammar revolver:creature-dna)
-				(rewrite-name ?Start)
+				(rewrite-name '?Start)
 				(current-depth +depth-bound+)
 				(symbol-table nil))
   (declare (optimize (debug 3)))
