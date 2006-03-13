@@ -72,9 +72,9 @@ TODO: This should probably actually make some sort of struct rather than redicul
   (mapcar
    (lambda (new-expansion)
      (let ((new-sub-tree
-	    (generate-tree processed-grammar
+	    (generate-tree (1- current-depth)
+			   processed-grammar
 			   (rewrite-node-name new-expansion)
-			   (1- current-depth)
 			   symbol-table)))
        
        (cond ((eq new-sub-tree 'gensym)
