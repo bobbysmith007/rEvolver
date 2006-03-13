@@ -18,22 +18,22 @@
 
 (defun random-location ()
   (let ((m (world-map *world*)))
-    (inspect-map m (random (x-size m)) (random (y-size m)))))
+    (random-node m)))
 
 (make-new-world)
 
-(defvar *Creature1* ())
-(setf *Creature1* (make-instance 'Creature :energy 128 :world *world* :location (random-location)))
+(defvar golem ())
+(setf golem (make-instance 'Creature
+			   :energy 128
+			   :world *world*
+			   :node (random-location)
+			   ))
 
-(setf (decision-fn *creature1*)
-      (let ((cr *Creature1*))
-	#'(lambda ()
-	    (format-log "In the decision function: ")
-	    (let ((*current-creature* cr))
-	      (declare (special *current-creature*))
-	      (format-log "About to call (move 'east) for creature: ~a~%" *current-creature*)
-	      (move 'east)))))
+(setf golem-interpreter (make-interpreter (dna-of golem)
+					  (creature-environment golem)))
 
-(schedule #'(lambda () (funcall (decision-fn *creature1*))) (world *creature1*) 1)
+
+(schedule golem-interpreter (world golem) 1)
 (advance-time *world*)
 (advance-time *world*)
+
