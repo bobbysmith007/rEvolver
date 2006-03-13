@@ -9,7 +9,7 @@
   ((energy :accessor energy :initform 0 :initarg :energy)
    (node :accessor node :initarg :node)
    (world :reader world :initarg :world)
-   dna
+   (dna :initarg :dna :initform (generate-tree))
    current-machine-state
    ))
 

@@ -20,6 +20,6 @@
 	       (:file "dna-generator" :depends-on ("packages"))
 	       (:file "dna" :depends-on ("packages" "dna-generator"))
 	       (:file "rEvolver" :depends-on ("packages"))
-	       (:file "Creature" :depends-on ("packages" "rEvolver" "map" "dna"))
+	       (:file "Creature" :depends-on ("packages" "rEvolver" "map" "dna" "dna-generator"))
 	       (:file "World" :depends-on ("packages" "rEvolver" "map")))))
   :depends-on (:arnesi :adwcodebase))

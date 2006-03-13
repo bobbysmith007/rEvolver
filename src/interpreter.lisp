@@ -50,6 +50,7 @@ with the environment it was closed to plus the name+argument pair."
   (name environment))
 
 (defun start-CSE-machine (frame stack beta-reduction-cost)
+  (revolver::rlogger.info "Interpreter starting frame: ~a  stack: ~a" frame stack)
   (labels ((new-frame (closure val)
 	     (setf frame (make-frame-from-closure closure val frame)))
 	   (pop-frame ()
@@ -82,6 +83,7 @@ with the environment it was closed to plus the name+argument pair."
 	     "Interrupt the current machine by calling the interrupt's continutation
 		passing it the interpreter continuation and finally returning it's value to the top.
 		the result up to the whomever originally invoked the machine."
+	     (revolver::rlogger.dribble "Interrupting interpreter: ~a" interrupt)
 	     (return-from start-CSE-machine
 	       (funcall (slot-value interrupt 'continuation)
 			(build-rator-continuation)))))
