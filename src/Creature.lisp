@@ -37,6 +37,9 @@
 
 
 (defmacro curry (args &body body)
+  "Turn a function of arity n into max(arity, 1) functions.
+That is, make sure there is at least arg, dummy if necessary, and curry functions
+of higher arity."
   (labels ((rcurry (args)
 	     (if (null args)
 		 body
@@ -82,7 +85,7 @@
 			     (with-slots (node world energy) creature
 			       (setf energy (+ energy (- (take-all-energy node) +feed-cost+)))
 			       (schedule k world +feed-time+))))))
-      (addenv 'dna:energy? (()
+      (addenv 'dna:energy? (curry ()
 			    (> (energy (node creature)) 0))))
     env))
 
