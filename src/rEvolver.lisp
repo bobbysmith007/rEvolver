@@ -21,4 +21,5 @@
 (defgeneric add (creature world)
   (:documentation "Add a creature to a world."))
 
+(defparameter revolver:Creature-dna nil)
 

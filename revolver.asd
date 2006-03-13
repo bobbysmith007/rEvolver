@@ -15,10 +15,11 @@
   :components
   ((:module :src
     :components ((:file "packages")
-		 (:file "interpreter" :depends-on ("packages"))
-                 (:file "Creature" :depends-on ("packages" "rEvolver" "map"))
-		 (:file "map" :depends-on ("packages"))
-                 (:file "rEvolver" :depends-on ("packages"))
-                 (:file "dna" :depends-on ("packages" "rEvolver"))
-		 (:file "World" :depends-on ("packages" "rEvolver")))))
+	       (:file "map" :depends-on ("packages"))
+	       (:file "interpreter" :depends-on ("packages"))
+	       (:file "dna-generator" :depends-on ("packages"))
+	       (:file "dna" :depends-on ("packages" "dna-generator"))
+	       (:file "rEvolver" :depends-on ("packages"))
+	       (:file "Creature" :depends-on ("packages" "rEvolver" "map" "dna"))
+	       (:file "World" :depends-on ("packages" "rEvolver" "map")))))
   :depends-on (:arnesi :adwcodebase))

@@ -19,16 +19,20 @@
 	   #:adjacent-nodes-of
 	   #:adjacent-p))
 
-
-(defpackage :revolver.dna
-    (:nicknames :dna)
+(defpackage :revolver.dna.generator
+    (:nicknames :generator)
   (:use :common-lisp
 	:net.acceleration.utils
 	)
-    (:export
-     #:generate-tree
-     #:creature-DNA-1
-     #:gamma
+  (:export
+   #:generate-tree
+   #:?start
+   #:process-grammar-definition))
+
+(defpackage :revolver.dna
+    (:nicknames :dna)
+  (:export
+    #:gamma
      #:lambda
      #:move
      #:feed
@@ -40,10 +44,7 @@
      #:if
      #:not
      #:eq
-     #:equal
-     #:?start
-     
-     ))
+     #:equal))
 
 (defpackage :rEvolver
   (:use :common-lisp
@@ -52,6 +53,7 @@
 	:arnesi
 	:rEvolver.map
 	:CSE)
-  (:import-from :dna #:generate-tree #:creature-DNA-1))
+  (:import-from :generator #:generate-tree )
+  (:export #:creature-DNA))
 
 
