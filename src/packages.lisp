@@ -44,7 +44,14 @@
      #:if
      #:not
      #:eq
-     #:equal))
+     #:equal
+     #:node
+     #:function
+     #:list
+     #:atom
+     #:number
+     #:nil
+     #:t))
 
 (defpackage :rEvolver
   (:use :common-lisp

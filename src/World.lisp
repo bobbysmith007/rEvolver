@@ -36,8 +36,11 @@
 		      (rlogger.dribble "[~a] Calling scheduled action: ~a"
 				       tick
 				       (data current-node))
-		      (restart-case (funcall (data current-node))
-		        (continue-next-action () nil))))))
+		      (restart-case
+		       (let ((rv (funcall (data current-node))
+			       (rlogger.info "Scheduled action returned: ~a" rv)
+			       rv)))
+		       (continue-next-action () nil))))))
 
 
 (defmethod schedule (action (w world) ticks-from-now)

@@ -63,7 +63,13 @@ of higher arity."
       (addenv 'dna:not (curry (n) (not n)))
       (addenv 'dna:eq (curry (x y) (eq x y)))
       (addenv 'dna:equal (curry (x y) (equal x y)))
-      (addenv 'dna:if (curry (test x y) (if test x y))))))
+      (addenv 'dna:if (curry (test x y) (if test x y)))
+      (addenv 'dna:nil nil)
+      (addenv 'dna:nil T)
+      (mapcar (lambda (sym)
+		(addenv sym sym))
+	      '(dna:node dna:function dna:list dna:atom dna:number)))
+    env))
 
 
 (defmethod creature-environment ((creature creature))
