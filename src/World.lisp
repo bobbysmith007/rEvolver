@@ -37,9 +37,10 @@
 				       tick
 				       (data current-node))
 		      (restart-case
-		       (let ((rv (funcall (data current-node))
+		       (let ((rv (funcall (data current-node))))
 			       (rlogger.info "Scheduled action returned: ~a" rv)
-			       rv)))
+			       
+			 rv)
 		       (continue-next-action () nil))))))
 
 
