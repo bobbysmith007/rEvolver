@@ -146,3 +146,35 @@ TODO: This should probably actually make some sort of struct rather than redicul
       
 	write-tree
       ))
+
+
+(defparameter *left-chance* +depth-bound+ )
+(defparameter *right-chance* +depth-bound+ )
+(defparameter *stop-chance* +depth-bound+ )
+
+(defun make-path-decision ( tree )
+  "returns either the tree, its left child or its right child "
+  (if (atom tree)
+      (values tree 0)
+      (let* ((sum (+ *left-chance* *right-chance* *stop-chance*))
+	     (rand (random (* 1.0 sum))))
+	(format T "sum: ~a - rand: ~a  ~a  ~a  ~a~%" sum rand  *left-chance* *right-chance* *stop-chance*)
+	(cond ((< 0 rand *left-chance*) (values (cadr tree) 1))
+	      ((< *left-chance* rand (+ *left-chance* *right-chance*))
+	       (values (caddr tree) 2))
+	      (T (values tree 0))))))
+
+(defun replace-random-subtree (tree replace-tree)
+    (labels ((rec-replace-random-subtree (sub-tree &optional (parent nil) (location 0))
+	       (multiple-value-bind (new-tree loc) (make-path-decision sub-tree )
+		 (cond
+		   ((and (null parent)
+			 (eq sub-tree new-tree)) ;we just selected the root
+		    replace-tree)
+		   ((eq sub-tree new-tree) ;we chose to stop at this node
+		    (setf (nth location parent) replace-tree) tree)
+		   (T (rec-replace-random-subtree new-tree sub-tree loc))
+		   
+		   ))))
+      (rec-replace-random-subtree tree))
+  )
