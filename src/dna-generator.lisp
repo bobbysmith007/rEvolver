@@ -21,7 +21,7 @@ TODO: This should probably actually make some sort of struct rather than redicul
 	   (if (listp rewrites-into)
 	       (mapcar
 		(lambda (right-part)
-		  (let ((loc (position '=> right-part )))
+		  (let ((loc (position 'dna::=> right-part )))
 		    (if loc
 			(cons (subseq right-part 0 loc)
 			      (subseq right-part (1+ loc) (length right-part)))
@@ -41,6 +41,7 @@ TODO: This should probably actually make some sort of struct rather than redicul
 (defun right-part (rewrites-to) (car rewrites-to))
 
 (defun get-rewrite-tokens (rewrites-to)
+  (declare (optimize (debug 3)))
   (let ((right-part (right-part rewrites-to)))
     (cond ((listp right-part)
 	   (remove-if-not
@@ -90,7 +91,7 @@ TODO: This should probably actually make some sort of struct rather than redicul
 (defun depth-first-expression-replace (list symbol-list value-list)
   "Replaces tokens from symbol-list with values from value-list in the list
   (depth-first-expression-replace '(gamma (gamma cons ?expression) ?expression) '(?Expression ?Expression) '(a b))
-  => '(gamma (gamma cons a) b) "
+  dna::=> '(gamma (gamma cons a) b) "
   (labels ((depth-first-expression-replace (list)
 	     (unless (null list)
 	       (let ((elem (car list))
