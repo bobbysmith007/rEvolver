@@ -103,7 +103,7 @@ with the environment it was closed to plus the name+argument pair."
 		 (setf (closure-environment op) (frame-environment frame))
 		 (push-stack op))
 		
-		((eq op 'gamma)
+		((eq op 'dna:gamma)
 		 (let* ((rator (pop-stack))
 			(rand (pop-stack)))
 		   (cond ((closure-p rator)
@@ -215,13 +215,7 @@ up to whoever originally invoked the interpreter."
 		     ((eq node 'dna:gamma)
 		      (append (rflat (rchild tree))
 			      (rflat (lchild tree))
-			      '(gamma)))
+			      '(dna:gamma)))
 		     (T (error "Found node ~a internally on a standardized tree." node))))
 		 (list tree))))
     (rflat tree )))
-
-
-(defparameter +ST+ '(gamma
-		     (lambda x (gamma (gamma + 1)
-				      x))
-		     3))

@@ -78,9 +78,9 @@ TODO: This should probably actually make some sort of struct rather than redicul
 			   (rewrite-node-name new-expansion)
 			   symbol-table)))
        
-       (cond ((eq new-sub-tree 'gensym)
+       (cond ((eq new-sub-tree 'dna::gensym)
 	      (car (push (gensym) symbol-table)))
-	     ((eq new-sub-tree '*gened-sym*)
+	     ((eq new-sub-tree 'dna::*gened-sym*)
 	      ;; When we have gensym
 	      (or (random-elt symbol-table)
 		  (when (eq '?symbol new-expansion)
