@@ -1,22 +1,24 @@
 (in-package :rEvolver)
 
-(defparameter +movement-energy-ratio+ 1/10)
-(defparameter +movement-time+ 10)
-(defparameter +feed-cost+ 2)
-(defparameter +feed-time+ 2)
+(declaim (optimize (debug 3)))
 
 (defclass creature ()
   ((energy :accessor energy :initform 0 :initarg :energy)
    (node :accessor node )
    (world :reader world :initarg :world)
    (dna :accessor dna-of :initarg :dna :initform (generate-tree))
-   current-machine-state
+   (current-continuation :initform nil)
    ))
 
 (defmethod initialize-instance :after ((creature creature) &rest slots
 				       &key node
 				       &allow-other-keys)
+  (declare (ignore slots))
   (add-creature creature node))
+
+
+(defmethod alivep ((creature creature))
+  (> (energy creature) 0))
 
 (defmethod die ((creature creature))
   (rlogger.info "[~a] Creature died: ~a"
@@ -25,6 +27,17 @@
   (when (node creature)
     (remove-creature creature (node creature)))
   creature)
+
+(define-condition has-the-pox ( error)
+  ((original-error :initarg :original-error)))
+
+(defmethod got-the-pox ((creature creature) (error error))
+  (rlogger.dribble "[~a] ~a got the pox: ~a"
+		   (tick-number (world creature))
+		   creature
+		   error)
+  (die creature)
+  (signal 'escape :reason error))
 
 (defmethod use-energy ((creature creature) amount)
   (when (>= 0 (decf (energy creature) amount))
@@ -40,87 +53,39 @@
   (setf (creatures-of node) (delete creature (creatures-of node) :test #'eq))
   (setf (node creature) nil))
 
+(defmethod suspend ((creature creature) continuation ticks)
+  (setf (slot-value creature 'current-continuation) continuation)
+  (schedule (lambda () (animate creature)) (world creature) ticks))
 
-(defmacro curry (args &body body)
-  "Turn a function of arity n into max(arity, 1) functions.
-That is, make sure there is at least arg, dummy if necessary, and curry functions
-of higher arity."
-  (labels ((rcurry (args)
-	     (if (null args)
-		 body
-		 `((lambda (,(first args))
-		   ,@(rcurry (rest args)))))))
-    (first (rcurry (or args (list 'dummy))))))
+(defmethod animate ((creature creature))
+  (handler-bind ((has-the-pox
+		  (lambda (er) (got-the-pox creature er))))
+    (with-slots (current-continuation) creature
+      (let ((rv
+	     (cond
+	       (current-continuation
+		(rlogger.dribble "Continuing previously suspended creature: ~a"
+				 current-continuation)
+		(funcall current-continuation))
+	       (t (rlogger.dribble "Starting the creature anew.")
+		  (funcall (make-interpreter (dna-of creature)
+					     (creature-environment creature)))))))
+	(rlogger.dribble "[~a] Creature animated successfully: ~a"
+			 (tick-number (world creature))
+			 rv)
+	(when (alivep creature)
+	  (suspend creature nil 1)) ;;restart in 1
+	))))
 
-(defparameter +base-lisp-environment+
-  (let (env)
-    (flet ((addenv (name fun)
-	     (setf env (env-push name fun env))))
-      (addenv 'dna:cons (curry (a b) (cons a b)))
-      (addenv 'dna:car (curry (c) (car c)))
-      (addenv 'dna:cdr (curry (c) (cdr c)))
-      (addenv 'dna:or (curry (x y) (or x y)))
-      (addenv 'dna:not (curry (n) (not n)))
-      (addenv 'dna:eq (curry (x y) (eq x y)))
-      (addenv 'dna:equal (curry (x y) (equal x y)))
-      (addenv 'dna:if (curry (test x y) (if test x y)))
-      (addenv 'dna:nil nil)
-      (addenv 'dna:nil T)
-      (mapcar (lambda (sym)
-		(addenv sym sym))
-	      '(dna:node dna:function dna:list dna:atom dna:number)))
-    env))
-
-
-(defmethod creature-environment ((creature creature))
-  (let ((env +base-lisp-environment+))
-    (flet ((addenv (name fun)
-	     (setf env (env-push name fun env))))
-      (addenv 'dna:move (curry (node)
-			  (interrupt-interpreter/cc
-			   (lambda (k)
-			     ;;before we move them to the new node use the energy (which might kill them)
-			     (use-energy creature
-					 (* (energy creature)
-					    +movement-energy-ratio+))  
-			     (remove-creature creature (node creature))
-			     ;;if the creature didn't specify then pick a random direction.
-			     (add-creature creature
-					   (or node
-					       (random-elt (adjacent-nodes-of
-							    (node creature)))))
-			     (schedule k (world creature) +movement-time+)))))
-      (addenv 'dna:feed (curry ()
-			  (interrupt-interpreter/cc
-			   (lambda (k)
-			     (with-slots (node world energy) creature
-			       (setf energy (+ energy (- (take-all-energy node) +feed-cost+)))
-			       (schedule k world +feed-time+))))))
-      (addenv 'dna:energy? (curry ()
-			    (> (energy (node creature)) 0))))
-    env))
 
 
 (defmethod print-object ((cr creature) stream)
   (format stream "#<(Creature :Energy ~a)>" (energy cr)))
 
+;(define-condition creature-condition ()
+;  (creature)) 
 
-(defmethod suspend ((creature creature) &optional (time 1))
-  "Escape from the interpeter in such a way that it can be resumed later."
-  (schedule #'(lambda () (resume-creature creature)) (world creature) time)
-  (signal 'suspend))
-
-(define-condition interpreter-signal ()
-  (creature)) 
-(define-condition suspend (interpreter-signal)
-  (reason duration)) 
-(define-condition dead (interpreter-signal)
-  (cause)
-  (:documentation "He's dead jim"))
-
-(define-condition stop (interpreter-signal)
-  (return-val))
-
-(define-condition creature-error (interpreter-signal error)
-  ()) 
+;(define-condition dead (creature-condition)
+;  (cause)
+;  (:documentation "He's dead jim"))
 

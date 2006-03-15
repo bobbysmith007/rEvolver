@@ -43,14 +43,17 @@ with the environment it was closed to plus the name+argument pair."
     (setf (frame-control frame) (rest control))
     (first control)))
 
+(define-condition escape ()
+  ((reason :initarg :reason :initform nil)))
 
 (define-condition interrupt ()
-  ((continuation :initarg :continuation)))
+  ((continuation :initarg :continuation)
+   (reason :initarg :reason :initform nil :accessor reason)))
 (define-condition unbound-name (error)
   (name environment))
 
 (defun start-CSE-machine (frame stack beta-reduction-cost)
-  (revolver::rlogger.info "Interpreter starting frame: ~a  stack: ~a" frame stack)
+  
   (labels ((new-frame (closure val)
 	     (setf frame (make-frame-from-closure closure val frame)))
 	   (pop-frame ()
@@ -78,17 +81,22 @@ with the environment it was closed to plus the name+argument pair."
 	       (start-CSE-machine frame
 				  (cons val stack)
 				  beta-reduction-cost)))
+	   (escape (esc)
+	     (revolver::rlogger.dribble "Escaped: ~a" esc)
+	     (return-from start-CSE-machine
+	       esc))
 	   
 	   (handle-interrupt (interrupt)
 	     "Interrupt the current machine by calling the interrupt's continutation
 		passing it the interpreter continuation and finally returning it's value to the top.
 		the result up to the whomever originally invoked the machine."
-	     (revolver::rlogger.dribble "Interrupting interpreter: ~a" interrupt)
+	     (revolver::rlogger.dribble "Interrupting interpreter: ~a" (reason interrupt))
 	     (return-from start-CSE-machine
 	       (funcall (slot-value interrupt 'continuation)
 			(build-rator-continuation)))))
 
-    (handler-bind ((interrupt #'handle-interrupt))
+    (handler-bind ((interrupt #'handle-interrupt)
+		   (escape #'escape))
       (loop 
 	do 
 	(if (null (peek-op frame))
@@ -132,14 +140,14 @@ with the environment it was closed to plus the name+argument pair."
 
 
 
-(defun interrupt-interpreter/cc (cont)
+(defun interrupt-interpreter/cc (cont &optional reason)
   "When called from a primary-environment function, will interrupt the currently
  running interpreter. The argument cont(inuation) should be a function of one
  argument. The function is called, passing in the interpreter continuation.
 That continuation may then be saved off somewhere. Will return the result back
 up to whoever originally invoked the interpreter."
   
-  (signal 'interrupt :continuation cont ))
+  (signal 'interrupt :continuation cont :reason reason))
 
 
 (defun make-interpreter (standardized-tree primary-environment &optional beta-reduction-cost)
@@ -153,45 +161,6 @@ up to whoever originally invoked the interpreter."
       (start-CSE-machine frame
 			'()
 			beta-reduction-cost))))
-
-
-(defparameter +CTRL1+ `(3 ,(make-lambda 'x '(x 1 + gamma gamma)) gamma))
-
-(defparameter +CTRL2+ `(6 5 ,(make-lambda 'x
-				(list (make-lambda 'w
-						   '(w x + gamma gamma))))
-			gamma gamma))
-(defparameter +CTRL3+ `(7
-			,(make-lambda 'z
-				      '(z 2 * gamma gamma))
-			gamma
-			,(make-lambda 'x
-				      `(x
-					,(make-lambda 'w
-						      '(w neg gamma))
-					gamma 1 + gamma gamma))
-			gamma))
-
-(defparameter +CTRLk+ `(6 5 ,(make-lambda 'x
-				`(,(make-lambda 'w
-						'(w x + gamma gamma))
-				  print-and-pause
-				  gamma))
-			gamma gamma))
-
-(defparameter +PE+ `((+ . ,#'(lambda (x)
-			       (lambda (y) (+ x y))))
-		     (- . ,#'(lambda (x)
-			       (lambda (y) (- x y))))
-		     (neg . ,#'(lambda (x)
-				 (- x)))
-		     (* . ,#'(lambda (x)
-			       (lambda (y) (* x y))))
-		     (print-and-pause . ,#'(lambda (x)
-					     (interrupt-interpreter/cc
-					      (lambda (k)
-						(print x)
-						(lambda () (funcall k x))))))))
 
 
 (defun lchild (tree)

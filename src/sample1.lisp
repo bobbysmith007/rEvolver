@@ -26,16 +26,9 @@
 (setf golem (make-instance 'Creature
 			   :energy 128
 			   :world *world*
-			   :node (random-location)
-			   ))
-(rlogger.info "Made new Golem dna: ~a" (dna-of golem))
+			   :node (random-location)))
+;(rlogger.info "Made new Golem dna: ~a" (dna-of golem))
 
-(defvar golem-interpreter ())
-(setf golem-interpreter (make-interpreter (dna-of golem)
-					  (creature-environment golem)))
-
-
-(schedule golem-interpreter (world golem) 1)
-(advance-time *world*)
-(advance-time *world*)
+(animate golem)
+;(advance-time *world*)
 
