@@ -44,7 +44,8 @@ of higher arity."
 	      '(dna:node dna:function dna:list dna:atom dna:number)))
     env))
 
-
+;;TODO: The continuations given to us by the interpreter are functions
+;; of an argument, we need to treat them as such.
 (defmethod creature-environment ((creature creature))
   (let ((env +base-lisp-environment+))
     (flet ((addenv (name fun)
@@ -56,13 +57,14 @@ of higher arity."
 			     ;;before we move them to the new node use the energy (which might kill them)
 			     (use-energy creature
 					 (* (energy creature)
-					    +movement-energy-ratio+))  
-			     (remove-creature creature (node creature))
+					    +movement-energy-ratio+))
+			     (let ((previous-node (node creature)))
+			       (remove-creature creature previous-node)
 			     ;;if the creature didn't specify then pick a random direction.
-			     (add-creature creature
-					   (or node
-					       (random-elt (adjacent-nodes-of
-							    (node creature)))))
+			       (add-creature creature
+					     (or node
+						 (random-elt (adjacent-nodes-of
+							      previous-node)))))
 			     (suspend creature k +movement-time+))
 			   'dna:move)))
       (addenv 'dna:feed (cr-env-function ()
@@ -74,7 +76,7 @@ of higher arity."
 			       (suspend creature k +feed-time+)))
 			   'dna:feed)))
       (addenv 'dna:energy? (cr-env-function ()
-			     (let ((energy (> (energy (node creature)) 0)))
+			     (let ((energy (> (revolver.map::energy (node creature)) 0)))
 			       (rlogger.dribble "Querying node for energy? ~a." energy)
 			       energy)))
       (addenv 'dna:asexually-reproduce

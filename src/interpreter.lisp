@@ -46,8 +46,11 @@ with the environment it was closed to plus the name+argument pair."
     (setf (frame-control frame) (rest control))
     (first control)))
 
-(define-condition escape ()
-  ((reason :initarg :reason :initform nil)))
+(defun escape (error)
+  (revolver::rlogger.dribble "Escaping: ~a" error)
+  (let ((esc (find-restart 'escape)))
+    (when esc
+      (invoke-restart esc error))))
 
 (define-condition interrupt ()
   ((continuation :initarg :continuation)
@@ -57,11 +60,11 @@ with the environment it was closed to plus the name+argument pair."
    (environment :initarg :environment)))
 
 (defun start-CSE-machine (frame stack beta-reduction-cost)
-  
-  (labels ((new-frame (closure val)
-	     (setf frame (make-frame-from-closure closure val frame)))
-	   (pop-frame ()
-	     "Return to a previous frame, if there isn't one then we are finished
+  (restart-case 
+   (labels ((new-frame (closure val)
+	      (setf frame (make-frame-from-closure closure val frame)))
+	    (pop-frame ()
+	      "Return to a previous frame, if there isn't one then we are finished
 		and return the top of the stack upward."
 	     (prog1 frame
 	       (setf frame (frame-previous frame))
@@ -87,11 +90,7 @@ with the environment it was closed to plus the name+argument pair."
 	       (start-CSE-machine frame
 				  (cons val stack)
 				  beta-reduction-cost)))
-	   (escape (esc)
-	     (revolver::rlogger.dribble "Escaped: ~a" esc)
-	     (return-from start-CSE-machine
-	       esc))
-	   
+   
 	   (handle-interrupt (interrupt)
 	     "Interrupt the current machine by calling the interrupt's continutation
 		passing it the interpreter continuation and finally returning it's value to the top.
@@ -101,8 +100,7 @@ with the environment it was closed to plus the name+argument pair."
 	       (funcall (slot-value interrupt 'continuation)
 			(build-rator-continuation)))))
 
-    (handler-bind ((interrupt #'handle-interrupt)
-		   (escape #'escape))
+    (handler-bind ((interrupt #'handle-interrupt))
       (loop 
 	do 
 	(if (null (peek-op frame))
@@ -142,7 +140,8 @@ with the environment it was closed to plus the name+argument pair."
 				 op
 				 (frame-environment frame)))))
 		   
-		   (T (error "Unkwown operation on the control ~a" op)))))))))
+		   (T (error "Unkwown operation on the control ~a" op))))))))
+   (escape (error) error)))
 
 
 

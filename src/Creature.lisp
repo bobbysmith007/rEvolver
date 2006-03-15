@@ -42,7 +42,7 @@
 		   creature
 		   error)
   (die creature)
-  (signal 'escape :reason error))
+  (escape (slot-value error 'original-error)))
 
 (defmethod use-energy ((creature creature) amount)
   (when (>= 0 (decf (energy creature) amount))
@@ -78,8 +78,6 @@
 	(rlogger.dribble "[~a] Creature animated successfully: ~a"
 			 (tick-number (world creature))
 			 rv)
-	(when (alivep creature)
-	  (suspend creature nil 1)) ;;restart in 1
 	))))
 
 
