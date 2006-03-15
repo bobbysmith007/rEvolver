@@ -152,6 +152,7 @@ TODO: This should probably actually make some sort of struct rather than redicul
 (defvar *right-chance* +depth-bound+ )
 (defvar *stop-chance* +depth-bound+ )
 (defparameter *mutation-rate* .01)
+(defparameter *value-mutation-rate* .01)
 (defparameter *mutation-depth* (/ +depth-bound+ 2))
 
 
@@ -190,3 +191,12 @@ TODO: This should probably actually make some sort of struct rather than redicul
 	(let ((new-tree (generate-tree *mutation-depth*)))
 	  (replace-random-subtree tree new-tree)))
     ))
+
+(defun maybe-mutate-value (val)
+  (let ((maybe (random 1.0)))
+    (if (not (< maybe *mutation-rate*))
+	val
+	(let* ((a (* val  *value-mutation-rate*))
+	       (b (* 2 a))
+	       (delta-rand (- (random b) a)))
+	  (+ val delta-rand)))))

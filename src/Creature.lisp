@@ -3,7 +3,8 @@
 (declaim (optimize (debug 3)))
 
 (defclass creature ()
-  ((energy :accessor energy :initform 0 :initarg :energy)
+  ((init-energy :accessor init-energy :initform 0 :initarg :energy)
+   (energy :accessor energy :initform 0 :initarg :energy)
    (node :accessor node )
    (world :reader world :initarg :world)
    (dna :accessor dna-of :initarg :dna :initform (generate-tree))
@@ -85,7 +86,22 @@
 ;(define-condition creature-condition ()
 ;  (creature)) 
 
-;(define-condition dead (creature-condition)
-;  (cause)
-;  (:documentation "He's dead jim"))
+(defmethod suspend ((creature creature) &optional (time 1))
+  "Escape from the interpeter in such a way that it can be resumed later."
+  (schedule #'(lambda () (resume-creature creature)) (world creature) time)
+  (signal 'suspend))
+
+(define-condition interpreter-signal ()
+  (creature)) 
+(define-condition suspend (interpreter-signal)
+  (reason duration)) 
+(define-condition dead (interpreter-signal)
+  (cause)
+  (:documentation "He's dead jim"))
+
+(define-condition stop (interpreter-signal)
+  (return-val))
+
+(define-condition creature-error (interpreter-signal error)
+  ()) 
 
