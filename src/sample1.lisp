@@ -29,6 +29,12 @@
 			   :node (random-location)))
 ;(rlogger.info "Made new Golem dna: ~a" (dna-of golem))
 
-(animate golem)
-;(advance-time *world*)
+(defvar golem-interpreter ())
+(setf golem-interpreter (make-interpreter (dna-of golem)
+					  (creature-environment golem)))
+
+
+(schedule golem-interpreter (world golem) 1)
+(advance-time *world*)
+(advance-time *world*)
 

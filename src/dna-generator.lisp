@@ -148,33 +148,45 @@ TODO: This should probably actually make some sort of struct rather than redicul
       ))
 
 
-(defparameter *left-chance* +depth-bound+ )
-(defparameter *right-chance* +depth-bound+ )
-(defparameter *stop-chance* +depth-bound+ )
+(defvar *left-chance* +depth-bound+ )
+(defvar *right-chance* +depth-bound+ )
+(defvar *stop-chance* +depth-bound+ )
+(defparameter *mutation-rate* .01)
+(defparameter *mutation-depth* (/ +depth-bound+ 2))
+
 
 (defun make-path-decision ( tree )
-  "returns either the tree, its left child or its right child "
-  (if (atom tree)
-      (values tree 0)
+  "returns the location of the replace ment (:root 0 :left 1 :right 2)"
+  (if (atom tree) 0
       (let* ((sum (+ *left-chance* *right-chance* *stop-chance*))
 	     (rand (random (* 1.0 sum))))
-	(format T "sum: ~a - rand: ~a  ~a  ~a  ~a~%" sum rand  *left-chance* *right-chance* *stop-chance*)
-	(cond ((< 0 rand *left-chance*) (values (cadr tree) 1))
+;	(format T "sum: ~a - rand: ~a  ~a  ~a  ~a~%" sum rand  *left-chance* *right-chance* *stop-chance*)
+	(cond ((< 0 rand *left-chance*)  1)
 	      ((< *left-chance* rand (+ *left-chance* *right-chance*))
-	       (values (caddr tree) 2))
-	      (T (values tree 0))))))
+	       2)
+	      (T 0)))))
 
 (defun replace-random-subtree (tree replace-tree)
+  "Replaces a random (sub)tree with the replacement-tree"
     (labels ((rec-replace-random-subtree (sub-tree &optional (parent nil) (location 0))
-	       (multiple-value-bind (new-tree loc) (make-path-decision sub-tree )
+	       (let ((loc (make-path-decision sub-tree)))
+;		 (format T "parent: ~a~%replace: ~a~%location: ~a~%-------~%" parent replace-tree location)
 		 (cond
 		   ((and (null parent)
-			 (eq sub-tree new-tree)) ;we just selected the root
+			 (= 0 loc)) ;we just selected the root
 		    replace-tree)
-		   ((eq sub-tree new-tree) ;we chose to stop at this node
-		    (setf (nth location parent) replace-tree) tree)
-		   (T (rec-replace-random-subtree new-tree sub-tree loc))
+		   ((= 0 loc) ;we chose to stop at this node
+		    (setf (nth location parent) replace-tree)
+		    tree)
+		   (T (rec-replace-random-subtree (nth loc sub-tree) sub-tree loc))
 		   
 		   ))))
-      (rec-replace-random-subtree tree))
-  )
+      (rec-replace-random-subtree tree)))
+
+(defun maybe-mutate-tree (tree)
+  (let ((maybe (random 1.0)))
+    (if (not (< maybe *mutation-rate*))
+	tree
+	(let ((new-tree (generate-tree *mutation-depth*)))
+	  (replace-random-subtree tree new-tree)))
+    ))
