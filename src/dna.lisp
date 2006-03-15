@@ -86,6 +86,9 @@
        (feed
 	=>
 	(gamma feed nil))
+       (asexually-reproduce
+	=>
+	(gamma asexually-reproduce nil))
        
        (?Type))))))
 
