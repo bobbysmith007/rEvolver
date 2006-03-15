@@ -5,7 +5,10 @@
 
 (defun lookup (key environment)
   "Find a value in the environment by key."
-  (cdr (assoc key environment)))
+  (let ((val (assoc key environment)))
+    (values (cdr val)
+	    (not (null val)))))
+
 (defun env-push (key datum environment)
   (acons key datum environment))
 
@@ -50,7 +53,8 @@ with the environment it was closed to plus the name+argument pair."
   ((continuation :initarg :continuation)
    (reason :initarg :reason :initform nil :accessor reason)))
 (define-condition unbound-name (error)
-  (name environment))
+  ((name :initarg :name)
+   (environment :initarg :environment)))
 
 (defun start-CSE-machine (frame stack beta-reduction-cost)
   
@@ -72,7 +76,9 @@ with the environment it was closed to plus the name+argument pair."
 	     (prog1 (first stack)
 	       (setf stack (rest stack))))
 	   (frame-lookup (key)
-	     (lookup key (frame-environment frame)))
+	     (apply #'values
+		    (multiple-value-list
+			(lookup key (frame-environment frame)))))
 	   
 	   (build-rator-continuation ()
 	     "Make a continuation that will push the return value onto the stack
@@ -129,12 +135,12 @@ with the environment it was closed to plus the name+argument pair."
 		   
 		   ;; CSE Rule 1 Stack a name
 		   ((symbolp op)
-		    (let ((obj (frame-lookup op)))
-		      (unless obj
-			(break "Environment lookup failed. Key: ~a  Frame: ~a"
-			       op
-			       frame))
-		      (push-stack obj)))
+		    (multiple-value-bind (obj foundp) (frame-lookup op)
+		      (if foundp
+			  (push-stack obj)
+			  (error 'unbound-name
+				 op
+				 (frame-environment frame)))))
 		   
 		   (T (error "Unkwown operation on the control ~a" op)))))))))
 

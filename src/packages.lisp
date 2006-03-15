@@ -4,6 +4,7 @@
     (:use :common-lisp)
   (:export #:make-interpreter
 	   #:interrupt-interpreter/cc
+	   #:escape
 	   #:env-push))
 
 (defpackage :rEvolver.map

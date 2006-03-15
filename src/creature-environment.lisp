@@ -6,7 +6,7 @@
 (defparameter +movement-time+ 10)
 (defparameter +feed-cost+ 2)
 (defparameter +feed-time+ 2)
-
+(defparameter +reproduction-time+ 1)
 
 (defmacro curry (args &body body)
   "Turn a function of arity n into max(arity, 1) functions.
@@ -38,7 +38,7 @@ of higher arity."
       (addenv 'dna:equal (cr-env-function (x y) (equal x y)))
       (addenv 'dna:if (cr-env-function (test x y) (if test x y)))
       (addenv 'dna:nil nil)
-      (addenv 'dna:nil T)
+      (addenv 'dna:T T)
       (mapcar (lambda (sym)
 		(addenv sym sym))
 	      '(dna:node dna:function dna:list dna:atom dna:number)))
@@ -76,6 +76,13 @@ of higher arity."
       (addenv 'dna:energy? (cr-env-function ()
 			     (let ((energy (> (energy (node creature)) 0)))
 			       (rlogger.dribble "Querying node for energy? ~a." energy)
-			       energy))))
+			       energy)))
+      (addenv 'dna:asexually-reproduce
+	      (cr-env-function ()
+		(rlogger.dribble "Starting to asexually reproduce.")
+		(interrupt-interpreter/cc
+		 (lambda (k)
+		   (asexually-reproduce creature)
+		   (suspend creature k +reproduction-time+))))))
     env))
 
