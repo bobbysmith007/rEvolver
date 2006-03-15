@@ -184,19 +184,19 @@ TODO: This should probably actually make some sort of struct rather than redicul
 		   ))))
       (rec-replace-random-subtree tree)))
 
-(defun maybe-mutate-tree (tree)
+(defun maybe-mutate-tree (tree &optional (mutation-rate *mutation-rate*) (mutation-depth *mutation-depth*))
   (let ((maybe (random 1.0)))
-    (if (not (< maybe *mutation-rate*))
+    (if (not (< maybe mutation-rate))
 	tree
-	(let ((new-tree (generate-tree *mutation-depth*)))
+	(let ((new-tree (generate-tree mutation-depth)))
 	  (replace-random-subtree tree new-tree)))
     ))
 
-(defun maybe-mutate-value (val)
+(defun maybe-mutate-value (val &optional (mutation-rate *mutation-rate*) (value-mutation-rate  *value-mutation-rate*))
   (let ((maybe (random 1.0)))
-    (if (not (< maybe *mutation-rate*))
+    (if (not (< maybe mutation-rate))
 	val
-	(let* ((a (* val  *value-mutation-rate*))
+	(let* ((a (* val  value-mutation-rate))
 	       (b (* 2 a))
 	       (delta-rand (- (random b) a)))
 	  (+ val delta-rand)))))
