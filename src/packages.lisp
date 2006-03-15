@@ -27,7 +27,9 @@
   (:export
    #:generate-tree
    #:?start
-   #:process-grammar-definition))
+   #:process-grammar-definition
+   #:maybe-mutate-tree
+   #:maybe-mutate-value))
 
 (defpackage :revolver.dna
     (:nicknames :dna)
