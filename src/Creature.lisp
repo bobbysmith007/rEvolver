@@ -3,7 +3,11 @@
 (declaim (optimize (debug 3)))
 
 (defclass creature ()
-  ((init-energy :accessor init-energy :initform 0 :initarg :energy)
+  (
+   (mutation-rate :accessor mutation-rate :initarg :mutation-rate :initform generator::*mutation-rate*)
+   (value-mutation-rate :accessor value-mutation-rate :initarg :value-mutation-rate :initform generator::*value-mutation-rate* )
+   (init-energy :accessor init-energy :initform 0 :initarg :energy)
+   
    (energy :accessor energy :initform 0 :initarg :energy)
    (node :accessor node )
    (world :reader world :initarg :world)
@@ -83,14 +87,20 @@
 (defmethod print-object ((cr creature) stream)
   (format stream "#<(Creature :Energy ~a)>" (energy cr)))
 
-;(define-condition creature-condition ()
-;  (creature)) 
-
 (defmethod asexually-reproduce ((golem creature))
-  (make-instance 'creature
-		 :energy (maybe-mutate-value (slot-value golem 'init-energy))
-		 :dna (maybe-mutate-tree (copy-tree (dna golem)))
-		 :world (world golem)
-		 :node (node golem)
-		 ))
+  (with-slots (init-energy mutation-rate value-mutation-rate dna)
+      golem
+    (make-instance 'creature
+		   :energy (maybe-mutate-value init-energy
+					       mutation-rate value-mutation-rate )
+		   :mutation-rate (maybe-mutate-value mutation-rate
+						      mutation-rate value-mutation-rate)
+		   :value-mutation-rate (maybe-mutate-value value-mutation-rate
+							    mutation-rate value-mutation-rate)
+		   
+		   :dna (maybe-mutate-tree (copy-tree dna) mutation-rate)
+		   :world (world golem)
+		   :node (node golem)
+		   )))
+
 
