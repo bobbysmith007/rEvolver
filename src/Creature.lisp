@@ -86,22 +86,11 @@
 ;(define-condition creature-condition ()
 ;  (creature)) 
 
-(defmethod suspend ((creature creature) &optional (time 1))
-  "Escape from the interpeter in such a way that it can be resumed later."
-  (schedule #'(lambda () (resume-creature creature)) (world creature) time)
-  (signal 'suspend))
-
-(define-condition interpreter-signal ()
-  (creature)) 
-(define-condition suspend (interpreter-signal)
-  (reason duration)) 
-(define-condition dead (interpreter-signal)
-  (cause)
-  (:documentation "He's dead jim"))
-
-(define-condition stop (interpreter-signal)
-  (return-val))
-
-(define-condition creature-error (interpreter-signal error)
-  ()) 
+(defmethod asexually-reproduce ((golem creature))
+  (make-instance 'creature
+		 :energy (maybe-mutate-value (slot-value golem 'init-energy))
+		 :dna (maybe-mutate-tree (copy-tree (dna golem)))
+		 :world (world golem)
+		 :node (node golem)
+		 ))
 
