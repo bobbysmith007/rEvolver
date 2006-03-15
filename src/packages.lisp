@@ -52,6 +52,7 @@
      #:list
      #:atom
      #:number
+     #:asexually-reproduce
      #:nil
      #:t))
 
