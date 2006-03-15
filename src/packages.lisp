@@ -62,7 +62,7 @@
 	:arnesi
 	:rEvolver.map
 	:CSE)
-  (:import-from :generator #:generate-tree )
+  (:import-from :generator #:generate-tree #:maybe-mutate-value #:maybe-mutate-tree)
   (:export #:creature-DNA))
 
 
