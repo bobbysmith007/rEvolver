@@ -39,6 +39,7 @@ of higher arity."
       (addenv 'dna:if (cr-env-function (test x y) (if test x y)))
       (addenv 'dna:nil nil)
       (addenv 'dna:T T)
+      (addenv 'dna:eof 'dna:eof)
       (mapcar (lambda (sym)
 		(addenv sym sym))
 	      '(dna:node dna:function dna:list dna:atom dna:number)))
@@ -65,7 +66,9 @@ of higher arity."
 					     (or node
 						 (random-elt (adjacent-nodes-of
 							      previous-node)))))
-			     (suspend creature k +movement-time+))
+			     (suspend creature #'(lambda ()
+						   (funcall k (node creature)))
+				      +movement-time+))
 			   'dna:move)))
       (addenv 'dna:feed (cr-env-function ()
 			  (rlogger.dribble "Starting to feed.")
@@ -73,7 +76,10 @@ of higher arity."
 			   (lambda (k)
 			     (with-slots (node world energy) creature
 			       (setf energy (+ energy (- (take-all-energy node) +feed-cost+)))
-			       (suspend creature k +feed-time+)))
+			       (suspend creature
+					#'(lambda ()
+					    (funcall k (energy creature)))
+					+feed-time+)))
 			   'dna:feed)))
       (addenv 'dna:energy? (cr-env-function ()
 			     (let ((energy (> (revolver.map::energy (node creature)) 0)))
@@ -85,6 +91,10 @@ of higher arity."
 		(interrupt-interpreter/cc
 		 (lambda (k)
 		   (asexually-reproduce creature)
-		   (suspend creature k +reproduction-time+))))))
+		   (suspend creature
+			    #'(lambda ()
+				(funcall k T))
+			    +reproduction-time+)))))
+      )
     env))
 
