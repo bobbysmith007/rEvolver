@@ -192,4 +192,4 @@ up to whoever originally invoked the interpreter."
 			      '(dna:gamma)))
 		     (T (error "Found node ~a internally on a standardized tree." node))))
 		 (list tree))))
-    (rflat tree )))
+    (append (rflat tree ) (list 'dna:eof))))
