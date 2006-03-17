@@ -13,6 +13,7 @@
    (world :reader world :initarg :world)
    (dna :accessor dna-of :initarg :dna :initform (generate-tree 3))
    (current-continuation :initform nil)
+   (animation-count :accessor animation-count :initform 0)
    ))
 
 (defmethod initialize-instance :after ((creature creature) &rest slots
@@ -75,13 +76,16 @@
       (let ((rv
 	     (cond
 	       (current-continuation
+		(incf (animation-count creature))
 		(rlogger.dribble "Continuing previously suspended creature: ~a"
 				 current-continuation)
 		(funcall current-continuation))
 	       ((alivep creature)
+		(incf (animation-count creature))
 		(rlogger.dribble "Starting the creature anew.")
 		(funcall (make-interpreter (dna-of creature)
 					     (creature-environment creature)))))))
+
 	(if rv
 	    (rlogger.dribble "[~a] Creature animated successfully: ~a"
 			     (tick-number (world creature))
@@ -92,12 +96,13 @@
 
 
 (defmethod print-object ((cr creature) stream)
-  (format stream "#<(Creature :Energy ~a)>" (energy cr)))
+  (format stream "#<(Creature :Energy ~a AC:~A)>" (energy cr) (animation-count cr)))
 
 (defmethod asexually-reproduce ((golem creature))
+  (rlogger.info "WOOHOO! Reproduction! " golem)
   (with-slots (init-energy mutation-rate value-mutation-rate dna)
       golem
-    (make-instance 'creature
+    (let ((cr (make-instance 'creature
 		   :energy (maybe-mutate-value init-energy
 					       mutation-rate value-mutation-rate )
 		   :mutation-rate (maybe-mutate-value mutation-rate
@@ -109,5 +114,8 @@
 		   :world (world golem)
 		   :node (node golem)
 		   )))
+      (schedule #'(lambda ()
+		    (rlogger.dribble "We are about to animate a NEW CREATURE! ~a" cr)
+		    (animate cr)) (world golem) +reproduction-time+))))
 
 
