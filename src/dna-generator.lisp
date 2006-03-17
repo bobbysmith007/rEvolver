@@ -84,7 +84,8 @@ TODO: This should probably actually make some sort of struct rather than redicul
 	      ;; When we have gensym
 	      (or (random-elt symbol-table)
 		  (when (eq 'dna::?symbol new-expansion)
-		      (gensym))))
+		      (gensym))
+		  'dna:nil))
 	     (T new-sub-tree))))
    rewrite-tokens))
 
@@ -137,12 +138,12 @@ TODO: This should probably actually make some sort of struct rather than redicul
 				(car child-nodes)
 				child-nodes))))
       
-;      (format T "~%------~%chosen:~a ~%" chosen)      
-;      (format T "rewrite-tokens:~a ~%" rewrite-tokens)
-;      (format T "write-part:~a ~%" write-part)
-;      (format T "write-tree:~a ~%" write-tree)
-;      (format T "children:~a ~%" child-nodes)
-;      (format T "current-depth:~a~%" current-depth)
+      (format T "~%------~%chosen:~s ~%" chosen)      
+      (format T "rewrite-tokens:~s ~%" rewrite-tokens)
+      (format T "write-part:~s ~%" write-part)
+      (format T "write-tree:~s ~%" write-tree)
+      (format T "children:~s ~%" child-nodes)
+      (format T "current-depth:~s~%" current-depth)
       
 	write-tree
       ))
