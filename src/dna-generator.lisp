@@ -138,12 +138,12 @@ TODO: This should probably actually make some sort of struct rather than redicul
 				(car child-nodes)
 				child-nodes))))
       
-      (format T "~%------~%chosen:~s ~%" chosen)      
-      (format T "rewrite-tokens:~s ~%" rewrite-tokens)
-      (format T "write-part:~s ~%" write-part)
-      (format T "write-tree:~s ~%" write-tree)
-      (format T "children:~s ~%" child-nodes)
-      (format T "current-depth:~s~%" current-depth)
+;      (format T "~%------~%chosen:~s ~%" chosen)      
+;      (format T "rewrite-tokens:~s ~%" rewrite-tokens)
+;      (format T "write-part:~s ~%" write-part)
+;      (format T "write-tree:~s ~%" write-tree)
+;      (format T "children:~s ~%" child-nodes)
+;      (format T "current-depth:~s~%" current-depth)
       
 	write-tree
       ))
