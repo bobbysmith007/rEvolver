@@ -1,5 +1,9 @@
 (in-package :generator)
 
+(deflogger logger ()
+  :level +error+
+  :appender (make-instance 'brief-stream-log-appender :stream t))
+
 ;;(?A -> (list ?Rewrite))
 ;;(?Rewrite -> ({attrib-block-1} [cond] {attrib-block-2} : (?RightPart)))
 ;;(?RightPart -> name ?rewrite-name ?rewrite-name => (write-part))
@@ -137,13 +141,13 @@ TODO: This should probably actually make some sort of struct rather than redicul
 			   (if  (listp child-nodes)
 				(car child-nodes)
 				child-nodes))))
-      
-;      (format T "~%------~%chosen:~s ~%" chosen)      
-;      (format T "rewrite-tokens:~s ~%" rewrite-tokens)
-;      (format T "write-part:~s ~%" write-part)
-;      (format T "write-tree:~s ~%" write-tree)
-;      (format T "children:~s ~%" child-nodes)
-;      (format T "current-depth:~s~%" current-depth)
+
+      (logger.dribble "chosen:~s " chosen)      
+      (logger.dribble "rewrite-tokens:~s " rewrite-tokens)
+      (logger.dribble "write-part:~s " write-part)
+      (logger.dribble "write-tree:~s " write-tree)
+      (logger.dribble "children:~s " child-nodes)
+      (logger.dribble "current-depth:~s~%" current-depth)
       
 	write-tree
       ))

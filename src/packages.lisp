@@ -27,6 +27,7 @@
     (:nicknames :generator)
   (:use :common-lisp
 	:net.acceleration.utils
+	:arnesi
 	)
   (:export
    #:generate-tree
