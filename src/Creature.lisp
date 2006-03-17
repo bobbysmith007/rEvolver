@@ -11,7 +11,7 @@
    (energy :accessor energy :initform 0 :initarg :energy)
    (node :accessor node )
    (world :reader world :initarg :world)
-   (dna :accessor dna-of :initarg :dna :initform (generate-tree))
+   (dna :accessor dna-of :initarg :dna :initform (generate-tree 3))
    (current-continuation :initform nil)
    ))
 
