@@ -83,7 +83,7 @@ TODO: This should probably actually make some sort of struct rather than redicul
 	     ((eq new-sub-tree 'dna::*gened-sym*)
 	      ;; When we have gensym
 	      (or (random-elt symbol-table)
-		  (when (eq '?symbol new-expansion)
+		  (when (eq 'dna::?symbol new-expansion)
 		      (gensym))))
 	     (T new-sub-tree))))
    rewrite-tokens))
@@ -119,7 +119,7 @@ TODO: This should probably actually make some sort of struct rather than redicul
   
     (let* (;get all of the rewrite possibilities of the rule
 	   (possibilities (if (= 0 current-depth)
-			      (possibilities processed-grammar '?Terminal)
+			      (possibilities processed-grammar 'dna::?Terminal)
 			      (possibilities processed-grammar rewrite-name)))
 	   (chosen (pick-possibility possibilities current-depth))
 	   
