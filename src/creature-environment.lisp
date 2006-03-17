@@ -3,7 +3,7 @@
 (declaim (optimize (debug 3)))
 
 (defparameter +movement-energy-ratio+ 1/10)
-(defparameter +movement-time+ 10)
+(defparameter +movement-time+ 2)
 (defparameter +feed-cost+ 2)
 (defparameter +feed-time+ 2)
 (defparameter +reproduction-time+ 1)
@@ -23,7 +23,7 @@ of higher arity."
   `(curry ,args
     (handler-case (progn ,@body)
       ;;TODO: good place for logging?
-      (error (e) (error 'has-the-pox :original-error e)))))
+      (error (e) (error 'CSE:code-error :original-error e)))))
 
 (defparameter +base-lisp-environment+
   (let (env)

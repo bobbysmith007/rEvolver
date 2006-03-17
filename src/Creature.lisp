@@ -31,10 +31,12 @@
 		  creature)
   (when (node creature)
     (remove-creature creature (node creature)))
+  (setf (energy creature) 0
+	(slot-value creature 'current-continuation) nil)
   creature)
 
-(define-condition has-the-pox ( error)
-  ((original-error :initarg :original-error)))
+;(define-condition has-the-pox ( error)
+;  ((original-error :initarg :original-error :accessor original-error)))
 
 (defmethod got-the-pox ((creature creature) (error error))
   (rlogger.dribble "[~a] ~a got the pox: ~a"
@@ -42,7 +44,8 @@
 		   creature
 		   error)
   (die creature)
-  (escape (slot-value error 'original-error)))
+  ;(escape (slot-value error 'original-error))
+  )
 
 (defmethod use-energy ((creature creature) amount)
   (when (>= 0 (decf (energy creature) amount))
@@ -63,21 +66,27 @@
   (schedule (lambda () (animate creature)) (world creature) ticks))
 
 (defmethod animate ((creature creature))
-  (handler-bind ((has-the-pox
-		  (lambda (er) (got-the-pox creature er))))
+  (handler-bind ((cse:code-error
+		  (lambda (er)
+		    (got-the-pox creature er)
+		    (return-from animate nil))))
     (with-slots (current-continuation) creature
+      
       (let ((rv
 	     (cond
 	       (current-continuation
 		(rlogger.dribble "Continuing previously suspended creature: ~a"
 				 current-continuation)
 		(funcall current-continuation))
-	       (t (rlogger.dribble "Starting the creature anew.")
-		  (funcall (make-interpreter (dna-of creature)
+	       ((alivep creature)
+		(rlogger.dribble "Starting the creature anew.")
+		(funcall (make-interpreter (dna-of creature)
 					     (creature-environment creature)))))))
-	(rlogger.dribble "[~a] Creature animated successfully: ~a"
-			 (tick-number (world creature))
-			 rv)
+	(if rv
+	    (rlogger.dribble "[~a] Creature animated successfully: ~a"
+			     (tick-number (world creature))
+			     rv)
+	    (rlogger.dribble "[~a] Creature is dead or something."))
 	))))
 
 

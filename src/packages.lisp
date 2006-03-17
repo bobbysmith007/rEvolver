@@ -5,6 +5,9 @@
   (:export #:make-interpreter
 	   #:interrupt-interpreter/cc
 	   #:escape
+	   #:code-error
+	   #:invalid-gamma-application
+	   #:unbound-name
 	   #:env-push))
 
 (defpackage :rEvolver.map

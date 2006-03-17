@@ -55,7 +55,13 @@ with the environment it was closed to plus the name+argument pair."
 (define-condition interrupt ()
   ((continuation :initarg :continuation)
    (reason :initarg :reason :initform nil :accessor reason)))
-(define-condition unbound-name (error)
+
+(define-condition code-error (error)
+  ((original-error :initarg :original-error :accessor original-error)))
+(define-condition invalid-gamma-application (code-error)
+  ((rator :initarg :rator)
+   (rand :initarg :rand)))
+(define-condition unbound-name (code-error)
   ((name :initarg :name)
    (environment :initarg :environment)))
 
@@ -70,8 +76,9 @@ with the environment it was closed to plus the name+argument pair."
 	       (setf frame (frame-previous frame))
 	       (unless frame
 		 (return-from start-CSE-machine
-		   (values (first stack)
-			   (rest stack))))))
+		   (progn ;(break "Done, about to return." stack)
+			  (values (first stack)
+				  (rest stack)))))))
 	   
 	   (push-stack (val)
 	     (setf stack (cons val stack)))
@@ -105,7 +112,7 @@ with the environment it was closed to plus the name+argument pair."
 	do 
 	(if (null (peek-op frame))
 	    ;;cse rule 5, exit an environment.
-	    (pop-frame)
+	    (pop-frame) ;;this is our loop exit
 	    
 	    (let ((op (pop-op frame)))
 	      (cond
@@ -126,7 +133,9 @@ with the environment it was closed to plus the name+argument pair."
 			 ;;the push will be handled by the build-rator-continuation stuff.
 			 ((functionp rator)
 			  (push-stack (funcall rator rand)))
-			 (T (error "We didn't have a function ~a ~a" rator rand)))))
+			 (T (error 'invalid-gamma-application
+				   :rator rator
+				   :rand rand)))))
 
 		   ((numberp op)
 		    (push-stack op))
@@ -137,8 +146,8 @@ with the environment it was closed to plus the name+argument pair."
 		      (if foundp
 			  (push-stack obj)
 			  (error 'unbound-name
-				 op
-				 (frame-environment frame)))))
+				 :name op
+				 :environment (frame-environment frame)))))
 		   
 		   (T (error "Unkwown operation on the control ~a" op))))))))
    (escape (error) error)))

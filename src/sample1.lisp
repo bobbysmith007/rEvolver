@@ -23,12 +23,19 @@
 (make-new-world)
 
 (defvar golem ())
-(setf golem (make-instance 'Creature
-			   :energy 128
-			   :world *world*
-			   :node (random-location)))
+(setf golem (loop for i to 10
+		  for cr = (make-instance 'Creature
+					  :energy 128
+					  :world *world*
+					  :node (random-location))
+		  do
+		  (let ((cr cr))
+		    (schedule (lambda () (animate cr)) *world* 1))
+		  collect cr))
+
 ;(rlogger.info "Made new Golem dna: ~a" (dna-of golem))
 
-(animate golem)
-;(advance-time *world*)
+;(animate golem)
+(advance-time *world*)
+
 
