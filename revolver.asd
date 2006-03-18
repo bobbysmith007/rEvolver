@@ -23,5 +23,6 @@
 
 		 (:file "Creature" :depends-on ("rEvolver" "map" "dna" "dna-generator"))
 		 (:file "creature-environment" :depends-on ("rEvolver" "Creature"))
-		 (:file "World" :depends-on ( "rEvolver" "map")))))
+		 (:file "World" :depends-on ( "rEvolver" "map"))
+		 (:file "simulation" :depends-on ("World" "Creature" )))))
   :depends-on (:arnesi :adwcodebase))

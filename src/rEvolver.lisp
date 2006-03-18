@@ -1,5 +1,5 @@
 (in-package :rEvolver)
-
+(defvar *debug-level* +dribble+ )
 ;;;;Define the loggers we will be using
 (deflogger rlogger ()
   :level +dribble+
