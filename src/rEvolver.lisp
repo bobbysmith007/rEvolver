@@ -2,7 +2,7 @@
 (defvar *debug-level* +dribble+ )
 ;;;;Define the loggers we will be using
 (deflogger rlogger ()
-  :level +dribble+
+  :level *debug-level*
   :appender (make-instance 'verbose-stream-log-appender :stream t))
 
 ;;;; Ticker is everything in the system that keeps track of time.

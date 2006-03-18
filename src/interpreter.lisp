@@ -1,6 +1,6 @@
 (in-package :CSE)
 
-(declaim (optimize (debug 3)))
+;(declaim (optimize (debug 3)))
 
 
 (defun lookup (key environment)

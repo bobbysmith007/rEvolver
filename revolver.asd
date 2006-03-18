@@ -21,8 +21,8 @@
 		 (:file "dna-generator" :depends-on ("rEvolver"))
 		 (:file "dna" :depends-on ( "dna-generator"))
 
-		 (:file "Creature" :depends-on ("rEvolver" "map" "dna" "dna-generator"))
-		 (:file "creature-environment" :depends-on ("rEvolver" "Creature"))
-		 (:file "World" :depends-on ( "rEvolver" "map"))
-		 (:file "simulation" :depends-on ("World" "Creature" )))))
+		 (:file "World" :depends-on ( "map"))
+		 (:file "Creature" :depends-on ("World" "dna" "interpreter"))
+		 (:file "creature-environment" :depends-on ("Creature"))
+		 (:file "simulation" :depends-on ("World" "creature-environment")))))
   :depends-on (:arnesi :adwcodebase))

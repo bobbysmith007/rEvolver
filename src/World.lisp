@@ -10,7 +10,9 @@
 
    (queue :initform '()
 	  :accessor queue
-	  :documentation "The what to do next queue. Leftist Min Priority Queue")))
+	  :documentation "The what to do next queue. Leftist Min Priority Queue")
+   (creature-count :initform 0 :reader creature-count)
+   ))
 
 (defmethod advance-time ((world world))
   "Advance a world a tick by advancing any creatures for that tick."

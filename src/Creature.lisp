@@ -1,6 +1,6 @@
 (in-package :rEvolver)
 
-(declaim (optimize (debug 3)))
+;;(declaim (optimize (debug 3)))
 
 (defclass creature ()
   (
@@ -18,10 +18,11 @@
    ))
 
 (defmethod initialize-instance :after ((creature creature) &rest slots
-				       &key node
+				       &key node world
 				       &allow-other-keys)
   (declare (ignore slots))
-  (add-creature creature node))
+  (add-creature creature node)
+  (add-creature creature world))
 
 
 (defmethod alivep ((creature creature))
@@ -32,6 +33,7 @@
 		  (tick-number (world creature))
 		  creature)
   (when (node creature)
+    (remove-creature creature (world creature))
     (remove-creature creature (node creature)))
   (setf (energy creature) 0
 	(slot-value creature 'current-continuation) nil)
@@ -49,7 +51,10 @@
   ;(escape (slot-value error 'original-error))
   )
 
-(defmethod use-energy ((creature creature) amount)
+(defmethod use-energy ((creature creature) (amount function))
+  (use-energy creature (funcall amount (energy creature))))
+
+(defmethod use-energy ((creature creature) (amount number))
   (when (>= 0 (decf (energy creature) amount))
     (signal 'dead :creature creature)))
 
@@ -62,6 +67,15 @@
   "Take a creature out of a node."
   (setf (creatures-of node) (delete creature (creatures-of node) :test #'eq))
   (setf (node creature) nil))
+
+(defmethod add-creature ((golem creature) (terra world))
+  (with-slots (creature-count) terra
+    (setf creature-count (1+ creature-count)))
+  )
+(defmethod remove-creature ((golem creature) (terra world))
+  (with-slots (creature-count) terra
+    (setf creature-count (1- creature-count)))
+  )
 
 (defmethod suspend ((creature creature) continuation ticks)
   (setf (slot-value creature 'current-continuation) continuation)
@@ -99,26 +113,6 @@
 (defmethod print-object ((cr creature) stream)
   (format stream "#<(Creature :Energy ~a AC:~A)>" (energy cr) (animation-count cr)))
 
-(defmethod asexually-reproduce ((golem creature))
-  (rlogger.info "WOOHOO! Reproduction! ~a " golem)
-  (with-slots (init-energy mutation-rate value-mutation-rate dna mutation-depth)
-      golem
-    (let ((cr (make-instance 'creature
-		   :energy (maybe-mutate-value init-energy
-					       mutation-rate value-mutation-rate )
-		   :mutation-rate (maybe-mutate-value mutation-rate
-						      mutation-rate value-mutation-rate)
-		   :value-mutation-rate (maybe-mutate-value value-mutation-rate
-							    mutation-rate value-mutation-rate)
-		   :mutation-depth (maybe-mutate-value mutation-depth
-						       mutation-rate value-mutation-rate)
-		   
-		   :dna (maybe-mutate-tree (copy-tree dna) mutation-rate mutation-depth)
-		   :world (world golem)
-		   :node (node golem)
-		   )))
-      (schedule #'(lambda ()
-		    (rlogger.dribble "We are about to animate a NEW CREATURE! ~a" cr)
-		    (animate cr)) (world golem) +reproduction-time+))))
+
 
 

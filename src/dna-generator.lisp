@@ -4,14 +4,14 @@
   :level +error+
   :appender (make-instance 'verbose-stream-log-appender :stream t))
 
-(defparameter +depth-bound+ 10
+(defvar *depth-bound* 10
   "the depth at which tree generation terminates")
-(defvar *left-chance* +depth-bound+ )
-(defvar *right-chance* +depth-bound+ )
-(defvar *stop-chance* +depth-bound+ )
+(defvar *left-chance* *depth-bound* )
+(defvar *right-chance* *depth-bound* )
+(defvar *stop-chance* *depth-bound* )
 (defparameter *mutation-rate* .01)
 (defparameter *value-mutation-rate* .01)
-(defparameter *mutation-depth* (/ +depth-bound+ 2))
+(defparameter *mutation-depth* (/ *depth-bound* 2))
 
 
 (defun process-grammar-definition (grammar)
@@ -118,7 +118,7 @@ TODO: This should probably actually make some sort of struct rather than redicul
 ;(depth-first-expression-replace '(gamma (gamma cons ?expression) ?expression) '(?Expression ?Expression) '((a) (b)))
 
 
-(defun generate-tree (&optional (current-depth +depth-bound+)
+(defun generate-tree (&optional (current-depth *depth-bound*)
 				(processed-grammar revolver:creature-dna)
 				(rewrite-name '?Start)
 				(symbol-table nil))
