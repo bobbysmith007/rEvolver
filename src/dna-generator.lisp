@@ -2,15 +2,17 @@
 
 (deflogger logger ()
   :level +error+
-  :appender (make-instance 'brief-stream-log-appender :stream t))
-
-;;(?A -> (list ?Rewrite))
-;;(?Rewrite -> ({attrib-block-1} [cond] {attrib-block-2} : (?RightPart)))
-;;(?RightPart -> name ?rewrite-name ?rewrite-name => (write-part))
-;;(?rewrite-name -> )
+  :appender (make-instance 'verbose-stream-log-appender :stream t))
 
 (defparameter +depth-bound+ 10
   "the depth at which tree generation terminates")
+(defvar *left-chance* +depth-bound+ )
+(defvar *right-chance* +depth-bound+ )
+(defvar *stop-chance* +depth-bound+ )
+(defparameter *mutation-rate* .01)
+(defparameter *value-mutation-rate* .01)
+(defparameter *mutation-depth* (/ +depth-bound+ 2))
+
 
 (defun process-grammar-definition (grammar)
   "Removes the arrows and makes them nice nested a-lists.
@@ -152,15 +154,6 @@ TODO: This should probably actually make some sort of struct rather than redicul
 	write-tree
       ))
 
-
-(defvar *left-chance* +depth-bound+ )
-(defvar *right-chance* +depth-bound+ )
-(defvar *stop-chance* +depth-bound+ )
-(defparameter *mutation-rate* .01)
-(defparameter *value-mutation-rate* .01)
-(defparameter *mutation-depth* (/ +depth-bound+ 2))
-
-
 (defun make-path-decision ( tree )
   "returns the location of the replace ment (:root 0 :left 1 :right 2)"
   (if (atom tree) 0
@@ -172,36 +165,44 @@ TODO: This should probably actually make some sort of struct rather than redicul
 	       2)
 	      (T 0)))))
 
-(defun replace-random-subtree (tree replace-tree)
+(defun replace-random-subtree (tree replacement-tree)
   "Replaces a random (sub)tree with the replacement-tree"
     (labels ((rec-replace-random-subtree (sub-tree &optional (parent nil) (location 0))
 	       (let ((loc (make-path-decision sub-tree)))
-;		 (format T "parent: ~a~%replace: ~a~%location: ~a~%-------~%" parent replace-tree location)
+;		 (format T "parent: ~a~%replace: ~a~%location: ~a~%-------~%" parent replacement-tree location)
 		 (cond
 		   ((and (null parent)
 			 (= 0 loc)) ;we just selected the root
-		    replace-tree)
+		    replacement-tree)
 		   ((= 0 loc) ;we chose to stop at this node
-		    (setf (nth location parent) replace-tree)
+		    (setf (nth location parent) replacement-tree)
 		    tree)
 		   (T (rec-replace-random-subtree (nth loc sub-tree) sub-tree loc))
 		   
 		   ))))
       (rec-replace-random-subtree tree)))
 
-(defun maybe-mutate-tree (tree &optional (mutation-rate *mutation-rate*) (mutation-depth *mutation-depth*))
+(defun maybe-mutate-tree (tree &optional (mutation-rate *mutation-rate*)
+			       (mutation-depth *mutation-depth*))
+  "Returns either a new, mutated tree or returns the original tree.
+   The second return val is whether or not we mutated."
   (let ((maybe (random 1.0)))
     (if (not (< maybe mutation-rate))
-	tree
-	(let ((new-tree (generate-tree mutation-depth)))
-	  (replace-random-subtree tree new-tree)))
+	(values tree nil)
+	(values (let ((new-tree (generate-tree mutation-depth)))
+		  (replace-random-subtree tree new-tree))
+		T))
     ))
 
-(defun maybe-mutate-value (val &optional (mutation-rate *mutation-rate*) (value-mutation-rate  *value-mutation-rate*))
+(defun maybe-mutate-value (val &optional (mutation-rate *mutation-rate*)
+			       (value-mutation-rate  *value-mutation-rate*))
+  "Returns either the old value, or a new mutated value and whether or not it was mutated"
   (let ((maybe (random 1.0)))
     (if (not (< maybe mutation-rate))
-	val
-	(let* ((a (* val  value-mutation-rate))
-	       (b (* 2 a))
-	       (delta-rand (- (random b) a)))
-	  (+ val delta-rand)))))
+	(values val nil)
+	(values
+	 (let* ((a (* val  value-mutation-rate))
+		(b (* 2 a))
+		(delta-rand (- (random b) a)))
+	   (+ val delta-rand))
+	 T))))
