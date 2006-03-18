@@ -4,6 +4,7 @@
 
 (defclass creature ()
   (
+   (mutation-depth :accessor mutation-depth :initarg :mutation-depth :initform generator::*mutation-depth*)
    (mutation-rate :accessor mutation-rate :initarg :mutation-rate :initform generator::*mutation-rate*)
    (value-mutation-rate :accessor value-mutation-rate :initarg :value-mutation-rate :initform generator::*value-mutation-rate* )
    (init-energy :accessor init-energy :initform 0 :initarg :energy)
@@ -99,8 +100,8 @@
   (format stream "#<(Creature :Energy ~a AC:~A)>" (energy cr) (animation-count cr)))
 
 (defmethod asexually-reproduce ((golem creature))
-  (rlogger.info "WOOHOO! Reproduction! " golem)
-  (with-slots (init-energy mutation-rate value-mutation-rate dna)
+  (rlogger.info "WOOHOO! Reproduction! ~a " golem)
+  (with-slots (init-energy mutation-rate value-mutation-rate dna mutation-depth)
       golem
     (let ((cr (make-instance 'creature
 		   :energy (maybe-mutate-value init-energy
@@ -109,8 +110,10 @@
 						      mutation-rate value-mutation-rate)
 		   :value-mutation-rate (maybe-mutate-value value-mutation-rate
 							    mutation-rate value-mutation-rate)
+		   :mutation-depth (maybe-mutate-value mutation-depth
+						       mutation-rate value-mutation-rate)
 		   
-		   :dna (maybe-mutate-tree (copy-tree dna) mutation-rate)
+		   :dna (maybe-mutate-tree (copy-tree dna) mutation-rate mutation-depth)
 		   :world (world golem)
 		   :node (node golem)
 		   )))
