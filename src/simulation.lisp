@@ -48,6 +48,10 @@
   (populate-world sim)
   )
 
+(defmethod random-location ((sim simulation))
+  (let ((m (world-map (world sim))))
+    (random-node m)))
+
 (defmethod make-new-world ((sim simulation))
   (let ((map (make-instance '2d-array-map :x-size (world-size sim) :y-size (world-size sim))))
     (drop-random-energy map (node-energy-frequency sim) (node-energy-max sim))
@@ -58,7 +62,7 @@
 	for cr = (make-instance 'Creature
 				:energy (init-creature-max-energy sim)
 				:world (world sim) 
-				:node (random-location)
+				:node (random-location sim)
 				:mutation-rate (base-mutation-rate sim)
 				:value-mutation-rate (base-value-mutation-rate sim)
 				:mutation-depth (base-mutation-depth sim))

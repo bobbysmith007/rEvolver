@@ -125,7 +125,7 @@ TODO: This should probably actually make some sort of struct rather than redicul
   (declare (optimize (debug 3)))
   
     (let* (;get all of the rewrite possibilities of the rule
-	   (possibilities (if (= 0 current-depth)
+	   (possibilities (if (<= current-depth 0)
 			      (possibilities processed-grammar 'dna::?Terminal)
 			      (possibilities processed-grammar rewrite-name)))
 	   (chosen (pick-possibility possibilities current-depth))
