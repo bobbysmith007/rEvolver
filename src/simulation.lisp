@@ -15,13 +15,13 @@
    
    (node-energy-frequency
     :accessor node-energy-frequency :initarg :node-energy-frequency :initform .3
-    :documentation "")
+    :documentation "What percentage of nodes should get energy dropped on them.")
    (node-energy-max
     :accessor node-energy-max :initarg :node-energy-max :initform 100
-    :documentation "")
+    :documentation "(random node-energy-max) will be dropped on nodes.")
    (drop-energy-turns
     :accessor drop-energy-turns :initarg :drop-energy-turns :initform 10
-    :documentation "")
+    :documentation "The period between energy drops.")
 
    (init-creature-max-energy
     :accessor init-creature-max-energy :initarg :init-creature-max-energy :initform 128
