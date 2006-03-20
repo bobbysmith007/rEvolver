@@ -2,7 +2,7 @@
 
 (defclass simulation ()
   (
-   ;; WORLD BITS
+   ;;;; WORLD BITS
    (world :accessor world :initarg :world
 	  :documentation "Our World.  The instance will be created in shared-initialize
                           using other values in our simulation.")
@@ -12,7 +12,7 @@
     "The world starts with this number of randomly generated tree structures" )
    (world-size :accessor world-size :initarg :worldsize :initform 20
 	       :documentation "The size of one side of the map")
-   
+   ;;Energy drop details
    (node-energy-frequency
     :accessor node-energy-frequency :initarg :node-energy-frequency :initform .3
     :documentation "What percentage of nodes should get energy dropped on them.")
@@ -27,7 +27,8 @@
     :accessor init-creature-max-energy :initarg :init-creature-max-energy :initform 128
     :documentation "The max energy of newly generated creatures")
 
-   ;;generation specs
+   
+   ;;;;generation specs
    (depth-bound
     :reader depth-bound :initarg :depth-bound :initform 8
     :documentation "The depth to force rewriting termination")
