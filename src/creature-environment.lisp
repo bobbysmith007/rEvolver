@@ -1,8 +1,8 @@
 (in-package :rEvolver)
 
 ;;(declaim (optimize (debug 3)))
-(defvar *function-energy-cost-hash* (make-hash-table :test #'eq))
-(defvar *function-time-cost-hash* (make-hash-table :test #'eq))
+(defvar *function-energy-cost-hash*)
+(defvar *function-time-cost-hash*)
 (defvar *default-energy-cost*)
 
 (defmacro curry (args &body body)
@@ -22,14 +22,14 @@ of higher arity."
       ;;TODO: good place for logging?
       (error (e) (error 'CSE:code-error :original-error e)))))
 
-(defun make-creature-base-lisp-environment (creature)
+(defun make-creature-base-lisp-environment ()
   (let (env)
     (flet ((addenv (name fun)
 	     (setf env (env-push name fun env))))
       (macrolet ((make-env-fn (name args &body body)
 		   `(addenv ',name
 			   (cr-env-function ,args
-			     (use-energy creature *default-energy-cost*)
+
 			     ,@body))		     
 		   ))
 	(make-env-fn dna:cons (a b) (cons a b))
@@ -91,7 +91,7 @@ of higher arity."
 ;;TODO: The continuations given to us by the interpreter are functions
 ;; of an argument, we need to treat them as such.
 (defmethod creature-environment ((creature creature))
-  (let ((env (make-creature-base-lisp-environment creature)))
+  (let ((env (make-creature-base-lisp-environment)))
     (macrolet ((costly-cr-env-function (name args cont-arg &body body)
 		 (with-unique-names (k)
 		   `(addenv ',name
@@ -106,7 +106,7 @@ of higher arity."
       (flet ((addenv (name fun)
 	       (setf env (env-push name fun env))))
  
-	(costly-cr-env-function 'dna:move (node) (node creature)
+	(costly-cr-env-function dna:move (node) (node creature)
 	  (let ((previous-node (node creature)))
 	    (remove-creature creature previous-node)
 	    ;;if the creature didn't specify then pick a random direction.
@@ -115,11 +115,11 @@ of higher arity."
 			      (random-elt (adjacent-nodes-of
 					   previous-node))))))
  
-	(costly-cr-env-function 'dna:feed () (energy creature)
+	(costly-cr-env-function dna:feed () (energy creature)
 	  (with-slots (node world energy) creature
 	    (setf energy (+ energy (take-all-energy node)))))
  
-	(costly-cr-env-function 'dna:energy? () T
+	(costly-cr-env-function dna:energy? () T
 	  (let ((energy (> (revolver.map::energy (node creature)) 0)))
 	    (rlogger.dribble "Querying node for energy resulted in: ~a." energy)
 	    energy))

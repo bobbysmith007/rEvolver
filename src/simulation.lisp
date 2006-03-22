@@ -1,5 +1,5 @@
 (in-package :rEvolver)
-
+(defvar *golem*)
 (defclass simulation ()
   (
    ;;;; WORLD BITS
@@ -10,6 +10,7 @@
     :accessor initial-creature-count :initarg :initial-creature-count :initform 50
     :documentation
     "The world starts with this number of randomly generated tree structures" )
+   
    (world-size :accessor world-size :initarg :worldsize :initform 20
 	       :documentation "The size of one side of the map")
    ;;Energy drop details
@@ -104,24 +105,25 @@
 	depth-bound (or val depth-bound))))
 
 (defmethod (setf function-energy-costs) ((list list) (sim simulation))
-  (with-slots (function-time-costs) sim
-    (setf function-time-costs list))
+  (with-slots (function-energy-costs) sim
+    (setf function-energy-costs list))
   (clrhash *function-energy-cost-hash*)
-    (mapcar
-     (lambda (x)       
-       (setf (gethash (car x) *function-energy-cost-hash*)
-	     (cdr x)))
-     list))
+  (mapcar
+   (lambda (x)       
+     (setf (gethash (car x) *function-energy-cost-hash*)
+	   (cdr x)))
+   list))
 
 (defmethod (setf function-time-costs) ((list list) (sim simulation))
   (with-slots (function-time-costs) sim
     (setf function-time-costs list))
   (clrhash *function-time-cost-hash*)
-    (mapcar
-     (lambda (x)       
-       (setf (gethash (car x) *function-time-cost-hash*)
-	     (cdr x)))
-     list))
+  (mapcar
+   (lambda (x)       
+     (setf (gethash (car x) *function-time-cost-hash*)
+	   (cdr x)))
+   list)
+  )
 
 (defmethod random-location ((sim simulation))
   (let ((m (world-map (world sim))))
@@ -140,9 +142,17 @@
 				:node (random-location sim)
 				:mutation-rate (base-mutation-rate sim)
 				:value-mutation-rate (base-value-mutation-rate sim)
-				:mutation-depth (base-mutation-depth sim))
+				:mutation-depth (base-mutation-depth sim)
+
+				;;This is just attempting to test movement
+				;;:dna '(dna:gamma
+				;;       (dna:gamma dna:cons (dna:gamma dna:move dna:nil)) 
+				;;       (dna:gamma dna:move dna:nil))
+				
+				)
 	do
 	(let ((cr cr))
+;;	  (setf *golem* cr)
 	  (schedule (lambda () (animate cr)) (world sim) 1))
 	collect cr))
 
@@ -152,15 +162,16 @@
 				     left-branch-chance right-branch-chance stop-chance
 				     &allow-other-keys)
   (declare (ignore slot-names))
-  (setf (stop-chance sim) stop-chance)
-  (setf (right-branch-chance sim) right-branch-chance)
-  (setf (left-branch-chance sim) left-branch-chance)
-  (setf (depth-bound sim) depth-bound)
+  
+  (setf (stop-chance sim) (or stop-chance (stop-chance sim)))
+  (setf (right-branch-chance sim) (or right-branch-chance (right-branch-chance sim)))
+  (setf (left-branch-chance sim) (or left-branch-chance (left-branch-chance sim)))
+  (setf (depth-bound sim) (or depth-bound (depth-bound sim)))
+  (setf (function-time-costs sim) (or function-time-costs (function-time-costs sim)))
+  (setf (function-energy-costs sim) (or function-energy-costs (function-energy-costs sim)))
+  
   (make-new-world sim)
   (populate-world sim)
-
-  (setf (function-time-costs sim) function-time-costs)
-  (setf (function-energy-costs sim) function-energy-costs)
   )
 
 
