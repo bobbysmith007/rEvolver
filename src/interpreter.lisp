@@ -56,6 +56,14 @@ with the environment it was closed to plus the name+argument pair."
   ((continuation :initarg :continuation)
    (reason :initarg :reason :initform nil :accessor reason)))
 
+(defun interrupt-interpreter/cc (cont &optional reason)
+  "When called from a primary-environment function, will interrupt the currently
+ running interpreter. The argument cont(inuation) should be a function of one
+ argument. The function is called, passing in the interpreter continuation.
+That continuation may then be saved off somewhere. Will return the result back
+up to whoever originally invoked the interpreter."
+  (signal 'interrupt :continuation cont :reason reason))
+
 (define-condition code-error (error)
   ((original-error :initarg :original-error :accessor original-error)))
 (define-condition invalid-gamma-application (code-error)
@@ -125,6 +133,9 @@ with the environment it was closed to plus the name+argument pair."
 		((eq op 'dna:gamma)
 		 (let* ((rator (pop-stack))
 			(rand (pop-stack)))
+		   ;;we are performing a beta-reduction. let the outside environment know.
+		   ;; this could possibly escape... ok
+		   (funcall beta-reduction-cost)
 		   (cond ((closure-p rator)
 			  ;;cse rule 4 apply lambda
 			  (new-frame rator rand))
@@ -154,20 +165,12 @@ with the environment it was closed to plus the name+argument pair."
 
 
 
-(defun interrupt-interpreter/cc (cont &optional reason)
-  "When called from a primary-environment function, will interrupt the currently
- running interpreter. The argument cont(inuation) should be a function of one
- argument. The function is called, passing in the interpreter continuation.
-That continuation may then be saved off somewhere. Will return the result back
-up to whoever originally invoked the interpreter."
-  
-  (signal 'interrupt :continuation cont :reason reason))
-
-
 (defun make-interpreter (standardized-tree primary-environment &optional beta-reduction-cost)
   "Takes a standardized tree and returns a function that when invoked will
  commence interpret the tree in the primary environment. Reinnvokng the
- returned function will restart the interpretation."
+ returned function will restart the interpretation.
+The beta-reduction is a function that can perform other side effects when any beta-reduction
+ is performed by the interpreter."
   (let* ((flattened (flattener standardized-tree))
 	 (frame (make-frame flattened
 			    primary-environment nil)))

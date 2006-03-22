@@ -1,7 +1,7 @@
 (in-package :rEvolver)
 
 ;;(declaim (optimize (debug 3)))
-
+(defparameter +beta-reduction-cost+ 1)
 (defclass creature ()
   (
    (mutation-depth :accessor mutation-depth :initarg :mutation-depth :initform generator::*mutation-depth*)
@@ -99,7 +99,9 @@
 		(incf (animation-count creature))
 		(rlogger.dribble "Starting the creature anew.")
 		(funcall (make-interpreter (dna-of creature)
-					     (creature-environment creature)))))))
+					   (creature-environment creature)
+					   #'(lambda ()
+					       (use-energy creature +beta-reduction-cost+))))))))
 
 	(if rv
 	    (rlogger.dribble "[~a] Creature animated successfully: ~a"
