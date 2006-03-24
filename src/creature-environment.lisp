@@ -1,9 +1,9 @@
 (in-package :rEvolver)
 
 ;;(declaim (optimize (debug 3)))
-(defvar *function-energy-cost-hash*)
-(defvar *function-time-cost-hash*)
-(defvar *default-energy-cost*)
+(defvar *function-energy-cost-hash* (make-hash-table ))
+(defvar *function-time-cost-hash* (make-hash-table ))
+(defvar *default-energy-cost* nil)
 
 (defmacro curry (args &body body)
   "Turn a function of arity n into max(arity, 1) functions.
