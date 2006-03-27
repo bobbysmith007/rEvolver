@@ -64,11 +64,12 @@ of higher arity."
 
 (defmethod asexually-reproduce ((golem creature))
   (rlogger.info "WOOHOO! Reproduction! ~a " golem)
-  (with-slots (init-energy mutation-rate value-mutation-rate dna mutation-depth)
+  (with-slots (max-energy mutation-rate value-mutation-rate dna mutation-depth)
       golem
     (let ((cr (make-instance 'creature
-		   :energy (maybe-mutate-value init-energy
+		   :max-energy (maybe-mutate-value max-energy
 					       mutation-rate value-mutation-rate )
+		   :energy (energy golem) 
 		   :mutation-rate (maybe-mutate-value mutation-rate
 						      mutation-rate value-mutation-rate)
 		   :value-mutation-rate (maybe-mutate-value value-mutation-rate

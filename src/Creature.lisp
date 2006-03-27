@@ -7,7 +7,7 @@
    (mutation-depth :accessor mutation-depth :initarg :mutation-depth :initform generator::*mutation-depth*)
    (mutation-rate :accessor mutation-rate :initarg :mutation-rate :initform generator::*mutation-rate*)
    (value-mutation-rate :accessor value-mutation-rate :initarg :value-mutation-rate :initform generator::*value-mutation-rate* )
-   (init-energy :accessor init-energy :initform 0 :initarg :energy)
+   (max-energy :accessor max-energy :initform 0 :initarg :max-energy)
    
    (energy :accessor energy :initform 0 :initarg :energy)
    (node :accessor node )
@@ -18,11 +18,17 @@
    ))
 
 (defmethod initialize-instance :after ((creature creature) &rest slots
-				       &key node world
+				       &key node world max-energy energy
 				       &allow-other-keys)
   (declare (ignore slots))
   (add-creature creature node)
-  (add-creature creature world))
+  (add-creature creature world)
+
+  (if (not max-energy)
+      (setf (max-energy creature)
+	    (or energy (energy creature))))
+  )
+
 
 
 (defmethod alivep ((creature creature))
@@ -56,7 +62,7 @@
 
 (defmethod use-energy ((creature creature) (amount number))
   (when (>= 0 (decf (energy creature) amount))
-    (signal 'dead :creature creature)))
+    (die creature)))
 
 (defmethod add-creature ((creature creature) (node node))
   "add a creature to a node."

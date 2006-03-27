@@ -69,7 +69,7 @@
 		    '(dna:feed . 3)
 		    '(dna:energy? . 1)
 		    (cons 'dna:asexually-reproduce
-			  (lambda (energy) (/ energy 20)))))
+			  (lambda (energy) (/ energy 2)))))
    
    (function-time-costs
     :initarg :function-time-costs
@@ -172,6 +172,14 @@
   
   (make-new-world sim)
   (populate-world sim)
+  (labels ((drop-energy-and-readd ()
+	     (drop-random-energy (world-map (world sim)) (node-energy-frequency sim) (node-energy-max sim))
+	     (schedule #'drop-energy-and-readd
+		       (world sim) 1)
+	     ))
+    ;;setup energy drops
+    (schedule #'drop-energy-and-readd
+	      (world sim) 1))
   )
 
 
