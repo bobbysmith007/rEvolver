@@ -5,10 +5,11 @@
   (:export #:make-interpreter
 	   #:interrupt-interpreter/cc
 	   #:escape
+	   #:reason
 	   #:code-error
 	   #:invalid-gamma-application
 	   #:unbound-name
-	   #:env-push))
+	   #:append-to-environment))
 
 (defpackage :rEvolver.map
     (:use :common-lisp)
@@ -17,6 +18,7 @@
 	   #:node
 	   #:creatures-of
 	   #:take-all-energy
+	   #:add-energy
 	   #:find-node-xy
 	   #:random-node
 	   #:drop-random-energy

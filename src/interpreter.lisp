@@ -1,6 +1,6 @@
 (in-package :CSE)
 
-;(declaim (optimize (debug 3)))
+(declaim (optimize (debug 3)))
 
 
 (defun lookup (key environment)
@@ -9,7 +9,7 @@
     (values (cdr val)
 	    (not (null val)))))
 
-(defun env-push (key datum environment)
+(defun append-to-environment (key datum environment)
   (acons key datum environment))
 
 (defstruct (closure (:constructor make-lambda (name control)))
@@ -35,7 +35,9 @@
 This function creates a new frame that will evaluate the body of the closure,
 with the environment it was closed to plus the name+argument pair."
   (make-frame (closure-control closure)
-	       (env-push (closure-name closure) value (closure-environment closure))
+	      (append-to-environment (closure-name closure)
+				     value
+				     (closure-environment closure))
 	       previous))
 
 (defun peek-op (frame)
@@ -46,15 +48,13 @@ with the environment it was closed to plus the name+argument pair."
     (setf (frame-control frame) (rest control))
     (first control)))
 
-(defun escape (error)
-  (revolver::rlogger.dribble "Escaping: ~a" error)
-  (let ((esc (find-restart 'escape)))
-    (when esc
-      (invoke-restart esc error))))
+;;;;Code for controlling the execution of the interpreter.
 
-(define-condition interrupt ()
-  ((continuation :initarg :continuation)
-   (reason :initarg :reason :initform nil :accessor reason)))
+(define-condition escape ()
+  ((reason :initarg :reason :initform nil :accessor reason)))
+
+(define-condition interrupt (escape)
+  ((continuation :initarg :continuation)))
 
 (defun interrupt-interpreter/cc (cont &optional reason)
   "When called from a primary-environment function, will interrupt the currently
@@ -74,94 +74,95 @@ up to whoever originally invoked the interpreter."
    (environment :initarg :environment)))
 
 (defun start-CSE-machine (frame stack beta-reduction-cost)
-  (restart-case 
-   (labels ((new-frame (closure val)
-	      (setf frame (make-frame-from-closure closure val frame)))
-	    (pop-frame ()
-	      "Return to a previous frame, if there isn't one then we are finished
+  (handler-case  
+      (labels ((new-frame (closure val)
+		 (setf frame (make-frame-from-closure closure val frame)))
+	       (pop-frame ()
+		 "Return to a previous frame, if there isn't one then we are finished
 		and return the top of the stack upward."
-	     (prog1 frame
-	       (setf frame (frame-previous frame))
-	       (unless frame
-		 (return-from start-CSE-machine
-		   (progn ;(break "Done, about to return." stack)
-			  (values (first stack)
-				  (rest stack)))))))
+		 (prog1 frame
+		   (setf frame (frame-previous frame))
+		   (unless frame
+		     (return-from start-CSE-machine
+		       (progn		;(break "Done, about to return." stack)
+			 (values (first stack)
+				 (rest stack)))))))
 	   
-	   (push-stack (val)
-	     (setf stack (cons val stack)))
-	   (pop-stack ()
-	     (prog1 (first stack)
-	       (setf stack (rest stack))))
-	   (frame-lookup (key)
-	     (apply #'values
-		    (multiple-value-list
-			(lookup key (frame-environment frame)))))
+	       (push-stack (val)
+		 (setf stack (cons val stack)))
+	       (pop-stack ()
+		 (prog1 (first stack)
+		   (setf stack (rest stack))))
+	       (frame-lookup (key)
+		 (apply #'values
+			(multiple-value-list
+			    (lookup key (frame-environment frame)))))
 	   
-	   (build-rator-continuation ()
-	     "Make a continuation that will push the return value onto the stack
+	       (build-rator-continuation ()
+		 "Make a continuation that will push the return value onto the stack
 		and continue processing."
-	     (lambda (val)
-	       (start-CSE-machine frame
-				  (cons val stack)
-				  beta-reduction-cost)))
+		 (lambda (val)
+		   (start-CSE-machine frame
+				      (cons val stack)
+				      beta-reduction-cost)))
    
-	   (handle-interrupt (interrupt)
-	     "Interrupt the current machine by calling the interrupt's continutation
+	       (handle-interrupt (interrupt)
+		 "Interrupt the current machine by calling the interrupt's continutation
 		passing it the interpreter continuation and finally returning it's value to the top.
 		the result up to the whomever originally invoked the machine."
-	     (revolver::rlogger.dribble "Interrupting interpreter: ~a" (reason interrupt))
-	     (return-from start-CSE-machine
-	       (funcall (slot-value interrupt 'continuation)
-			(build-rator-continuation)))))
+		 (revolver::rlogger.dribble "Interrupting interpreter: ~a" (reason interrupt))
+		 (signal 'escape
+			 :reason
+			 (funcall (slot-value interrupt 'continuation)
+				  (build-rator-continuation)))))
 
-    (handler-bind ((interrupt #'handle-interrupt))
-      (loop 
-	do 
-	(if (null (peek-op frame))
-	    ;;cse rule 5, exit an environment.
-	    (pop-frame) ;;this is our loop exit
+	(handler-bind ((interrupt #'handle-interrupt))
+	  (loop 
+	      do 
+	      (if (null (peek-op frame))
+		  ;;cse rule 5, exit an environment.
+		  (pop-frame);;this is our loop exit
 	    
-	    (let ((op (pop-op frame)))
-	      (cond
+		  (let ((op (pop-op frame)))
+		    (cond
 		
-		;;cse rule 2 stack a lambda
-		((closure-p op)
-		 (setf (closure-environment op) (frame-environment frame))
-		 (push-stack op))
+		      ;;cse rule 2 stack a lambda
+		      ((closure-p op)
+		       (setf (closure-environment op) (frame-environment frame))
+		       (push-stack op))
 		
-		((eq op 'dna:gamma)
-		 (let* ((rator (pop-stack))
-			(rand (pop-stack)))
-		   ;;we are performing a beta-reduction. let the outside environment know.
-		   ;; this could possibly escape... ok
-		   (funcall beta-reduction-cost)
-		   (cond ((closure-p rator)
-			  ;;cse rule 4 apply lambda
-			  (new-frame rator rand))
-			 ;;cse rule 3 apply rator
-			 ;;if rator here gets #'interrupt-interpreter/cc here, it's allright
-			 ;;the push will be handled by the build-rator-continuation stuff.
-			 ((functionp rator)
-			  (push-stack (funcall rator rand)))
-			 (T (error 'invalid-gamma-application
-				   :rator rator
-				   :rand rand)))))
+		      ((eq op 'dna:gamma)
+		       (let* ((rator (pop-stack))
+			      (rand (pop-stack)))
+			 ;;we are performing a beta-reduction. let the outside environment know.
+			 ;; this could possibly escape... ok
+			 (funcall beta-reduction-cost)
+			 (cond ((closure-p rator)
+				;;cse rule 4 apply lambda
+				(new-frame rator rand))
+			       ;;cse rule 3 apply rator
+			       ;;if rator here gets #'interrupt-interpreter/cc here, it's allright
+			       ;;the push will be handled by the build-rator-continuation stuff.
+			       ((functionp rator)
+				(push-stack (funcall rator rand)))
+			       (T (error 'invalid-gamma-application
+					 :rator rator
+					 :rand rand)))))
 
-		   ((numberp op)
-		    (push-stack op))
+		      ((numberp op)
+		       (push-stack op))
 		   
-		   ;; CSE Rule 1 Stack a name
-		   ((symbolp op)
-		    (multiple-value-bind (obj foundp) (frame-lookup op)
-		      (if foundp
-			  (push-stack obj)
-			  (error 'unbound-name
-				 :name op
-				 :environment (frame-environment frame)))))
+		      ;; CSE Rule 1 Stack a name
+		      ((symbolp op)
+		       (multiple-value-bind (obj foundp) (frame-lookup op)
+			 (if foundp
+			     (push-stack obj)
+			     (error 'unbound-name
+				    :name op
+				    :environment (frame-environment frame)))))
 		   
-		   (T (error "Unkwown operation on the control ~a" op))))))))
-   (escape (error) error)))
+		      (T (error "Unkwown operation on the control ~a" op))))))))
+    (escape (esc) (return-from start-CSE-machine (reason esc)))))
 
 
 

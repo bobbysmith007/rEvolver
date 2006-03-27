@@ -36,6 +36,10 @@
 	   (prog1 (energy node)
 	     (setf (energy node) 0))))
 
+(defgeneric add-energy (node amount)
+  (:method ((node node) amount)
+	   (setf (energy node) (+ (energy node) amount))))
+
 
 (defclass 2d-array-map (rEvolver-map)
   ((x-size :initarg :x-size :accessor x-size)
@@ -71,7 +75,7 @@
   (dotimes (n (* frequency (x-size m) (y-size m)))
 	(let ((l (random-node m))
 	      (e (random energy-to-add-max/spot)))
-	  (setf (energy l) (+ e (energy l)))))
+	  (add-energy l e)))
   m)
 
 

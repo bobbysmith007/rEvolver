@@ -30,15 +30,20 @@
   )
 
 
+(defgeneric asexually-reproduce (golem))
 
 (defmethod alivep ((creature creature))
-  (> (energy creature) 0))
+  (and (world creature)
+       (node creature)
+       (> (energy creature) 0)))
 
 (defmethod die ((creature creature))
   (rlogger.info "[~a] Creature died: ~a"
 		  (tick-number (world creature))
 		  creature)
   (when (node creature)
+    ;;the creature 'decays' returning energy to the system
+    (add-energy (node creature) (energy creature))
     (remove-creature creature (world creature))
     (remove-creature creature (node creature)))
   (setf (energy creature) 0
@@ -62,7 +67,8 @@
 
 (defmethod use-energy ((creature creature) (amount number))
   (when (>= 0 (decf (energy creature) amount))
-    (die creature)))
+    (die creature)
+    (signal 'cse:escape :reason 'died-from-exhaustion)))
 
 (defmethod add-creature ((creature creature) (node node))
   "add a creature to a node."
@@ -83,15 +89,18 @@
     (setf creature-count (1- creature-count)))
   )
 
-(defmethod suspend ((creature creature) continuation ticks)
+(defmethod reschedule ((creature creature) continuation ticks)
   (setf (slot-value creature 'current-continuation) continuation)
   (schedule (lambda () (animate creature)) (world creature) ticks))
 
 (defmethod animate ((creature creature))
   (handler-bind ((cse:code-error
-		  (lambda (er)
-		    (got-the-pox creature er)
-		    (return-from animate nil))))
+		  #'(lambda (er)
+		      (got-the-pox creature er)
+		      (return-from animate nil)))
+		 (cse:escape
+		  #'(lambda (esc)
+		      (return-from animate (cse:reason esc)))))
     (with-slots (current-continuation) creature
       
       (let ((rv
@@ -120,7 +129,4 @@
 
 (defmethod print-object ((cr creature) stream)
   (format stream "#<(Creature :Energy ~a AC:~A)>" (energy cr) (animation-count cr)))
-
-
-
 

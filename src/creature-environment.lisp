@@ -24,42 +24,87 @@ of higher arity."
 
 (defun make-creature-base-lisp-environment ()
   (let (env)
-    (flet ((addenv (name fun)
-	     (setf env (env-push name fun env))))
-      (macrolet ((make-env-fn (name args &body body)
-		   `(addenv ',name
-			   (cr-env-function ,args
-
-			     ,@body))		     
-		   ))
-	(make-env-fn dna:cons (a b) (cons a b))
-	(make-env-fn dna:car (c) (car c))
-	(make-env-fn dna:cdr (c) (cdr c))
-	(make-env-fn dna:or (x y) (or x y))
-	(make-env-fn dna:not (n) (not n))
-	(make-env-fn dna:eq (x y) (eq x y))
-	(make-env-fn dna:equal (x y) (equal x y))
-	(make-env-fn dna:if (test x y) (if test x y))
-	(addenv 'dna:nil nil)
-	(addenv 'dna:T T)
+    (flet ((pushenv (name val)
+	     (setf env (append-to-environment name val env))))
+      (macrolet ((define-environment-fun (name args &body body)
+		     `(pushenv ',name
+		       (cr-env-function ,args ,@body))))
+	(define-environment-fun dna:cons (a b) (cons a b))
+	(define-environment-fun dna:car (c) (car c))
+	(define-environment-fun dna:cdr (c) (cdr c))
+	(define-environment-fun dna:or (x y) (or x y))
+	(define-environment-fun dna:not (n) (not n))
+	(define-environment-fun dna:eq (x y) (eq x y))
+	(define-environment-fun dna:equal (x y) (equal x y))
+	(define-environment-fun dna:if (test x y) (if test x y))
+	(pushenv 'dna:nil nil)
+	(pushenv 'dna:T T)
 	(mapcar (lambda (sym)
-		  (addenv sym sym))
+		  (pushenv sym sym))
 		'(dna:eof dna:node dna:function dna:list dna:atom dna:number)))
       env)))
 
 (defun apply-energy-costs (name creature)
+  "Based on operation name, have the creature use the appropriate energy."
   (multiple-value-bind (val in-hash) (gethash name *function-energy-cost-hash*)
     (when in-hash
       (use-energy creature val))))
 
 (defun apply-time-costs (name creature continuation cont-arg)
+  "Based on operation name, continue the creature at the appropriate-time."
   (multiple-value-bind (val in-hash) (gethash name *function-time-cost-hash*)
     (if  in-hash
-      (suspend creature
+      (reschedule creature
 	       (lambda ()
 		 (funcall continuation cont-arg))
 	       val)
-      (funcall continuation cont-arg))))
+      (funcall continuation cont-arg)))
+  name)
+
+
+;;TODO: The continuations given to us by the interpreter are functions
+;; of an argument, we need to treat them as such.
+(defmethod creature-environment ((creature creature))
+  (let ((env (make-creature-base-lisp-environment)))
+    (macrolet ((costly-cr-env-function (name args cont-arg &body body)
+		 (with-unique-names (k)
+		   `(pushenv ',name
+		     (cr-env-function ,args
+		       (rlogger.dribble "Starting: ~a" ',name)
+		       (interrupt-interpreter/cc
+			(lambda (,k)
+			  (apply-energy-costs ',name creature)
+			  (apply-time-costs ',name creature ,k (progn ,@body)))))))))
+      
+      (flet ((pushenv (name fun)
+	       (setf env (append-to-environment name fun env))))
+ 
+	(costly-cr-env-function dna:move (node) 
+	  (let ((previous-node (node creature)))
+	    (remove-creature creature previous-node)
+	    ;;if the creature didn't specify then pick a random direction.
+	    (add-creature creature
+			  (or node
+			      (random-elt (adjacent-nodes-of
+					   previous-node))))
+	    (node creature)))
+ 
+	(costly-cr-env-function dna:feed () 
+	  (with-slots (node world energy) creature
+	    (setf energy (+ energy (take-all-energy node))))
+	  (energy creature))
+ 
+	(costly-cr-env-function dna:energy? () 
+	  (let ((energy (> (revolver.map::energy (node creature)) 0)))
+	    (rlogger.dribble "Querying node for energy resulted in: ~a." energy)
+	    energy))
+ 
+	(costly-cr-env-function dna:asexually-reproduce ()
+          (asexually-reproduce creature)
+	  T)
+      ))
+    env))
+
 
 
 (defmethod asexually-reproduce ((golem creature))
@@ -88,45 +133,3 @@ of higher arity."
 		(or (gethash 'dna:asexually-reproduce *function-time-cost-hash*)
 		    1)
 		    ))))
-
-;;TODO: The continuations given to us by the interpreter are functions
-;; of an argument, we need to treat them as such.
-(defmethod creature-environment ((creature creature))
-  (let ((env (make-creature-base-lisp-environment)))
-    (macrolet ((costly-cr-env-function (name args cont-arg &body body)
-		 (with-unique-names (k)
-		   `(addenv ',name
-		     (cr-env-function ,args
-		     (rlogger.dribble "Starting: ~a" ',name)
-		     (interrupt-interpreter/cc
-		      (lambda (,k)
-			(apply-energy-costs ',name creature)
-			,@body
-			(apply-time-costs ',name creature ,k ,cont-arg))))))))
-      
-      (flet ((addenv (name fun)
-	       (setf env (env-push name fun env))))
- 
-	(costly-cr-env-function dna:move (node) (node creature)
-	  (let ((previous-node (node creature)))
-	    (remove-creature creature previous-node)
-	    ;;if the creature didn't specify then pick a random direction.
-	    (add-creature creature
-			  (or node
-			      (random-elt (adjacent-nodes-of
-					   previous-node))))))
- 
-	(costly-cr-env-function dna:feed () (energy creature)
-	  (with-slots (node world energy) creature
-	    (setf energy (+ energy (take-all-energy node)))))
- 
-	(costly-cr-env-function dna:energy? () T
-	  (let ((energy (> (revolver.map::energy (node creature)) 0)))
-	    (rlogger.dribble "Querying node for energy resulted in: ~a." energy)
-	    energy))
- 
-	(costly-cr-env-function dna:asexually-reproduce () T
-          (asexually-reproduce creature))
-      ))
-    env))
-
