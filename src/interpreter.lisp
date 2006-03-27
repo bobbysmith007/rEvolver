@@ -38,7 +38,7 @@ with the environment it was closed to plus the name+argument pair."
 	      (append-to-environment (closure-name closure)
 				     value
 				     (closure-environment closure))
-	       previous))
+	      previous))
 
 (defun peek-op (frame)
   (first (frame-control frame)))
@@ -177,8 +177,8 @@ The beta-reduction is a function that can perform other side effects when any be
 			    primary-environment nil)))
     (lambda ()
       (start-CSE-machine frame
-			'()
-			beta-reduction-cost))))
+			 '()
+			 beta-reduction-cost))))
 
 
 (defun lchild (tree)

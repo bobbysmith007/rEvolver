@@ -65,12 +65,12 @@
    #:t))
 
 (defpackage :rEvolver
-  (:use :common-lisp
-	:net.acceleration.utils
-	:net.acceleration.data-structures.trees
-	:arnesi
-	:rEvolver.map
-	:CSE)
+    (:use :common-lisp
+	  :net.acceleration.utils
+	  :net.acceleration.data-structures.trees
+	  :arnesi
+	  :rEvolver.map
+	  :CSE)
   (:import-from :generator #:generate-tree #:maybe-mutate-value #:maybe-mutate-tree)
   (:export #:creature-DNA))
 

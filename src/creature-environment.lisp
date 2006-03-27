@@ -54,11 +54,11 @@ of higher arity."
   "Based on operation name, continue the creature at the appropriate-time."
   (multiple-value-bind (val in-hash) (gethash name *function-time-cost-hash*)
     (if  in-hash
-      (reschedule creature
-	       (lambda ()
-		 (funcall continuation cont-arg))
-	       val)
-      (funcall continuation cont-arg)))
+	 (reschedule creature
+		     (lambda ()
+		       (funcall continuation cont-arg))
+		     val)
+	 (funcall continuation cont-arg)))
   name)
 
 
@@ -80,29 +80,29 @@ of higher arity."
 	       (setf env (append-to-environment name fun env))))
  
 	(costly-cr-env-function dna:move (node) 
-	  (let ((previous-node (node creature)))
-	    (remove-creature creature previous-node)
-	    ;;if the creature didn't specify then pick a random direction.
-	    (add-creature creature
-			  (or node
-			      (random-elt (adjacent-nodes-of
-					   previous-node))))
-	    (node creature)))
+				(let ((previous-node (node creature)))
+				  (remove-creature creature previous-node)
+				  ;;if the creature didn't specify then pick a random direction.
+				  (add-creature creature
+						(or node
+						    (random-elt (adjacent-nodes-of
+								 previous-node))))
+				  (node creature)))
  
 	(costly-cr-env-function dna:feed () 
-	  (with-slots (node world energy) creature
-	    (setf energy (+ energy (take-all-energy node))))
-	  (energy creature))
+				(with-slots (node world energy) creature
+				  (setf energy (+ energy (take-all-energy node))))
+				(energy creature))
  
 	(costly-cr-env-function dna:energy? () 
-	  (let ((energy (> (revolver.map::energy (node creature)) 0)))
-	    (rlogger.dribble "Querying node for energy resulted in: ~a." energy)
-	    energy))
+				(let ((energy (> (revolver.map::energy (node creature)) 0)))
+				  (rlogger.dribble "Querying node for energy resulted in: ~a." energy)
+				  energy))
  
 	(costly-cr-env-function dna:asexually-reproduce ()
-          (asexually-reproduce creature)
-	  T)
-      ))
+				(asexually-reproduce creature)
+				T)
+	))
     env))
 
 
@@ -112,24 +112,24 @@ of higher arity."
   (with-slots (max-energy mutation-rate value-mutation-rate dna mutation-depth)
       golem
     (let ((cr (make-instance 'creature
-		   :max-energy (maybe-mutate-value max-energy
-					       mutation-rate value-mutation-rate )
-		   :energy (energy golem) 
-		   :mutation-rate (maybe-mutate-value mutation-rate
-						      mutation-rate value-mutation-rate)
-		   :value-mutation-rate (maybe-mutate-value value-mutation-rate
-							    mutation-rate value-mutation-rate)
-		   :mutation-depth (maybe-mutate-value mutation-depth
-						       mutation-rate value-mutation-rate)
+			     :max-energy (maybe-mutate-value max-energy
+							     mutation-rate value-mutation-rate )
+			     :energy (energy golem) 
+			     :mutation-rate (maybe-mutate-value mutation-rate
+								mutation-rate value-mutation-rate)
+			     :value-mutation-rate (maybe-mutate-value value-mutation-rate
+								      mutation-rate value-mutation-rate)
+			     :mutation-depth (maybe-mutate-value mutation-depth
+								 mutation-rate value-mutation-rate)
 		   
-		   :dna (maybe-mutate-tree (copy-tree dna) mutation-rate mutation-depth)
-		   :world (world golem)
-		   :node (node golem)
-		   )))
+			     :dna (maybe-mutate-tree (copy-tree dna) mutation-rate mutation-depth)
+			     :world (world golem)
+			     :node (node golem)
+			     )))
       (schedule #'(lambda ()
 		    (rlogger.dribble "We are about to animate a NEW CREATURE! ~a" cr)
 		    (animate cr))
 		(world golem)
 		(or (gethash 'dna:asexually-reproduce *function-time-cost-hash*)
 		    1)
-		    ))))
+		))))

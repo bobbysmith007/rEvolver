@@ -39,8 +39,8 @@
 
 (defmethod die ((creature creature))
   (rlogger.info "[~a] Creature died: ~a"
-		  (tick-number (world creature))
-		  creature)
+		(tick-number (world creature))
+		creature)
   (when (node creature)
     ;;the creature 'decays' returning energy to the system
     (add-energy (node creature) (energy creature))
@@ -59,7 +59,7 @@
 		   creature
 		   error)
   (die creature)
-  ;(escape (slot-value error 'original-error))
+					;(escape (slot-value error 'original-error))
   )
 
 (defmethod use-energy ((creature creature) (amount function))
