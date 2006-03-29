@@ -1,22 +1,24 @@
 (in-package :rEvolver)
 
 ;;(declaim (optimize (debug 3)))
-(defparameter +beta-reduction-cost+ 1)
+
 (defclass creature ()
   (
-   (mutation-depth :accessor mutation-depth :initarg :mutation-depth :initform generator::*mutation-depth*)
-   (mutation-rate :accessor mutation-rate :initarg :mutation-rate :initform generator::*mutation-rate*)
-   (value-mutation-rate :accessor value-mutation-rate :initarg :value-mutation-rate :initform generator::*value-mutation-rate* )
+   (mutation-depth :accessor mutation-depth :initarg :mutation-depth
+		   :initform (base-mutation-depth *simulation*))
+   (mutation-rate :accessor mutation-rate :initarg :mutation-rate
+		  :initform (base-mutation-rate *simulation*))
+   (value-mutation-rate :accessor value-mutation-rate :initarg :value-mutation-rate
+			:initform (base-value-mutation-rate *simulation*) )
    (max-energy :accessor max-energy :initform 0 :initarg :max-energy)
    
    (energy :accessor energy :initform 0 :initarg :energy)
    (node :accessor node )
    (world :reader world :initarg :world)
-   (dna :accessor dna-of :initarg :dna :initform (generate-tree 3))
+   (dna :accessor dna-of :initarg :dna :initform (generate-tree (depth-bound *simulation*)))
    (current-continuation :initform nil)
    (animation-count :accessor animation-count :initform 0)
    ))
-
 (defmethod initialize-instance :after ((creature creature) &rest slots
 				       &key node world max-energy energy
 				       &allow-other-keys)
@@ -31,6 +33,26 @@
 
 
 (defgeneric asexually-reproduce (golem))
+(defgeneric clone-with-mutation (golem))
+
+(defmethod clone-with-mutation ((golem creature))
+  (with-slots (dna max-energy mutation-rate mutation-depth value-mutation-rate) golem
+    (make-instance
+     'creature
+     :max-energy (maybe-mutate-value max-energy
+				     mutation-rate value-mutation-rate )
+     :energy (energy golem) 
+     :mutation-rate (maybe-mutate-value mutation-rate
+					mutation-rate value-mutation-rate)
+     :value-mutation-rate (maybe-mutate-value value-mutation-rate
+					      mutation-rate value-mutation-rate)
+     :mutation-depth (maybe-mutate-value mutation-depth
+					 mutation-rate value-mutation-rate)
+     
+     :dna (maybe-mutate-tree (copy-tree dna) mutation-rate mutation-depth)
+     :world (world golem)
+     :node (node golem)
+     )))
 
 (defmethod alivep ((creature creature))
   (and (world creature)
@@ -43,7 +65,8 @@
 		creature)
   (when (node creature)
     ;;the creature 'decays' returning energy to the system
-    (add-energy (node creature) (energy creature))
+    (when (< 0 (energy creature))
+      (add-energy (node creature) (energy creature)))
     (remove-creature creature (world creature))
     (remove-creature creature (node creature)))
   (setf (energy creature) 0
@@ -62,6 +85,7 @@
 					;(escape (slot-value error 'original-error))
   )
 
+(defmethod use-energy ((creature creature) (amount (eql nil))) ())
 (defmethod use-energy ((creature creature) (amount function))
   (use-energy creature (funcall amount (energy creature))))
 
@@ -116,7 +140,7 @@
 		(funcall (make-interpreter (dna-of creature)
 					   (creature-environment creature)
 					   #'(lambda ()
-					       (use-energy creature +beta-reduction-cost+))))))))
+					       (use-energy creature (beta-reduction-cost *simulation*)))))))))
 
 	(if rv
 	    (rlogger.dribble "[~a] Creature animated successfully: ~a"

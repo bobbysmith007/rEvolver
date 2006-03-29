@@ -23,3 +23,4 @@
 
 (defparameter revolver:Creature-dna nil)
 
+(defvar *simulation* ())

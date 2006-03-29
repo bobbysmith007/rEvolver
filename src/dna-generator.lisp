@@ -1,18 +1,8 @@
-(in-package :generator)
+(in-package :rEvolver)
 
 (deflogger logger ()
   :level +error+
   :appender (make-instance 'verbose-stream-log-appender :stream t))
-
-(defvar *depth-bound* 10
-  "the depth at which tree generation terminates")
-(defvar *left-chance* *depth-bound* )
-(defvar *right-chance* *depth-bound* )
-(defvar *stop-chance* *depth-bound* )
-(defparameter *mutation-rate* .01)
-(defparameter *value-mutation-rate* .01)
-(defparameter *mutation-depth* (/ *depth-bound* 2))
-
 
 (defun process-grammar-definition (grammar)
   "Removes the arrows and makes them nice nested a-lists.
@@ -118,7 +108,7 @@ TODO: This should probably actually make some sort of struct rather than redicul
 ;(depth-first-expression-replace '(gamma (gamma cons ?expression) ?expression) '(?Expression ?Expression) '((a) (b)))
 
 
-(defun generate-tree (&optional (current-depth *depth-bound*)
+(defun generate-tree (&optional (current-depth (depth-bound *simulation*))
 				(processed-grammar revolver:creature-dna)
 				(rewrite-name '?Start)
 				(symbol-table nil))
@@ -155,15 +145,16 @@ TODO: This should probably actually make some sort of struct rather than redicul
       ))
 
 (defun make-path-decision ( tree )
-  "returns the location of the replace ment (:root 0 :left 1 :right 2)"
+  "returns the location of the replacement (:root 0 :left 1 :right 2)"
+  (let ((lc (left-branch-chance *simulation*))
+	(rc (right-branch-chance *simulation*))
+	(sc (stop-chance *simulation*)))
   (if (atom tree) 0
-      (let* ((sum (+ *left-chance* *right-chance* *stop-chance*))
+      (let* ((sum (+ lc rc sc))
 	     (rand (random (* 1.0 sum))))
-;	(format T "sum: ~a - rand: ~a  ~a  ~a  ~a~%" sum rand  *left-chance* *right-chance* *stop-chance*)
-	(cond ((< 0 rand *left-chance*)  1)
-	      ((< *left-chance* rand (+ *left-chance* *right-chance*))
-	       2)
-	      (T 0)))))
+	(cond ((< 0 rand lc)  1)
+	      ((< lc rand (+ lc rc)) 2)
+	      (T 0))))))
 
 (defun replace-random-subtree (tree replacement-tree)
   "Replaces a random (sub)tree with the replacement-tree"
@@ -182,8 +173,8 @@ TODO: This should probably actually make some sort of struct rather than redicul
 		   ))))
       (rec-replace-random-subtree tree)))
 
-(defun maybe-mutate-tree (tree &optional (mutation-rate *mutation-rate*)
-			       (mutation-depth *mutation-depth*))
+(defun maybe-mutate-tree (tree &optional (mutation-rate (mutation-rate *simulation*))
+			       (mutation-depth (mutation-depth *simulation*)))
   "Returns either a new, mutated tree or returns the original tree.
    The second return val is whether or not we mutated."
   (let ((maybe (random 1.0)))
@@ -194,8 +185,8 @@ TODO: This should probably actually make some sort of struct rather than redicul
 		T))
     ))
 
-(defun maybe-mutate-value (val &optional (mutation-rate *mutation-rate*)
-			       (value-mutation-rate  *value-mutation-rate*))
+(defun maybe-mutate-value (val &optional (mutation-rate (mutation-rate *simulation*))
+			       (value-mutation-rate  (value-mutation-rate *simulation*)))
   "Returns either the old value, or a new mutated value and whether or not it was mutated"
   (let ((maybe (random 1.0)))
     (if (not (< maybe mutation-rate))

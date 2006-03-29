@@ -1,9 +1,7 @@
 (in-package :rEvolver)
 
 ;;(declaim (optimize (debug 3)))
-(defvar *function-energy-cost-hash* (make-hash-table ))
-(defvar *function-time-cost-hash* (make-hash-table ))
-(defvar *default-energy-cost* nil)
+
 
 (defmacro curry (args &body body)
   "Turn a function of arity n into max(arity, 1) functions.
@@ -44,16 +42,10 @@ of higher arity."
 		'(dna:eof dna:node dna:function dna:list dna:atom dna:number)))
       env)))
 
-(defun apply-energy-costs (name creature)
-  "Based on operation name, have the creature use the appropriate energy."
-  (multiple-value-bind (val in-hash) (gethash name *function-energy-cost-hash*)
-    (when in-hash
-      (use-energy creature val))))
-
 (defun apply-time-costs (name creature continuation cont-arg)
   "Based on operation name, continue the creature at the appropriate-time."
-  (multiple-value-bind (val in-hash) (gethash name *function-time-cost-hash*)
-    (if  in-hash
+  (let ((val (function-time-cost name *simulation*)) )
+    (if  (and val (> val 0))
 	 (reschedule creature
 		     (lambda ()
 		       (funcall continuation cont-arg))
@@ -66,14 +58,14 @@ of higher arity."
 ;; of an argument, we need to treat them as such.
 (defmethod creature-environment ((creature creature))
   (let ((env (make-creature-base-lisp-environment)))
-    (macrolet ((costly-cr-env-function (name args cont-arg &body body)
+    (macrolet ((costly-cr-env-function (name args &body body)
 		 (with-unique-names (k)
 		   `(pushenv ',name
 		     (cr-env-function ,args
 		       (rlogger.dribble "Starting: ~a" ',name)
 		       (interrupt-interpreter/cc
 			(lambda (,k)
-			  (apply-energy-costs ',name creature)
+			  (use-energy creature (function-energy-cost ',name *simulation*))
 			  (apply-time-costs ',name creature ,k (progn ,@body)))))))))
       
       (flet ((pushenv (name fun)
@@ -91,11 +83,15 @@ of higher arity."
  
 	(costly-cr-env-function dna:feed () 
 				(with-slots (node world energy) creature
-				  (setf energy (+ energy (take-all-energy node))))
+				  (let* ((energy-gleened (take-all-energy node))
+					 (new-creature-energy (min (+ energy energy-gleened)
+								   (max-energy creature))))
+				    (setf energy new-creature-energy )
+				    (remove-energy (world creature) energy-gleened)))
 				(energy creature))
  
 	(costly-cr-env-function dna:energy? () 
-				(let ((energy (> (revolver.map::energy (node creature)) 0)))
+				(let ((energy (> (energy (node creature)) 0)))
 				  (rlogger.dribble "Querying node for energy resulted in: ~a." energy)
 				  energy))
  
@@ -111,25 +107,11 @@ of higher arity."
   (rlogger.info "WOOHOO! Reproduction! ~a " golem)
   (with-slots (max-energy mutation-rate value-mutation-rate dna mutation-depth)
       golem
-    (let ((cr (make-instance 'creature
-			     :max-energy (maybe-mutate-value max-energy
-							     mutation-rate value-mutation-rate )
-			     :energy (energy golem) 
-			     :mutation-rate (maybe-mutate-value mutation-rate
-								mutation-rate value-mutation-rate)
-			     :value-mutation-rate (maybe-mutate-value value-mutation-rate
-								      mutation-rate value-mutation-rate)
-			     :mutation-depth (maybe-mutate-value mutation-depth
-								 mutation-rate value-mutation-rate)
-		   
-			     :dna (maybe-mutate-tree (copy-tree dna) mutation-rate mutation-depth)
-			     :world (world golem)
-			     :node (node golem)
-			     )))
+    (let ((cr (clone-with-mutation golem)))
       (schedule #'(lambda ()
 		    (rlogger.dribble "We are about to animate a NEW CREATURE! ~a" cr)
 		    (animate cr))
 		(world golem)
-		(or (gethash 'dna:asexually-reproduce *function-time-cost-hash*)
+		(or (function-time-cost 'dna:asexually-reproduce *simulation*)
 		    1)
 		))))

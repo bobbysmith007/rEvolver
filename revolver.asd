@@ -16,13 +16,15 @@
   ((:module :src
     :components ((:file "packages")
 		 (:file "rEvolver" :depends-on ("packages"))
-		 (:file "map" :depends-on ("rEvolver"))
-		 (:file "interpreter" :depends-on ("rEvolver"))
-		 (:file "dna-generator" :depends-on ("rEvolver"))
+		 (:file "simulation" :depends-on ("rEvolver"))
+	 
+		 (:file "map" :depends-on ("simulation"))
+		 (:file "interpreter" :depends-on ("simulation"))
+		 (:file "dna-generator" :depends-on ("simulation"))
 		 (:file "dna" :depends-on ( "dna-generator"))
 
 		 (:file "World" :depends-on ( "map"))
 		 (:file "Creature" :depends-on ("World" "dna" "interpreter"))
 		 (:file "creature-environment" :depends-on ("Creature"))
-		 (:file "simulation" :depends-on ("World" "creature-environment")))))
+		 )))
   :depends-on (:arnesi :adwcodebase))

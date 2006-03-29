@@ -2,8 +2,8 @@
 
 ;;; A grammar specification for the DNA language
 (CL:setf revolver:Creature-DNA
-  (generator:process-grammar-definition
-   '((generator:?Start -> ((?Expression)))
+  (revolver::process-grammar-definition
+   '((revolver::?Start -> ((?Expression)))
      (?Expression ->
       (;function defintion and application
        

@@ -1,4 +1,4 @@
-(in-package :rEvolver.map)
+(in-package :rEvolver)
 
 (defclass node ()
   ((energy :initarg :energy :accessor energy :initform 0)
@@ -6,6 +6,18 @@
    (rEvolver-map :initarg :rEvolver-map :reader rEvolver-map))
   (:documentation "A location on a map."))
 
+(defclass rEvolver-map ()
+  ()
+  (:documentation "Generic map interface."))
+
+(defclass 2d-array-map (rEvolver-map)
+  ((x-size :initarg :x-size :accessor x-size)
+   (y-size :initarg :y-size :accessor y-size)
+   (array)))
+
+(defclass 2d-node (node)
+  ((x :initarg :x :reader x)
+   (y :initarg :y :reader y)))
 
 ;(defmethod print-object ((location location) stream)
 ;  (format stream "<#Location (~a,~a) with Energy(~a) Creature(~a) >"
@@ -14,15 +26,8 @@
 ;	  (energy location)
 ;	  (length (creatures location))))
 
-(defclass rEvolver-map ()
-  ()
-  (:documentation "Generic map interface."))
-
 (defgeneric random-node (map)
   (:documentation "Get a random node on a map."))
-
-(defgeneric drop-random-energy (map frequency energy-to-add-max/spot)
-  (:documentation "Drop a bunch of energy on a map"))
 
 (defgeneric adjacent-nodes-of (node)
   (:documentation "What nodes are adjacent to the given node."))
@@ -38,24 +43,21 @@
 
 (defgeneric add-energy (node amount)
   (:method ((node node) amount)
-	   (setf (energy node) (+ (energy node) amount))))
-
-
-(defclass 2d-array-map (rEvolver-map)
-  ((x-size :initarg :x-size :accessor x-size)
-   (y-size :initarg :y-size :accessor y-size)
-   (array)))
+	   "This function will return the energy that it actually added to the node (in case we try to exceed the max)"
+	   (let* ((new-energy (+ (energy node) amount))
+		  (new-node-energy (min new-energy
+					(node-energy-max *simulation*)))
+		  (added-energy
+		   (- new-node-energy (energy node))))
+	     (setf (energy node)
+		   new-node-energy)
+	     added-energy)))
 
 (defmethod initialize-instance :after ((m 2d-array-map) &key)
   (with-slots (array x-size y-size) m
     (setf array (make-array (list x-size y-size)
 			    :initial-element nil
 			    :adjustable nil))))
-
-
-(defclass 2d-node (node)
-  ((x :initarg :x :reader x)
-   (y :initarg :y :reader y)))
 
 (defgeneric find-node-xy (map x y)
   (:method  ((m 2d-array-map) x y)
@@ -70,13 +72,6 @@
 
 (defmethod random-node ((m 2d-array-map))
   (find-node-xy m (random (x-size m)) (random (y-size m))))
-
-(defmethod drop-random-energy ((m 2d-array-map) frequency energy-to-add-max/spot )
-  (dotimes (n (* frequency (x-size m) (y-size m)))
-	(let ((l (random-node m))
-	      (e (random energy-to-add-max/spot)))
-	  (add-energy l e)))
-  m)
 
 
 (defmethod adjacent-nodes-of ((node 2d-node))
