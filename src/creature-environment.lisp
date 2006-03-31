@@ -87,7 +87,7 @@ of higher arity."
 				    (setf energy new-creature-energy )
 				    (remove-energy (world creature) energy-gleened)))
 				(energy creature))
- 
+	
 	(costly-cr-env-function dna:energy? () 
 				(let ((energy (> (energy (node creature)) 0)))
 				  (rlogger.dribble "Querying node for energy resulted in: ~a." energy)

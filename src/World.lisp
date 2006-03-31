@@ -38,7 +38,7 @@
 
 (defmethod schedule (action (w world) ticks-from-now)
   (let ((tick (+ ticks-from-now (tick-number w))))
-    (rlogger.dribble "Scheduling an action in the world. Tick: ~a~%" tick)
+    (rlogger.dribble "[~a] Scheduling an action in the world: ~a." (tick-number w) tick)
   
     (setf (queue w) (meld (queue w)
 			  (make-instance 'leftist-tree-node

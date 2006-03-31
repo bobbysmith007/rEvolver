@@ -47,6 +47,10 @@
    		    The weight for the root")
 
    ;;Creature Variables
+   (sleep-time
+    :accessor sleep-time :initarg :sleep-time :initform 2
+    :documentation "How long to sleep after completing but before re-animating.")
+   
    (base-mutation-rate
     :accessor base-mutation-rate :initarg :base-mutation-rate :initform .01
     :documentation "What is the default 'Should I Mutate?' rate")

@@ -76,7 +76,7 @@
 ;(define-condition has-the-pox ( error)
 ;  ((original-error :initarg :original-error :accessor original-error)))
 
-(defmethod got-the-pox ((creature creature) (error error))
+(defmethod got-the-pox ((creature creature) error)
   (rlogger.dribble "[~a] ~a got the pox: ~a"
 		   (tick-number (world creature))
 		   creature
@@ -118,35 +118,36 @@
   (schedule (lambda () (animate creature)) (world creature) ticks))
 
 (defmethod animate ((creature creature))
-  (handler-bind ((cse:code-error
-		  #'(lambda (er)
-		      (got-the-pox creature er)
-		      (return-from animate nil)))
-		 (cse:escape
-		  #'(lambda (esc)
-		      (return-from animate (cse:reason esc)))))
-    (with-slots (current-continuation) creature
-      
-      (let ((rv
-	     (cond
-	       (current-continuation
-		(incf (animation-count creature))
-		(rlogger.dribble "Continuing previously suspended creature: ~a"
-				 current-continuation)
-		(funcall current-continuation))
-	       ((alivep creature)
-		(incf (animation-count creature))
-		(rlogger.dribble "Starting the creature anew.")
-		(funcall (make-interpreter (dna-of creature)
-					   (creature-environment creature)
-					   #'(lambda ()
-					       (use-energy creature (beta-reduction-cost *simulation*)))))))))
-
-	(if rv
-	    (rlogger.dribble "[~a] Creature animated successfully: ~a"
+  (unless (alivep creature)
+    (error "[~a] Apparently we tried to animate a dead creature or something. ~a"
+	   (tick-number (world creature))
+	   creature))
+  
+  (with-slots (current-continuation) creature
+    (handler-bind ((cse:code-error
+		    #'(lambda (er)
+			(got-the-pox creature er)
+			(return-from animate nil)))
+		   (cse:escape
+		    #'(lambda (esc) ;;the continuation should already have been set.
+			(return-from animate (cse:reason esc)))))
+      (incf (animation-count creature))
+      (let* ((fn (or current-continuation
+		    (make-interpreter (dna-of creature)
+				      (creature-environment creature)
+				      #'(lambda ()
+					  (use-energy creature
+						      (beta-reduction-cost *simulation*))))))
+	     (rv (funcall fn)))
+	(if (eq 'dna:eof rv) 
+	    (progn (rlogger.dribble "[~a] Creature succesfully reached end of dna. Scheduling reanimation."
+				    (tick-number (world creature)))
+		   (schedule (lambda () (animate creature)) (world creature) (sleep-time *simulation*)))
+	    
+	    (progn (rlogger.dribble "[~a] Creature appeared to finish, but failed to return eof: ~a"
 			     (tick-number (world creature))
 			     rv)
-	    (rlogger.dribble "[~a] Creature is dead or something."))
+		   (got-the-pox creature "Failed to find EOF")))
 	))))
 
 
