@@ -54,8 +54,6 @@ of higher arity."
   name)
 
 
-;;TODO: The continuations given to us by the interpreter are functions
-;; of an argument, we need to treat them as such.
 (defmethod creature-environment ((creature creature))
   (let ((env (make-creature-base-lisp-environment)))
     (macrolet ((costly-cr-env-function (name args &body body)
