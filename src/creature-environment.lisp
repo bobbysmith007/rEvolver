@@ -81,7 +81,7 @@ of higher arity."
  
 	(costly-cr-env-function dna:feed () 
 				(with-slots (node world energy) creature
-				  (let* ((energy-gleened (take-all-energy node))
+				  (let* ((energy-gleened (take-energy node))
 					 (new-creature-energy (min (+ energy energy-gleened)
 								   (max-energy creature))))
 				    (setf energy new-creature-energy )

@@ -35,11 +35,11 @@
 (defgeneric adjacent-p (node1 node2)
   (:documentation "Are two nodes adjacent. I.E. is there an arc from node1 to node2."))
 
-(defgeneric take-all-energy (node)
+(defgeneric take-energy (node &optional amount)
   (:documentation "Remove all the energy from a node, returning how much there was.")
-  (:method ((node node) )
-	   (prog1 (energy node)
-	     (setf (energy node) 0))))
+  (:method ((node node) &optional (amount (energy node)))
+	   (let ((amount (min (energy node) amount)))
+	     (setf (energy node) (- (energy node) amount)))))
 
 (defgeneric add-energy (node amount)
   (:method ((node node) amount)
