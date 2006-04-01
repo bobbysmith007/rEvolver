@@ -18,10 +18,10 @@
 	       :documentation "The size of one side of the map")
    ;;Energy drop details
    (node-energy-frequency
-    :accessor node-energy-frequency :initarg :node-energy-frequency :initform .2
+    :accessor node-energy-frequency :initarg :node-energy-frequency :initform .1
     :documentation "What percentage of nodes should get energy dropped on them.")
    (node-energy-max
-    :accessor node-energy-max :initarg :node-energy-max :initform 70
+    :accessor node-energy-max :initarg :node-energy-max :initform 75
     :documentation "(random node-energy-max) will be dropped on nodes.")
    (drop-energy-turns
     :accessor drop-energy-turns :initarg :drop-energy-turns :initform 10
@@ -34,14 +34,14 @@
    
    ;;;;generation specs
    (depth-bound
-    :accessor depth-bound :initarg :depth-bound :initform 8
+    :accessor depth-bound :initarg :depth-bound :initform 12
     :documentation "The depth to force rewriting termination")
    (left-branch-chance
-    :accessor left-branch-chance :initarg :left-branch-chance :initform 8
+    :accessor left-branch-chance :initarg :left-branch-chance :initform 10
     :documentation "The stochaistic amount to use when determining a random subtree
 		    The weight for the left branch")
    (right-branch-chance
-    :accessor right-branch-chance :initarg :right-branch-chance :initform 8
+    :accessor right-branch-chance :initarg :right-branch-chance :initform 10
     :documentation "The stochaistic amount to use when determining a random subtree
    		    The weight for the left branch")
    (stop-chance
@@ -53,16 +53,19 @@
    (sleep-time
     :accessor sleep-time :initarg :sleep-time :initform 2
     :documentation "How long to sleep after completing but before re-animating.")
+   (rerun-cost
+    :accessor rerun-cost :initarg :rerun-cost :initform (lambda (val)  (* 1.0d0 (1+ (/ val 10))))
+    :documentation "The amount of energy that rerunning the program takes")
    
    (base-mutation-rate
-    :accessor base-mutation-rate :initarg :base-mutation-rate :initform .01
+    :accessor base-mutation-rate :initarg :base-mutation-rate :initform .05
     :documentation "What is the default 'Should I Mutate?' rate")
    (base-value-mutation-rate
-    :accessor base-value-mutation-rate :initarg :base-value-mutation-rate :initform .01
+    :accessor base-value-mutation-rate :initarg :base-value-mutation-rate :initform .05
     :documentation
     "What is the default max amount of change in a value that is mutated")
    (base-mutation-depth
-    :accessor base-mutation-depth :initarg :base-mutation-depth :initform 4
+    :accessor base-mutation-depth :initarg :base-mutation-depth :initform 6
     :documentation "The depth bound of newly generated sub-trees")
    (default-energy-cost
     :accessor default-energy-cost :initarg :default-energy-cost  :initform 1
@@ -76,7 +79,7 @@
     :reader function-energy-costs
     :initform (list (cons 'dna:move
 			  (lambda (energy) (* 1.0d0 (/ energy 10))))
-		    '(dna:feed . 3)
+		    '(dna:feed . 5)
 		    '(dna:energy? . 1)
 		    (cons 'dna:asexually-reproduce
 			  (lambda (energy) (* 1.0d0 (/ energy 2))))))
@@ -84,7 +87,7 @@
    (function-time-costs
     :initarg :function-time-costs
     :reader function-time-costs
-    :initform '((dna:move . 10)
+    :initform '((dna:move . 5)
 		(dna:feed . 3)
 		(dna:energy? . 2)
 		(dna:asexually-reproduce . 5)))

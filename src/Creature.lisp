@@ -34,15 +34,14 @@
 
 
 (defgeneric asexually-reproduce (golem))
-(defgeneric clone-with-mutation (golem))
 
-(defmethod clone-with-mutation ((golem creature))
+(defmethod clone-with-mutation ((golem creature) &key (energy #'energy) (world nil) (node nil))
   (with-slots (dna max-energy mutation-rate mutation-depth value-mutation-rate) golem
     (make-instance
      'creature
      :max-energy (maybe-mutate-value max-energy
 				     mutation-rate value-mutation-rate )
-     :energy (energy golem) 
+     :energy (funcall energy golem) 
      :mutation-rate (maybe-mutate-value mutation-rate
 					mutation-rate value-mutation-rate)
      :value-mutation-rate (maybe-mutate-value value-mutation-rate
@@ -51,8 +50,8 @@
 					 mutation-rate value-mutation-rate)
      
      :dna (maybe-mutate-tree (copy-tree dna) mutation-rate mutation-depth)
-     :world (world golem)
-     :node (node golem)
+     :world (or world (world golem))
+     :node (or node (node golem))
      )))
 
 (defmethod alivep ((creature creature))
@@ -61,7 +60,7 @@
        (> (energy creature) 0)))
 
 (defmethod die ((creature creature))
-  (rlogger.info "[~a] Creature died: ~a"
+  (rlogger.info "[~a] ~a died."
 		(tick-number (world creature))
 		creature)
   (when (node creature)
@@ -91,7 +90,7 @@
   (use-energy creature (funcall amount (energy creature))))
 
 (defmethod use-energy ((creature creature) (amount number))
-  (when (>= 0 (decf (energy creature) amount))
+  (when (>= 1 (decf (energy creature) amount))
     (die creature)
     (signal 'cse:escape :reason 'died-from-exhaustion)))
 
@@ -153,6 +152,7 @@
 	    (progn (rlogger.dribble "[~a] ~a succesfully reached end of dna. Scheduling reanimation."
 				    (tick-number (world creature))
 				    creature)
+		   (use-energy  creature (rerun-cost *simulation*))
 		   (schedule (lambda ()
 			       (rlogger.dribble "[~a] About to reanimate ~a that was at the end of his dna."
 				    (tick-number (world creature))
@@ -170,6 +170,6 @@
 
 
 (defmethod print-object ((cr creature) stream)
-  (format stream "#<(Creature :Id ~a :Energy ~a AC:~A)>"
+  (format stream "#<(Creature :Id ~a :Energy ~a :AC ~A)>"
 	  (unique-id cr) (energy cr) (animation-count cr)))
 

@@ -75,13 +75,16 @@ of higher arity."
 	       (setf env (append-to-environment name fun env))))
  
 	(costly-cr-env-function dna:move (node) 
-				(let ((previous-node (node creature)))
+				(let* ((previous-node (node creature))
+				      ;;if the creature didn't specify then pick a random direction.
+				      (new-loc (or (and node
+							(subtypep (type-of node) 'node )
+							node) ;; so that the  correct value is returned
+						   (random-elt
+						    (adjacent-nodes-of previous-node)))))
 				  (remove-creature creature previous-node)
-				  ;;if the creature didn't specify then pick a random direction.
-				  (add-creature creature
-						(or node
-						    (random-elt (adjacent-nodes-of
-								 previous-node))))
+
+				  (add-creature creature new-loc)
 				  (node creature)))
  
 	(costly-cr-env-function dna:feed () 

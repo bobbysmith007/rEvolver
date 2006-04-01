@@ -59,6 +59,7 @@
 				:value-mutation-rate (base-value-mutation-rate *simulation*)
 				:mutation-depth (base-mutation-depth *simulation*)
 
+				;;DNA to move twice
 				;;:dna '(dna:gamma (dna:gamma dna:cons (dna:gamma dna:move nil)) (dna:gamma dna:move nil))
 				)
 	do
@@ -69,7 +70,10 @@
 
 (defmethod advance-time ((world world))
   "Advance a world a tick by advancing any creatures for that tick."
-  (rlogger.info "Advancing the world from tick: ~a~%" (tick-number world))
+  (rlogger.info "Advancing the world from tick: ~a creature-count: ~a free-energy: ~a~%"
+		(tick-number world)
+		(creature-count world)
+		(unconsumed-energy-in-the-world world))
   (when (= (creature-count world) 0)
     (incf (population-infusions world))
     (populate-world world))
