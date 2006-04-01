@@ -3,7 +3,8 @@
 ;;(declaim (optimize (debug 3)))
 
 (defclass creature ()
-  (
+  ( 
+   (unique-id :reader unique-id :initform (next-id *simulation*))
    (mutation-depth :accessor mutation-depth :initarg :mutation-depth
 		   :initform (base-mutation-depth *simulation*))
    (mutation-rate :accessor mutation-rate :initarg :mutation-rate
@@ -113,13 +114,21 @@
     (setf creature-count (1- creature-count)))
   )
 
-(defmethod reschedule ((creature creature) continuation ticks)
+(defmethod reschedule ((creature creature) continuation ticks &optional (reason nil))
+  (unless (alivep creature)
+    (break "Why are you trying to reschedule a dead creature:~a?" creature))
+  
   (setf (slot-value creature 'current-continuation) continuation)
-  (schedule (lambda () (animate creature)) (world creature) ticks))
+  (schedule (lambda ()
+	      (unless (alivep creature)
+		(break "The creature died between when it was rescheduled (for: ~a) and when the continuation was called:~a " reason creature))
+	      (animate creature))
+	    (world creature)
+	    ticks))
 
 (defmethod animate ((creature creature))
   (unless (alivep creature)
-    (error "[~a] Apparently we tried to animate a dead creature or something. ~a"
+    (break "[~a] Apparently we tried to animate a dead creature or something. ~a"
 	   (tick-number (world creature))
 	   creature))
   
@@ -130,6 +139,7 @@
 			(return-from animate nil)))
 		   (cse:escape
 		    #'(lambda (esc) ;;the continuation should already have been set.
+			(rlogger.dribble "~a escaped because: ~a" creature (cse:reason esc) )
 			(return-from animate (cse:reason esc)))))
       (incf (animation-count creature))
       (let* ((fn (or current-continuation
@@ -140,9 +150,16 @@
 						      (beta-reduction-cost *simulation*))))))
 	     (rv (funcall fn)))
 	(if (eq 'dna:eof rv) 
-	    (progn (rlogger.dribble "[~a] Creature succesfully reached end of dna. Scheduling reanimation."
-				    (tick-number (world creature)))
-		   (schedule (lambda () (animate creature)) (world creature) (sleep-time *simulation*)))
+	    (progn (rlogger.dribble "[~a] ~a succesfully reached end of dna. Scheduling reanimation."
+				    (tick-number (world creature))
+				    creature)
+		   (schedule (lambda ()
+			       (rlogger.dribble "[~a] About to reanimate ~a that was at the end of his dna."
+				    (tick-number (world creature))
+				    creature)
+			       (animate creature))
+			     (world creature)
+			     (sleep-time *simulation*)))
 	    
 	    (progn (rlogger.dribble "[~a] Creature appeared to finish, but failed to return eof: ~a"
 			     (tick-number (world creature))
@@ -153,5 +170,6 @@
 
 
 (defmethod print-object ((cr creature) stream)
-  (format stream "#<(Creature :Energy ~a AC:~A)>" (energy cr) (animation-count cr)))
+  (format stream "#<(Creature :Id ~a :Energy ~a AC:~A)>"
+	  (unique-id cr) (energy cr) (animation-count cr)))
 

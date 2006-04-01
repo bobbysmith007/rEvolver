@@ -22,5 +22,3 @@
   (:documentation "Add a creature to a world."))
 
 (defparameter revolver:Creature-dna nil)
-
-(defvar *simulation* ())

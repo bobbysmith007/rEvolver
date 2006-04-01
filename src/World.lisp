@@ -58,6 +58,8 @@
 				:mutation-rate (base-mutation-rate *simulation*)
 				:value-mutation-rate (base-value-mutation-rate *simulation*)
 				:mutation-depth (base-mutation-depth *simulation*)
+
+				;;:dna '(dna:gamma (dna:gamma dna:cons (dna:gamma dna:move nil)) (dna:gamma dna:move nil))
 				)
 	do
 	(let ((cr cr))

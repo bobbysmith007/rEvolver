@@ -1,8 +1,11 @@
 (in-package :rEvolver)
+(defvar *simulation*)
 (defvar *golem*)
+(defvar *world*)
 (defclass simulation ()
   (
    ;;;; WORLD BITS
+   (%next-id :initform (make-counter))
    (world :accessor world :initarg :world
 	  :documentation "Our World.  The instance will be created in shared-initialize
                           using other values in our simulation.")
@@ -95,3 +98,6 @@
   (cdr (assoc fn-name (function-energy-costs sim) :test #'eq)))
 
 (setf *simulation* (make-instance 'simulation))
+
+(defmethod next-id ((sim simulation))
+  (funcall (slot-value sim '%next-id)))

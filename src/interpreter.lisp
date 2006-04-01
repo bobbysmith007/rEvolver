@@ -162,7 +162,13 @@ up to whoever originally invoked the interpreter."
 				    :environment (frame-environment frame)))))
 		   
 		      (T (error "Unkwown operation on the control ~a" op))))))))
-    (escape (esc) (return-from start-CSE-machine (reason esc)))))
+    (escape (esc)
+	    ;(return-from start-CSE-machine (reason esc))
+	    ;;
+	    ;; Currently we dont want to handle anything here jsut keep going
+	    ;; because the interpretter should only ever return the final output
+	    (signal esc)
+	    )))
 
 
 

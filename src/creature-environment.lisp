@@ -48,10 +48,13 @@ of higher arity."
     (if  (and val (> val 0))
 	 (reschedule creature
 		     (lambda ()
+		       (rlogger.dribble "About to resume from ~a with ~a as the value." name cont-arg )
 		       (funcall continuation cont-arg))
-		     val)
-	 (funcall continuation cont-arg)))
-  name)
+		     val name)
+	 
+	 (funcall continuation cont-arg))
+    (values name val))
+  )
 
 
 (defmethod creature-environment ((creature creature))
@@ -64,7 +67,9 @@ of higher arity."
 		       (interrupt-interpreter/cc
 			(lambda (,k)
 			  (use-energy creature (function-energy-cost ',name *simulation*))
-			  (apply-time-costs ',name creature ,k (progn ,@body)))))))))
+			  (apply-time-costs ',name creature ,k (progn ,@body))))
+		       (error "I dont think we should ever get here if we are properly interrupting")
+		       )))))
       
       (flet ((pushenv (name fun)
 	       (setf env (append-to-environment name fun env))))
