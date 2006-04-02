@@ -59,6 +59,21 @@
 			    :initial-element nil
 			    :adjustable nil))))
 
+(defmethod map-nodes (fn (map 2d-array-map))
+  (let ((list ()))
+    (loop for x from 0 to (x-size map)
+	  do (loop for y from 0 to (y-size map)
+		   do (push (funcall fn (find-node-xy map x y)) list)))
+    (nreverse list)
+    )
+  )
+
+(defmethod creatures ((map 2d-array-map))
+  (kmrcl:flatten (map-nodes (lambda (node)
+			      (creatures-of node))
+			    map)))
+
+
 (defgeneric find-node-xy (map x y)
   (:method  ((m 2d-array-map) x y)
 	    (with-slots (x-size y-size array) m

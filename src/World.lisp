@@ -14,6 +14,7 @@
    (creature-count :initform 0 :accessor creature-count)
    (unconsumed-energy-in-the-world :initform 0 :accessor unconsumed-energy-in-the-world)
    (population-infusions :initform 0 :accessor population-infusions)
+   (repopulation-infusions :initform 0 :accessor repopulation-infusions)
    ))
 (defmethod process-queue-for-tick ((world world))
   (with-accessors ((tick tick-number) (queue queue)) world
@@ -50,6 +51,7 @@
     (random-node m)))
 
 (defmethod populate-world ((w World))
+  (incf (population-infusions w))
   (loop for i from 1 to (initial-creature-count *simulation*)
 	for cr = (make-instance 'Creature
 				:energy (init-creature-max-energy *simulation*)
@@ -68,15 +70,36 @@
 	  (schedule (lambda () (animate cr)) w 1))
 	collect cr))
 
+(defmethod creatures ((w world))
+  (creatures (world-map w)))
+
+(defmethod repopulate-world ((w World))
+  (incf (repopulation-infusions w))
+  (let* ((cl (creatures w))
+	 (creatures (make-array (length cl) :initial-contents cl))
+	 (init (creature-count w)))
+    
+    (loop for i from init to (initial-creature-count *simulation*)
+	  for cr = (random-elt creatures)
+	  for new-cr = (clone-with-mutation cr :energy #'max-energy)
+	  do
+	  (let ((new-cr new-cr))
+	    ;;	  (setf *golem* new-cr)
+	    (schedule (lambda () (animate new-cr)) w 1))
+	  collect new-cr)))
+
 (defmethod advance-time ((world world))
   "Advance a world a tick by advancing any creatures for that tick."
   (rlogger.info "Advancing the world from tick: ~a creature-count: ~a free-energy: ~a~%"
 		(tick-number world)
 		(creature-count world)
 		(unconsumed-energy-in-the-world world))
-  (when (= (creature-count world) 0)
-    (incf (population-infusions world))
-    (populate-world world))
+  (when (<= (creature-count world) (* (initial-creature-count *simulation*) .10))
+    ;;The point here is to reward the most rugged creatures by using them as a base for the next generation
+    (if (> (creature-count world) 0)
+	(repopulate-world world)
+	(populate-world world)))
+  
   (call-next-method) ;increment tick
   (process-queue-for-tick world)
   ;;TODO: at some point having creatures automatically recycled in here.
@@ -105,7 +128,8 @@
 			   (drop-energy-turns *simulation*))
 		 ))
 	;;setup energy drops
-	(schedule #'drop-energy-and-re-add world 1))
+	(schedule #'drop-energy-and-re-add world 1)
+	(populate-world world))
       world)))
 
 (defmethod drop-random-energy ((world world) frequency energy-to-add-max/spot )

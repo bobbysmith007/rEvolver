@@ -10,11 +10,11 @@
 	  :documentation "Our World.  The instance will be created in shared-initialize
                           using other values in our simulation.")
    (initial-creature-count
-    :accessor initial-creature-count :initarg :initial-creature-count :initform 50
+    :accessor initial-creature-count :initarg :initial-creature-count :initform 2000
     :documentation
     "The world starts with this number of randomly generated tree structures" )
    
-   (world-size :accessor world-size :initarg :worldsize :initform 20
+   (world-size :accessor world-size :initarg :worldsize :initform 25
 	       :documentation "The size of one side of the map")
    ;;Energy drop details
    (node-energy-frequency

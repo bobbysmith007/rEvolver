@@ -27,4 +27,5 @@
 		 (:file "Creature" :depends-on ("World" "dna" "interpreter"))
 		 (:file "creature-environment" :depends-on ("Creature"))
 		 )))
-  :depends-on (:arnesi :adwcodebase))
+  :depends-on (:arnesi :kmrcl :adwcodebase ))
+ 
