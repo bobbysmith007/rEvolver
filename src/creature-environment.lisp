@@ -50,7 +50,9 @@ of higher arity."
     (if  (and val (> val 0))
 	 (reschedule creature
 		     (lambda ()
-		       (rlogger.dribble "About to resume from ~a with ~a as the value." name cont-arg )
+		       (rlogger.dribble "About to resume from ~a with ~a as the value."
+					name
+					cont-arg)
 		       (funcall continuation cont-arg))
 		     val name)
 	 
@@ -110,14 +112,10 @@ of higher arity."
 
 
 (defmethod asexually-reproduce ((golem creature))
-  (rlogger.info "WOOHOO! Reproduction! ~a " golem)
-  (with-slots (max-energy mutation-rate value-mutation-rate dna mutation-depth)
-      golem
-    (let ((cr (clone-with-mutation golem)))
-      (schedule #'(lambda ()
-		    (rlogger.dribble "We are about to animate a NEW CREATURE! ~a" cr)
-		    (animate cr))
-		(world golem)
-		(or (function-time-cost 'dna:asexually-reproduce *simulation*)
-		    1)
-		))))
+  (rlogger.debug "WOOHOO! Reproduction! ~a " golem)
+  ;;reducing the energy of the creature is taken care of by the costly-creature-fn.
+  (let ((cr (clone-with-mutation golem)))
+    (schedule #'(lambda ()
+		  (animate cr))
+	      (world golem)
+	      (function-time-cost 'dna:asexually-reproduce *simulation*))))

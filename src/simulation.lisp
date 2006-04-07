@@ -10,27 +10,24 @@
 	  :documentation "Our World.  The instance will be created in shared-initialize
                           using other values in our simulation.")
    (initial-creature-count
-    :accessor initial-creature-count :initarg :initial-creature-count :initform 2000
+    :accessor initial-creature-count :initarg :initial-creature-count :initform 640
     :documentation
     "The world starts with this number of randomly generated tree structures" )
    
-   (world-size :accessor world-size :initarg :worldsize :initform 25
+   (world-size :accessor world-size :initarg :worldsize :initform 32
 	       :documentation "The size of one side of the map")
    ;;Energy drop details
    (node-energy-frequency
-    :accessor node-energy-frequency :initarg :node-energy-frequency :initform .1
+    :accessor node-energy-frequency :initarg :node-energy-frequency :initform .2
     :documentation "What percentage of nodes should get energy dropped on them.")
    (node-energy-max
-    :accessor node-energy-max :initarg :node-energy-max :initform 75
+    :accessor node-energy-max :initarg :node-energy-max :initform 32
     :documentation "(random node-energy-max) will be dropped on nodes.")
    (drop-energy-turns
-    :accessor drop-energy-turns :initarg :drop-energy-turns :initform 10
+    :accessor drop-energy-turns :initarg :drop-energy-turns :initform 16
     :documentation "The period between energy drops.")
 
-   (init-creature-max-energy
-    :accessor init-creature-max-energy :initarg :init-creature-max-energy :initform 128
-    :documentation "The max energy of newly generated creatures")
-
+   
    
    ;;;;generation specs
    (depth-bound
@@ -50,11 +47,23 @@
    		    The weight for the root")
 
    ;;Creature Variables
+   (creature-minimum-energy
+    :accessor creature-minimum-energy
+    :initarg :creature-minimum-energy
+    :initform 32
+    :documentation "A lot of the costs are fractions of the current energy.
+We want to have a non-zero minimum so they can die from these functions.")
+   
+   (init-creature-max-energy
+    :accessor init-creature-max-energy :initarg :init-creature-max-energy :initform 256
+    :documentation "The max energy of newly generated creatures")
+   
    (sleep-time
     :accessor sleep-time :initarg :sleep-time :initform 2
     :documentation "How long to sleep after completing but before re-animating.")
    (rerun-cost
-    :accessor rerun-cost :initarg :rerun-cost :initform (lambda (val)  (* 1.0d0 (1+ (/ val 10))))
+    :accessor rerun-cost :initarg :rerun-cost
+    :initform (lambda (val)  (truncate (1+ (/ val 10))))
     :documentation "The amount of energy that rerunning the program takes")
    
    (base-mutation-rate
@@ -67,30 +76,35 @@
    (base-mutation-depth
     :accessor base-mutation-depth :initarg :base-mutation-depth :initform 6
     :documentation "The depth bound of newly generated sub-trees")
-   (default-energy-cost
-    :accessor default-energy-cost :initarg :default-energy-cost  :initform 1
-    :documentation "The amount of energy a function call takes")
 
+   (animation-cost
+    :accessor animation-cost :initarg :animation-cost :initform 4
+    :documentation "How much energy any call to animate should cost. This is another failsafe.")
    (beta-reduction-cost
-    :initarg :beta-reduction-cost :accessor beta-reduction-cost :initform 1
+    :initarg :beta-reduction-cost :accessor beta-reduction-cost :initform 2
     :documentation "The energy a creature uses to beta-reduce its dna")
    (function-energy-costs
     :initarg :function-energy-costs
     :reader function-energy-costs
     :initform (list (cons 'dna:move
-			  (lambda (energy) (* 1.0d0 (/ energy 10))))
-		    '(dna:feed . 5)
-		    '(dna:energy? . 1)
+			  (lambda (energy) (truncate (/ energy 8))))
+		    '(dna:feed . 16)
+		    '(dna:energy? . 4)
 		    (cons 'dna:asexually-reproduce
-			  (lambda (energy) (* 1.0d0 (/ energy 2))))))
+			  ;;each creature get's half the (original- min)
+			  ;; lost due to entropy
+			  (lambda (energy)
+			    (truncate (/ (+ energy
+					    (creature-minimum-energy *simulation*))
+					 2))))))
    
    (function-time-costs
     :initarg :function-time-costs
     :reader function-time-costs
-    :initform '((dna:move . 5)
+    :initform '((dna:move . 4)
 		(dna:feed . 3)
 		(dna:energy? . 2)
-		(dna:asexually-reproduce . 5)))
+		(dna:asexually-reproduce . 6)))
    
    ))
 

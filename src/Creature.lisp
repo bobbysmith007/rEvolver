@@ -59,10 +59,11 @@
        (node creature)
        (> (energy creature) 0)))
 
-(defmethod die ((creature creature))
-  (rlogger.info "[~a] ~a died."
-		(tick-number (world creature))
-		creature)
+(defmethod die ((creature creature) &optional reason)
+  (rlogger.debug "[~a] ~a died: ~a"
+		 (tick-number (world creature))
+		 creature
+		 reason)
   (when (node creature)
     ;;the creature 'decays' returning energy to the system
     (when (< 0 (energy creature))
@@ -71,28 +72,23 @@
     (remove-creature creature (node creature)))
   (setf (energy creature) 0
 	(slot-value creature 'current-continuation) nil)
+  (signal 'cse:escape :reason reason)
   creature)
 
 ;(define-condition has-the-pox ( error)
 ;  ((original-error :initarg :original-error :accessor original-error)))
 
 (defmethod got-the-pox ((creature creature) error)
-  (rlogger.dribble "[~a] ~a got the pox: ~a"
-		   (tick-number (world creature))
-		   creature
-		   error)
-  (die creature)
-					;(escape (slot-value error 'original-error))
-  )
+  (die creature "Got the Pox"))
 
 (defmethod use-energy ((creature creature) (amount (eql nil))) ())
 (defmethod use-energy ((creature creature) (amount function))
   (use-energy creature (funcall amount (energy creature))))
 
 (defmethod use-energy ((creature creature) (amount number))
-  (when (>= 1 (decf (energy creature) amount))
-    (die creature)
-    (signal 'cse:escape :reason 'died-from-exhaustion)))
+  (when (< (decf (energy creature) amount)
+	   (creature-minimum-energy *simulation*))
+    (die creature "Died from exhaustion.")))
 
 (defmethod add-creature ((creature creature) (node node))
   "add a creature to a node."
@@ -143,6 +139,8 @@
 					 creature
 					 (cse:reason esc) )
 			(return-from animate (cse:reason esc)))))
+      ;;any animation costs something.
+      (use-energy creature (animation-cost *simulation*))
       (incf (animation-count creature))
       (let* ((fn (or current-continuation
 		    (make-interpreter (dna-of creature)
@@ -151,19 +149,20 @@
 					  (use-energy creature
 						      (beta-reduction-cost *simulation*))))))
 	     (rv (funcall fn)))
-	(if (eq 'dna:eof rv) 
-	    (progn (rlogger.dribble "[~a] ~a succesfully reached end of dna. Scheduling reanimation."
-				    (tick-number (world creature))
-				    creature)
-		   (use-energy  creature (rerun-cost *simulation*))
-		   (schedule (lambda () (animate creature))
-			     (world creature)
-			     (sleep-time *simulation*)))
-	    
-	    (progn (rlogger.dribble "[~a] Creature appeared to finish, but failed to return eof: ~a"
-			     (tick-number (world creature))
-			     rv)
-		   (got-the-pox creature "Failed to find EOF")))
+	(cond
+	  ((eq 'dna:eof rv) 
+	   (rlogger.dribble "[~a] ~a succesfully reached end of dna. Scheduling reanimation."
+			    (tick-number (world creature))
+			    creature)
+	   (use-energy  creature (rerun-cost *simulation*))
+	   (schedule (lambda () (animate creature))
+		     (world creature)
+		     (sleep-time *simulation*)))
+	  
+	  (T (rlogger.dribble "[~a] Creature appeared to finish, but failed to return eof: ~a"
+			      (tick-number (world creature))
+			      rv)
+	     (got-the-pox creature "Failed to find EOF")))
 	))))
 
 

@@ -35,19 +35,21 @@
 (defgeneric schedule (action world ticks-from-now))
 
 (defmethod schedule (action (w world) ticks-from-now)
-  (let ((tick (+ ticks-from-now (tick-number w))))
-    (setf (queue w) (meld (queue w)
-			  (make-instance 'leftist-tree-node
-					 :key (+ ticks-from-now (tick-number w))
-					 :data action)))))
+  (setf (queue w) (meld (queue w)
+			(make-instance 'leftist-tree-node
+				       :key (+ ticks-from-now (tick-number w))
+				       :data action))))
 
 (defmethod random-location ((w world))
   (let ((m (world-map w)))
     (random-node m)))
 
-(defmethod populate-world ((w World))
-  (incf (population-infusions w))
-  (loop for i from 1 to (initial-creature-count *simulation*)
+(defmethod populate-world ((w World) num)
+  (incf (population-infusions w) num)
+  (rlogger.info "[~a] Populating world with: ~a"
+		(tick-number w)
+		num)
+  (loop for i from 1 to num
 	for cr = (make-instance 'Creature
 				:energy (init-creature-max-energy *simulation*)
 				:world w 
@@ -68,13 +70,16 @@
 (defmethod creatures ((w world))
   (creatures (world-map w)))
 
-(defmethod repopulate-world ((w World))
-  (incf (repopulation-infusions w))
+(defmethod repopulate-world ((w World) num)
+  (rlogger.info "[~a] Repopulating world with: ~a"
+		(tick-number w)
+		num)
+  (incf (repopulation-infusions w) num)
   (let* ((cl (creatures w))
 	 (creatures (make-array (length cl) :initial-contents cl))
-	 (init (creature-count w)))
+	 )
     
-    (loop for i from init to (initial-creature-count *simulation*)
+    (loop for i to num
 	  for cr = (random-elt creatures)
 	  for new-cr = (clone-with-mutation cr :energy #'max-energy)
 	  do
@@ -85,15 +90,20 @@
 
 (defmethod advance-time ((world world))
   "Advance a world a tick by advancing any creatures for that tick."
-  (rlogger.info "Advancing the world from tick: ~a creature-count: ~a free-energy: ~a~%"
+  (rlogger.info "Advancing the world from tick: ~a creature-count: ~a free-energy: ~a"
 		(tick-number world)
 		(creature-count world)
 		(unconsumed-energy-in-the-world world))
   (when (<= (creature-count world) (* (initial-creature-count *simulation*) .10))
-    ;;The point here is to reward the most rugged creatures by using them as a base for the next generation
-    (if (> (creature-count world) 0)
-	(repopulate-world world)
-	(populate-world world)))
+    ;;The point here is to reward the most rugged creatures by using them
+    ;;as a base for the next generation
+    (when (> (creature-count world) 0)
+      (repopulate-world world
+			(* .75 (- (initial-creature-count *simulation*)
+				  (creature-count world)))))
+    ;;as well as some fresh ones.
+    (populate-world world (- (initial-creature-count *simulation*)
+				  (creature-count world))))
   
   (call-next-method) ;increment tick
   (process-queue-for-tick world)
@@ -124,7 +134,7 @@
 		 ))
 	;;setup energy drops
 	(schedule #'drop-energy-and-re-add world 1)
-	(populate-world world))
+	(populate-world world (initial-creature-count *simulation*)))
       world)))
 
 (defmethod drop-random-energy ((world world) frequency energy-to-add-max/spot )
