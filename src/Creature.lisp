@@ -64,6 +64,13 @@
 		 (tick-number (world creature))
 		 creature
 		 reason)
+  (when (or (null *golem*)
+	    (> (animation-count creature)
+	       (animation-count *golem*)))
+    (rlogger.info "[~a] New animation-count record: ~a"
+		  (tick-number (world creature))
+		  (animation-count creature))
+    (setf *golem* creature))
   (when (node creature)
     ;;the creature 'decays' returning energy to the system
     (when (< 0 (energy creature))
@@ -83,7 +90,7 @@
 
 (defmethod use-energy ((creature creature) (amount (eql nil))) ())
 (defmethod use-energy ((creature creature) (amount function))
-  (use-energy creature (funcall amount (energy creature))))
+  (use-energy creature (truncate (funcall amount (energy creature)))))
 
 (defmethod use-energy ((creature creature) (amount number))
   (when (< (decf (energy creature) amount)

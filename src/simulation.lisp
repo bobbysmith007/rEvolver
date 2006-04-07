@@ -1,6 +1,6 @@
 (in-package :rEvolver)
 (defvar *simulation*)
-(defvar *golem*)
+(defvar *golem* 'nil)
 (defvar *world*)
 (defclass simulation ()
   (
@@ -10,7 +10,7 @@
 	  :documentation "Our World.  The instance will be created in shared-initialize
                           using other values in our simulation.")
    (initial-creature-count
-    :accessor initial-creature-count :initarg :initial-creature-count :initform 640
+    :accessor initial-creature-count :initarg :initial-creature-count :initform 800
     :documentation
     "The world starts with this number of randomly generated tree structures" )
    
@@ -18,13 +18,13 @@
 	       :documentation "The size of one side of the map")
    ;;Energy drop details
    (node-energy-frequency
-    :accessor node-energy-frequency :initarg :node-energy-frequency :initform .16
+    :accessor node-energy-frequency :initarg :node-energy-frequency :initform .32
     :documentation "What percentage of nodes should get energy dropped on them.")
    (node-energy-max
-    :accessor node-energy-max :initarg :node-energy-max :initform 32
+    :accessor node-energy-max :initarg :node-energy-max :initform 64
     :documentation "(random node-energy-max) will be dropped on nodes.")
    (drop-energy-turns
-    :accessor drop-energy-turns :initarg :drop-energy-turns :initform 16
+    :accessor drop-energy-turns :initarg :drop-energy-turns :initform 6
     :documentation "The period between energy drops.")
 
    
@@ -50,7 +50,7 @@
    (creature-minimum-energy
     :accessor creature-minimum-energy
     :initarg :creature-minimum-energy
-    :initform 32
+    :initform 20
     :documentation "A lot of the costs are fractions of the current energy.
 We want to have a non-zero minimum so they can die from these functions.")
    
@@ -87,8 +87,8 @@ We want to have a non-zero minimum so they can die from these functions.")
     :initarg :function-energy-costs
     :reader function-energy-costs
     :initform (list (cons 'dna:move
-			  (lambda (energy) (truncate (/ energy 12))))
-		    '(dna:feed . 16)
+			  (lambda (energy) (truncate (/ energy 16))))
+		    '(dna:feed . 8)
 		    '(dna:energy? . 4)
 		    (cons 'dna:asexually-reproduce
 			  ;;each creature get's half the (original- min)

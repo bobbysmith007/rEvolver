@@ -90,10 +90,14 @@
 
 (defmethod advance-time ((world world))
   "Advance a world a tick by advancing any creatures for that tick."
-  (rlogger.info "Advancing the world from tick: ~a creature-count: ~a free-energy: ~a"
+  (rlogger.info "Advancing the world from tick: ~a creature-count: ~a free-energy: ~a (~a/node)"
 		(tick-number world)
 		(creature-count world)
-		(unconsumed-energy-in-the-world world))
+		(unconsumed-energy-in-the-world world)
+		(truncate
+		 (/ (unconsumed-energy-in-the-world world)
+		    (* (world-size *simulation*)
+		       (world-size *simulation*)))))
   (when (<= (creature-count world) (* (initial-creature-count *simulation*) .20))
     ;;The point here is to reward the most rugged creatures by using them
     ;;as a base for the next generation
@@ -111,10 +115,10 @@
   )
 
 (defmethod add-energy ((world world) value)
-  (incf (unconsumed-energy-in-the-world world) (* 1.0d0 value)))
+  (incf (unconsumed-energy-in-the-world world) value))
 
 (defmethod remove-energy ((world world) value)
-  (decf (unconsumed-energy-in-the-world world) (* 1.0d0 value)))
+  (decf (unconsumed-energy-in-the-world world)  value))
 
 (defun make-new-world ()
   (let ((map (make-instance '2d-array-map
