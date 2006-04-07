@@ -110,7 +110,6 @@ up to whoever originally invoked the interpreter."
 		 "Interrupt the current machine by calling the interrupt's continutation
 		passing it the interpreter continuation and finally returning it's value to the top.
 		the result up to the whomever originally invoked the machine."
-		 (revolver::rlogger.dribble "Interrupting interpreter: ~a" (reason interrupt))
 		 (signal 'escape
 			 :reason
 			 (funcall (slot-value interrupt 'continuation)
@@ -163,12 +162,10 @@ up to whoever originally invoked the interpreter."
 		   
 		      (T (error "Unkwown operation on the control ~a" op))))))))
     (escape (esc)
-	    ;(return-from start-CSE-machine (reason esc))
-	    ;;
-	    ;; Currently we dont want to handle anything here jsut keep going
-	    ;; because the interpretter should only ever return the final output
+	    ;;we resignal escape, hoping some outer handler is there,
+	    ;;if it isn't handled we return.
 	    (signal esc)
-	    )))
+	    (return-from start-CSE-machine (reason esc)))))
 
 
 

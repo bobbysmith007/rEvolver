@@ -29,9 +29,6 @@
 		    (multiple-value-bind (current-node new-queue)
 			(pop-tree! (queue world))
 		      (setf queue new-queue)
-		      (rlogger.dribble "[~a] Calling scheduled action: ~a"
-				       tick
-				       (data current-node))
 		      (restart-case (funcall (data current-node))
 		       (continue-next-action () nil))))))
 
@@ -39,8 +36,6 @@
 
 (defmethod schedule (action (w world) ticks-from-now)
   (let ((tick (+ ticks-from-now (tick-number w))))
-    (rlogger.dribble "[~a] Scheduling an action in the world: ~a." (tick-number w) tick)
-  
     (setf (queue w) (meld (queue w)
 			  (make-instance 'leftist-tree-node
 					 :key (+ ticks-from-now (tick-number w))

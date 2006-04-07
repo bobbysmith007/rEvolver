@@ -65,7 +65,7 @@ of higher arity."
 		 (with-unique-names (k)
 		   `(pushenv ',name
 		     (cr-env-function ,args
-		       (rlogger.dribble "Starting: ~a" ',name)
+		       (rlogger.dribble "Starting: ~a on ~a " ',name creature)
 		       (interrupt-interpreter/cc
 			(lambda (,k)
 			  (use-energy creature (function-energy-cost ',name *simulation*))
@@ -99,9 +99,7 @@ of higher arity."
 				(energy creature))
 	
 	(costly-cr-env-function dna:energy? () 
-				(let ((energy (> (energy (node creature)) 0)))
-				  (rlogger.dribble "Querying node for energy resulted in: ~a." energy)
-				  energy))
+				(> (energy (node creature)) 0))
  
 	(costly-cr-env-function dna:asexually-reproduce ()
 				(asexually-reproduce creature)

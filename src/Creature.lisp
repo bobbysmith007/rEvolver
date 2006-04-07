@@ -92,7 +92,6 @@
 (defmethod use-energy ((creature creature) (amount number))
   (when (>= 1 (decf (energy creature) amount))
     (die creature)
-    (rlogger.error "About to die from exhaustion")
     (signal 'cse:escape :reason 'died-from-exhaustion)))
 
 (defmethod add-creature ((creature creature) (node node))
@@ -139,7 +138,10 @@
 			(return-from animate nil)))
 		   (cse:escape
 		    #'(lambda (esc) ;;the continuation should already have been set.
-			(rlogger.dribble "~a escaped because: ~a" creature (cse:reason esc) )
+			(rlogger.dribble "[~a] ~a escaped because: ~a"
+					 (tick-number (world creature))
+					 creature
+					 (cse:reason esc) )
 			(return-from animate (cse:reason esc)))))
       (incf (animation-count creature))
       (let* ((fn (or current-continuation
@@ -154,11 +156,7 @@
 				    (tick-number (world creature))
 				    creature)
 		   (use-energy  creature (rerun-cost *simulation*))
-		   (schedule (lambda ()
-			       (rlogger.dribble "[~a] About to reanimate ~a that was at the end of his dna."
-				    (tick-number (world creature))
-				    creature)
-			       (animate creature))
+		   (schedule (lambda () (animate creature))
 			     (world creature)
 			     (sleep-time *simulation*)))
 	    
