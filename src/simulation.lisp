@@ -10,21 +10,21 @@
 	  :documentation "Our World.  The instance will be created in shared-initialize
                           using other values in our simulation.")
    (initial-creature-count
-    :accessor initial-creature-count :initarg :initial-creature-count :initform 800
+    :accessor initial-creature-count :initarg :initial-creature-count :initform 2048
     :documentation
     "The world starts with this number of randomly generated tree structures" )
    
-   (world-size :accessor world-size :initarg :worldsize :initform 32
+   (world-size :accessor world-size :initarg :worldsize :initform 64
 	       :documentation "The size of one side of the map")
    ;;Energy drop details
    (node-energy-frequency
-    :accessor node-energy-frequency :initarg :node-energy-frequency :initform .32
+    :accessor node-energy-frequency :initarg :node-energy-frequency :initform .25
     :documentation "What percentage of nodes should get energy dropped on them.")
    (node-energy-max
-    :accessor node-energy-max :initarg :node-energy-max :initform 64
+    :accessor node-energy-max :initarg :node-energy-max :initform 512
     :documentation "(random node-energy-max) will be dropped on nodes.")
    (drop-energy-turns
-    :accessor drop-energy-turns :initarg :drop-energy-turns :initform 6
+    :accessor drop-energy-turns :initarg :drop-energy-turns :initform 4
     :documentation "The period between energy drops.")
 
    

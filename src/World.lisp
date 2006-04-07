@@ -98,13 +98,14 @@
 		 (/ (unconsumed-energy-in-the-world world)
 		    (* (world-size *simulation*)
 		       (world-size *simulation*)))))
-  (when (<= (creature-count world) (* (initial-creature-count *simulation*) .20))
+  (when (<= (creature-count world)
+	    (* (initial-creature-count *simulation*) .10))
     ;;The point here is to reward the most rugged creatures by using them
     ;;as a base for the next generation
     (when (> (creature-count world) 0)
       (repopulate-world world
-			(* .75 (- (initial-creature-count *simulation*)
-				  (creature-count world)))))
+			(* .2 (- (initial-creature-count *simulation*)
+				 (creature-count world)))))
     ;;as well as some fresh ones.
     (populate-world world (- (initial-creature-count *simulation*)
 				  (creature-count world))))
