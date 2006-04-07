@@ -101,10 +101,10 @@ We want to have a non-zero minimum so they can die from these functions.")
    (function-time-costs
     :initarg :function-time-costs
     :reader function-time-costs
-    :initform '((dna:move . 4)
+    :initform '((dna:move . 5)
 		(dna:feed . 3)
 		(dna:energy? . 2)
-		(dna:asexually-reproduce . 6)))
+		(dna:asexually-reproduce . 7)))
    
    ))
 
