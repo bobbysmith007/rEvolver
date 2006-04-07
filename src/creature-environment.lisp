@@ -7,12 +7,14 @@
   "Turn a function of arity n into max(arity, 1) functions.
 That is, make sure there is at least arg, dummy if necessary, and curry functions
 of higher arity."
-  (labels ((rcurry (args)
-	     (if (null args)
-		 body
-		 `((lambda (,(first args))
-		     ,@(rcurry (rest args)))))))
-    (first (rcurry (or args (list 'dummy))))))
+  (with-unique-names (dummy)
+    (labels ((rcurry (args)
+	       (if (null args)
+		   body
+		   `((lambda (,(first args))
+		       (declare (ignorable ,(first args)))
+		       ,@(rcurry (rest args)))))))
+      (first (rcurry (or args (list dummy)))))))
 
 (defmacro cr-env-function (args &body body)
   `(curry ,args
