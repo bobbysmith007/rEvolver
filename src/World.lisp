@@ -94,7 +94,7 @@
 		(tick-number world)
 		(creature-count world)
 		(unconsumed-energy-in-the-world world))
-  (when (<= (creature-count world) (* (initial-creature-count *simulation*) .10))
+  (when (<= (creature-count world) (* (initial-creature-count *simulation*) .20))
     ;;The point here is to reward the most rugged creatures by using them
     ;;as a base for the next generation
     (when (> (creature-count world) 0)
@@ -126,6 +126,7 @@
 			  (node-energy-frequency *simulation*)
 			  (node-energy-max *simulation*))
       (labels ((drop-energy-and-re-add ()
+		 (rlogger.info "[~a] Dropping Energy." (tick-number world))
 		 (drop-random-energy world
 				     (node-energy-frequency *simulation*)
 				     (node-energy-max *simulation*))

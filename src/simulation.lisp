@@ -18,7 +18,7 @@
 	       :documentation "The size of one side of the map")
    ;;Energy drop details
    (node-energy-frequency
-    :accessor node-energy-frequency :initarg :node-energy-frequency :initform .2
+    :accessor node-energy-frequency :initarg :node-energy-frequency :initform .16
     :documentation "What percentage of nodes should get energy dropped on them.")
    (node-energy-max
     :accessor node-energy-max :initarg :node-energy-max :initform 32
@@ -87,7 +87,7 @@ We want to have a non-zero minimum so they can die from these functions.")
     :initarg :function-energy-costs
     :reader function-energy-costs
     :initform (list (cons 'dna:move
-			  (lambda (energy) (truncate (/ energy 8))))
+			  (lambda (energy) (truncate (/ energy 12))))
 		    '(dna:feed . 16)
 		    '(dna:energy? . 4)
 		    (cons 'dna:asexually-reproduce
