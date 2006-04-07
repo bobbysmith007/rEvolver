@@ -92,6 +92,7 @@
 (defmethod use-energy ((creature creature) (amount number))
   (when (>= 1 (decf (energy creature) amount))
     (die creature)
+    (rlogger.error "About to die from exhaustion")
     (signal 'cse:escape :reason 'died-from-exhaustion)))
 
 (defmethod add-creature ((creature creature) (node node))
@@ -127,7 +128,7 @@
 
 (defmethod animate ((creature creature))
   (unless (alivep creature)
-    (break "[~a] Apparently we tried to animate a dead creature or something. ~a"
+    (rlogger.error "[~a] Apparently we tried to animate a dead creature or something. ~a"
 	   (tick-number (world creature))
 	   creature))
   
