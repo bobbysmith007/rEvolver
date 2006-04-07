@@ -119,9 +119,14 @@ We want to have a non-zero minimum so they can die from these functions.")
 (defmethod next-id ((sim simulation))
   (funcall (slot-value sim '%next-id)))
 #|
+(list
+ (tick-number *world*)
 (creature-count *world*)
 (animation-count *golem*)
 (repopulation-infusions *world*)
 (population-infusions *world*)
 (energy (random-node (world-map *world*)))
+)
+(dna-of *golem*)
+(creatures (world-map *world*) )
 |#

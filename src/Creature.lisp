@@ -67,7 +67,7 @@
   (when (or (null *golem*)
 	    (> (animation-count creature)
 	       (animation-count *golem*)))
-    (rlogger.info "[~a] New animation-count record: ~a"
+    (rlogger.error "[~a] New animation-count record: ~a"
 		  (tick-number (world creature))
 		  (animation-count creature))
     (setf *golem* creature))

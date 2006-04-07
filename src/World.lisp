@@ -131,7 +131,6 @@
 			  (node-energy-frequency *simulation*)
 			  (node-energy-max *simulation*))
       (labels ((drop-energy-and-re-add ()
-		 (rlogger.info "[~a] Dropping Energy." (tick-number world))
 		 (drop-random-energy world
 				     (node-energy-frequency *simulation*)
 				     (node-energy-max *simulation*))
@@ -153,4 +152,7 @@
 	
 	(incf sum actual-energy)
 	(add-energy world actual-energy)))
+    (rlogger.info "[~a] Dropped Energy: ~a"
+			       (tick-number world)
+			       sum)
     sum))
