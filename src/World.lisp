@@ -104,11 +104,11 @@
     ;;as a base for the next generation
     (when (> (creature-count world) 0)
       (repopulate-world world
-			(* .2 (- (initial-creature-count *simulation*)
-				 (creature-count world)))))
+			(truncate (* .2 (- (initial-creature-count *simulation*)
+					   (creature-count world))))))
     ;;as well as some fresh ones.
     (populate-world world (- (initial-creature-count *simulation*)
-				  (creature-count world))))
+			     (creature-count world))))
   
   (call-next-method) ;increment tick
   (process-queue-for-tick world)
