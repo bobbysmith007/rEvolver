@@ -12,7 +12,7 @@
 	  :accessor queue
 	  :documentation "The what to do next queue. Leftist Min Priority Queue")
    (creature-count :initform 0 :accessor creature-count)
-   (unconsumed-energy-in-the-world :initform 0 :accessor unconsumed-energy-in-the-world)
+   
    (population-infusions :initform 0 :accessor population-infusions)
    (repopulation-infusions :initform 0 :accessor repopulation-infusions)
    ))
@@ -93,9 +93,9 @@
   (rlogger.info "Advancing the world from tick: ~a creature-count: ~a free-energy: ~a (~a/node)"
 		(tick-number world)
 		(creature-count world)
-		(unconsumed-energy-in-the-world world)
+		(free-energy (world-map world))
 		(truncate
-		 (/ (unconsumed-energy-in-the-world world)
+		 (/ (free-energy (world-map world))
 		    (* (world-size *simulation*)
 		       (world-size *simulation*)))))
   (when (<= (creature-count world)
@@ -114,12 +114,6 @@
   (process-queue-for-tick world)
   ;;TODO: at some point having creatures automatically recycled in here.
   )
-
-(defmethod add-energy ((world world) value)
-  (incf (unconsumed-energy-in-the-world world) value))
-
-(defmethod remove-energy ((world world) value)
-  (decf (unconsumed-energy-in-the-world world)  value))
 
 (defun make-new-world ()
   (let ((map (make-instance '2d-array-map
@@ -148,10 +142,8 @@
     (dotimes (n (* frequency (x-size m) (y-size m)))
       (let* ((l (random-node m))
 	     (e (random energy-to-add-max/spot))
-	     (actual-energy (add-energy l e)))
-	
-	(incf sum actual-energy)
-	(add-energy world actual-energy)))
+	     (actual-energy ))
+	(incf sum (add-energy l e))))
     (rlogger.info "[~a] Dropped Energy: ~a"
 			       (tick-number world)
 			       sum)

@@ -7,7 +7,7 @@
   (:documentation "A location on a map."))
 
 (defclass rEvolver-map ()
-  ()
+  ((free-energy :initform 0 :accessor free-energy))
   (:documentation "Generic map interface."))
 
 (defclass 2d-array-map (rEvolver-map)
@@ -39,18 +39,20 @@
   (:documentation "Remove all the energy from a node, returning how much there was.")
   (:method ((node node) &optional (amount (energy node)))
 	   (let ((amount (min (energy node) amount)))
-	     (setf (energy node) (- (energy node) amount)))))
+	     (setf (energy node) (- (energy node) amount))
+	     (decf (free-energy (revolver-map node)) amount)
+	     amount)))
 
 (defgeneric add-energy (node amount)
   (:method ((node node) amount)
-	   "This function will return the energy that it actually added to the node (in case we try to exceed the max)"
-	   (let* ((new-energy (+ (energy node) amount))
-		  (new-node-energy (min new-energy
+	   "This function will return the energy that it actually added to the node
+ (in case we try to exceed the max)"
+	   (let* ((new-node-energy (min (+ (energy node) amount)
 					(node-energy-max *simulation*)))
 		  (added-energy
 		   (- new-node-energy (energy node))))
-	     (setf (energy node)
-		   new-node-energy)
+	     (setf (energy node) new-node-energy)
+	     (incf (free-energy (revolver-map node)) added-energy)
 	     added-energy)))
 
 (defmethod initialize-instance :after ((m 2d-array-map) &key)

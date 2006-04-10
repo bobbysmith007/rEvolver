@@ -100,9 +100,7 @@ of higher arity."
 					 (new-creature-energy
 					  (min (+ energy energy-gleened)
 					       (max-energy creature))))
-				    
-				    (setf energy new-creature-energy )
-				    (remove-energy (world creature) energy-gleened)))
+				    (setf energy new-creature-energy )))
 				(energy creature))
 	
 	(costly-cr-env-function dna:energy? () 
