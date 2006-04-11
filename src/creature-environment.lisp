@@ -37,6 +37,9 @@ of higher arity."
 	(define-environment-fun dna:eq (x y) (eq x y))
 	(define-environment-fun dna:equal (x y) (equal x y))
 	(define-environment-fun dna:if (test x y) (if test x y))
+	(define-environment-fun dna:< (a b) (< a b))
+	(define-environment-fun dna:+ (a b) (+ a b))
+	(define-environment-fun dna:- (a) (- a)) 
 	(pushenv 'dna:nil nil)
 	(pushenv 'dna:T T)
 	(mapcar (lambda (sym)
@@ -66,18 +69,21 @@ of higher arity."
     (macrolet ((costly-cr-env-function (name args &body body)
 		 (with-unique-names (k)
 		   `(pushenv ',name
-		     (cr-env-function ,args
+		     (curry ,args
 		       (rlogger.dribble "Starting: ~a on ~a " ',name creature)
 		       (interrupt-interpreter/cc
 			(lambda (,k)
-			  (use-energy creature (function-energy-cost ',name *simulation*))
-			  (apply-time-costs ',name creature ,k (progn ,@body))))
+			  (handler-case
+			      (progn
+				(use-energy creature (function-energy-cost ',name *simulation*))
+				(apply-time-costs ',name creature ,k (progn ,@body)))
+			    (error (e) (error 'CSE:code-error :original-error e)))))
 		       (error "I dont think we should ever get here if we are properly interrupting")
 		       )))))
       
       (flet ((pushenv (name fun)
 	       (setf env (append-to-environment name fun env))))
- 
+	(pushenv 'dna:me creature)
 	(costly-cr-env-function dna:move (node) 
 				(let* ((previous-node (node creature))
 				      ;;if the creature didn't specify then pick a random direction.
@@ -102,9 +108,13 @@ of higher arity."
 					       (max-energy creature))))
 				    (setf energy new-creature-energy )))
 				(energy creature))
-	
-	(costly-cr-env-function dna:energy? () 
-				(> (energy (node creature)) 0))
+	(costly-cr-env-function dna:energy? ()
+				"Get the current energy of the node the creature is on."
+				(energy (node creature)))
+	(costly-cr-env-function dna:energy (thing)
+				(etypecase thing
+				  (node (energy thing))
+				  (creature (energy creature))))
  
 	(costly-cr-env-function dna:asexually-reproduce ()
 				(asexually-reproduce creature)

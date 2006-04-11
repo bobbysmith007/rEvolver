@@ -33,6 +33,7 @@
    #:lambda
    #:move
    #:feed
+   #:energy
    #:energy?
    #:cons
    #:car
@@ -49,7 +50,11 @@
    #:number
    #:asexually-reproduce
    #:nil
-   #:t))
+   #:t
+   #:me
+   #:<
+   #:+
+   #:-))
 
 (defpackage :rEvolver
     (:use :common-lisp

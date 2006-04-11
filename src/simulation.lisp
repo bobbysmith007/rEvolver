@@ -119,19 +119,23 @@ We want to have a non-zero minimum so they can die from these functions.")
 (defmethod next-id ((sim simulation))
   (funcall (slot-value sim '%next-id)))
 #|
-(rlogger.error "[~a] Creatures: ~a  Animation-record: ~a  population(~a,~a) free-energy: ~a (~a/node)"
-	       
-	       (tick-number *world*)
-	       (creature-count *world*)
-	       (animation-count *golem*)
-	       (repopulation-infusions *world*)
-	       (population-infusions *world*)
-	       (free-energy (world-map *world*))
-	       (truncate
-		(/ (free-energy (world-map *world*))
-		   (* (world-size *simulation*)
-		      (world-size *simulation*)))))
+(let ((node-count (* (world-size *simulation*)
+		      (world-size *simulation*))))
+  (rlogger.error "[~a] Creatures: ~a (~a/node)  Animation-record: ~a  population(~a,~a) free-energy: ~a (~a/node)"
+		 
+		 (tick-number *world*)
+		 (creature-count *world*)
+		 (float (/ (creature-count *world*)
+		    node-count))
+		 (animation-count *golem*)
+		 (repopulation-infusions *world*)
+		 (population-infusions *world*)
+		 (free-energy (world-map *world*))
+		 (truncate
+		  (/ (free-energy (world-map *world*))
+		     node-count))))
 (dna-of *golem*)
 (creatures (world-map *world*) )
 (setf (log.level 'rlogger) 3)
+
 |#

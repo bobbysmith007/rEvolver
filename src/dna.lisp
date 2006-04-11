@@ -27,10 +27,21 @@
 	    =>
 	    (gamma car ?Expression))
        
-	;boolean 
+       ;boolean 
        (or ?Expression ?Expression
 	   =>
 	   (gamma (gamma or ?Expression) ?Expression))
+
+       ;;arithmetic
+       (- ?Expression
+	    =>
+	    (gamma - ?Expression))
+       (< ?Expression ?Expression
+	   =>
+	   (gamma (gamma < ?Expression) ?Expression))
+       (+ ?Expression ?Expression
+	   =>
+	   (gamma (gamma + ?Expression) ?Expression))
        
        (if ?Expression ?Expression ?Expression
 	   =>
@@ -51,6 +62,10 @@
        (type? ?Expression ?Type
 	      =>
 	      (gamma (gamma eq ?Expression) ?Type))
+       ;;inspection
+       (energy ?Expression
+	       =>
+	       (gamma energy ?Expression))
        
 ;Environment
 ;(move (?Expression (type . 'node) (return . )) => move)
@@ -76,6 +91,7 @@
       ((nil => nil)
        (t => t)
        (*gened-sym* => *gened-sym*)
+       (Me => Me)
       ;Environment
        (move
 	=>
