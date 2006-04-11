@@ -181,7 +181,7 @@ TODO: This should probably actually make some sort of struct rather than redicul
     (if (not (< maybe mutation-rate))
 	(values tree nil)
 	(values (let ((new-tree (generate-tree mutation-depth)))
-		  (replace-random-subtree tree new-tree))
+		  (replace-random-subtree (copy-tree tree) new-tree))
 		T))
     ))
 

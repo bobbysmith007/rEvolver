@@ -10,7 +10,7 @@
 	  :documentation "Our World.  The instance will be created in shared-initialize
                           using other values in our simulation.")
    (initial-creature-count
-    :accessor initial-creature-count :initarg :initial-creature-count :initform 2048
+    :accessor initial-creature-count :initarg :initial-creature-count :initform 128
     :documentation
     "The world starts with this number of randomly generated tree structures" )
    
@@ -63,7 +63,7 @@ We want to have a non-zero minimum so they can die from these functions.")
     :documentation "How long to sleep after completing but before re-animating.")
    (rerun-cost
     :accessor rerun-cost :initarg :rerun-cost
-    :initform (lambda (val)  (truncate (1+ (/ val 10))))
+    :initform 4
     :documentation "The amount of energy that rerunning the program takes")
    
    (base-mutation-rate
@@ -138,4 +138,33 @@ We want to have a non-zero minimum so they can die from these functions.")
 (creatures (world-map *world*) )
 (setf (log.level 'rlogger) 3)
 
+
+(setf *world* (let ((map (make-instance '2d-array-map
+						  :x-size (world-size *simulation*)
+						  :y-size (world-size *simulation*))))
+			  
+			  (let ((world (make-instance 'world :map map)))
+			    (drop-random-energy world
+						(node-energy-frequency *simulation*)
+						(node-energy-max *simulation*))
+			    (labels ((drop-energy-and-re-add ()
+				       (drop-random-energy world
+							   (node-energy-frequency *simulation*)
+							   (node-energy-max *simulation*))
+				       (schedule #'drop-energy-and-re-add world
+						 (drop-energy-turns *simulation*))
+				       ))
+			      ;;setup energy drops
+			      (schedule #'drop-energy-and-re-add world 1))
+			    (setf *golem* (make-instance 'Creature
+				:energy (init-creature-max-energy *simulation*)
+				:world world
+				:node (random-location world)
+				:mutation-rate (base-mutation-rate *simulation*)
+				:value-mutation-rate (base-value-mutation-rate *simulation*)
+				:mutation-depth (base-mutation-depth *simulation*)
+				:dna '(dna:gamma (dna:gamma dna:cons (dna:gamma dna:move nil)) (dna:gamma dna:move nil))
+				)) 
+			    (reschedule *golem* (creature-fn *golem*) 1)
+			    world))
 |#

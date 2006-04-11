@@ -66,23 +66,25 @@ of higher arity."
 
 (defmethod creature-environment ((creature creature))
   (let ((env (make-creature-base-lisp-environment)))
-    (macrolet ((costly-cr-env-function (name args &body body)
-		 (with-unique-names (k)
-		   `(pushenv ',name
-		     (curry ,args
-		       (rlogger.dribble "Starting: ~a on ~a " ',name creature)
-		       (interrupt-interpreter/cc
-			(lambda (,k)
-			  (handler-case
-			      (progn
-				(use-energy creature (function-energy-cost ',name *simulation*))
-				(apply-time-costs ',name creature ,k (progn ,@body)))
-			    (error (e) (error 'CSE:code-error :original-error e)))))
-		       (error "I dont think we should ever get here if we are properly interrupting")
-		       )))))
-      
-      (flet ((pushenv (name fun)
-	       (setf env (append-to-environment name fun env))))
+    (flet ((pushenv (name fun)
+	     (setf env (append-to-environment name fun env))))
+      (macrolet ((costly-cr-env-function (name args &body body)
+		   (with-unique-names (k)
+		     `(pushenv ',name
+		       (curry ,args
+			 (rlogger.dribble "Starting: ~a on ~a " ',name creature)
+			 (interrupt-interpreter/cc
+			  (lambda (,k)
+			    (handler-case
+				(progn
+				  (use-energy creature
+					      (function-energy-cost ',name *simulation*))
+				  (rlogger.dribble "Used energy, now going to resched.")
+				  (apply-time-cost ',name creature ,k (progn ,@body)))
+			      (error (e) (error 'CSE:code-error :original-error e)))))
+			 (error "I dont think we should ever get here if we are properly interrupting")
+			 )))))
+
 	(pushenv 'dna:me creature)
 	(costly-cr-env-function dna:move (node) 
 				(let* ((previous-node (node creature))

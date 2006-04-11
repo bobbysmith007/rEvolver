@@ -17,11 +17,12 @@
    (node :accessor node )
    (world :reader world :initarg :world)
    (dna :accessor dna-of :initarg :dna :initform (generate-tree (depth-bound *simulation*)))
+   (creature-fn :accessor creature-fn :initform nil :initarg creature-fn)
    (current-continuation :initform nil)
    (animation-count :accessor animation-count :initform 0)
    ))
 (defmethod initialize-instance :after ((creature creature) &rest slots
-				       &key node world max-energy energy
+				       &key node world max-energy energy creature-fn
 				       &allow-other-keys)
   (declare (ignore slots))
   (add-creature creature node)
@@ -30,29 +31,43 @@
   (if (not max-energy)
       (setf (max-energy creature)
 	    (or energy (energy creature))))
+  
+    (setf (creature-fn creature)
+	  (or creature-fn
+	      (make-interpreter (dna-of creature)
+				(creature-environment creature)
+				#'(lambda ()
+				    (use-energy creature
+						(beta-reduction-cost *simulation*))))))
   )
 
 
 (defgeneric asexually-reproduce (golem))
 
-(defmethod clone-with-mutation ((golem creature) &key (energy #'energy) (world nil) (node nil))
-  (with-slots (dna max-energy mutation-rate mutation-depth value-mutation-rate) golem
-    (make-instance
-     'creature
-     :max-energy (maybe-mutate-value max-energy
-				     mutation-rate value-mutation-rate )
-     :energy (funcall energy golem) 
-     :mutation-rate (maybe-mutate-value mutation-rate
-					mutation-rate value-mutation-rate)
-     :value-mutation-rate (maybe-mutate-value value-mutation-rate
-					      mutation-rate value-mutation-rate)
-     :mutation-depth (maybe-mutate-value mutation-depth
-					 mutation-rate value-mutation-rate)
-     
-     :dna (maybe-mutate-tree (copy-tree dna) mutation-rate mutation-depth)
-     :world (or world (world golem))
-     :node (or node (node golem))
-     )))
+(defmethod clone-with-mutation ((golem creature)
+				&key (energy #'energy) (world nil) (node nil))
+  (with-slots (dna max-energy mutation-rate mutation-depth
+		   value-mutation-rate creature-fn)
+      golem
+    (multiple-value-bind (new-dna dna-changed)
+	(maybe-mutate-tree dna mutation-rate mutation-depth)
+      (make-instance
+       'creature
+       :max-energy (maybe-mutate-value max-energy
+				       mutation-rate value-mutation-rate )
+       :energy (funcall energy golem) 
+       :mutation-rate (maybe-mutate-value mutation-rate
+					  mutation-rate value-mutation-rate)
+       :value-mutation-rate (maybe-mutate-value value-mutation-rate
+						mutation-rate value-mutation-rate)
+       :mutation-depth (maybe-mutate-value mutation-depth
+					   mutation-rate value-mutation-rate)
+       
+       :dna new-dna
+       :creature-fn (unless dna-changed creature-fn)
+       :world (or world (world golem))
+       :node (or node (node golem))
+       ))))
 
 (defmethod alivep ((creature creature))
   (and (world creature)
@@ -123,7 +138,8 @@
   (setf (slot-value creature 'current-continuation) continuation)
   (schedule (lambda ()
 	      (unless (alivep creature)
-		(break "The creature died between when it was rescheduled (for: ~a) and when the continuation was called:~a " reason creature))
+		(break "The creature died between when it was rescheduled (for: ~a) and when the continuation was called:~a "
+		       reason creature))
 	      (animate creature))
 	    (world creature)
 	    ticks))
@@ -134,7 +150,7 @@
 	   (tick-number (world creature))
 	   creature))
   
-  (with-slots (current-continuation) creature
+  (with-slots (current-continuation creature-fn) creature
     (handler-bind ((cse:code-error
 		    #'(lambda (er)
 			(got-the-pox creature er)
@@ -149,24 +165,17 @@
       ;;any animation costs something.
       (use-energy creature (animation-cost *simulation*))
       (incf (animation-count creature))
-      (let* ((fn (or current-continuation
-		    (make-interpreter (dna-of creature)
-				      (creature-environment creature)
-				      #'(lambda ()
-					  (use-energy creature
-						      (beta-reduction-cost *simulation*))))))
-	     (rv (funcall fn)))
+      (let* ((rv (funcall (or current-continuation creature-fn))))
 	(cond
-	  ((eq 'dna:eof rv) 
+	  ((eq 'dna:eof rv)
 	   (rlogger.dribble "[~a] ~a succesfully reached end of dna. Scheduling reanimation."
 			    (tick-number (world creature))
 			    creature)
 	   (use-energy  creature (rerun-cost *simulation*))
-	   (schedule (lambda () (animate creature))
-		     (world creature)
-		     (sleep-time *simulation*)))
+	   
+	   (reschedule creature creature-fn (sleep-time *simulation*) 'dna:eof))
 	  
-	  (T (rlogger.dribble "[~a] Creature appeared to finish, but failed to return eof: ~a"
+	  (T (rlogger.error "[~a] Creature appeared to finish, but failed to return eof: ~a"
 			      (tick-number (world creature))
 			      rv)
 	     (got-the-pox creature "Failed to find EOF")))

@@ -1,5 +1,5 @@
 (in-package :CSE)
-
+(declaim (optimize (debug 3)))
 (defun lookup (key environment)
   "Find a value in the environment by key."
   (let ((val (assoc key environment)))
@@ -8,6 +8,7 @@
 
 (defun append-to-environment (key datum environment)
   (acons key datum environment))
+
 
 (defstruct (closure (:constructor make-lambda (name control)))
   "A closure needs to keep track of the variable name, the function body (control)
@@ -172,11 +173,9 @@ up to whoever originally invoked the interpreter."
  returned function will restart the interpretation.
 The beta-reduction is a function that can perform other side effects when any beta-reduction
  is performed by the interpreter."
-  (let* ((flattened (flattener standardized-tree))
-	 (frame (make-frame flattened
-			    primary-environment nil)))
+  (let ((flattened (flattener standardized-tree)))
     (lambda ()
-      (start-CSE-machine frame
+      (start-CSE-machine (make-frame flattened primary-environment nil)
 			 '()
 			 beta-reduction-cost))))
 
@@ -206,3 +205,4 @@ The beta-reduction is a function that can perform other side effects when any be
 		     (T (error "Found node ~a internally on a standardized tree." node))))
 		 (list tree))))
     (append (rflat tree ) (list 'dna:eof))))
+
