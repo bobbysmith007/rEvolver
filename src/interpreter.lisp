@@ -68,8 +68,13 @@ up to whoever originally invoked the interpreter."
   ((rator :initarg :rator)
    (rand :initarg :rand)))
 (define-condition unbound-name (code-error)
-  ((name :initarg :name)
-   (environment :initarg :environment)))
+  ((name :initarg :name :reader unbound-name-name)
+   (environment :initarg :environment :reader unbound-name-environment))
+  (:report (lambda (condition stream)
+	     (format stream "~a is unbound in ~a"
+		     (unbound-name-name condition)
+		     (unbound-name-environment condition)
+		     ))))
 
 (defun start-CSE-machine (frame stack beta-reduction-cost)
   (handler-case  
@@ -133,7 +138,7 @@ up to whoever originally invoked the interpreter."
 			      (rand (pop-stack)))
 			 ;;we are performing a beta-reduction. let the outside environment know.
 			 ;; this could possibly escape... ok
-			 (funcall beta-reduction-cost)
+			 (when beta-reduction-cost (funcall beta-reduction-cost))
 			 (cond ((closure-p rator)
 				;;cse rule 4 apply lambda
 				(new-frame rator rand))
@@ -175,9 +180,11 @@ The beta-reduction is a function that can perform other side effects when any be
  is performed by the interpreter."
   (let ((flattened (flattener standardized-tree)))
     (lambda ()
-      (start-CSE-machine (make-frame flattened primary-environment nil)
-			 '()
-			 beta-reduction-cost))))
+      "This is root interpreter continuation."
+      (let ((frame (make-frame flattened primary-environment nil))
+	    (stack '()))
+	
+      (start-CSE-machine frame stack beta-reduction-cost)))))
 
 
 (defun lchild (tree)
