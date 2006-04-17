@@ -64,7 +64,7 @@
 	do
 	(let ((cr cr))
 ;;	  (setf *golem* cr)
-	  (schedule (lambda () (animate cr)) w 1))
+	  (schedule (lambda () (animate cr (creature-fn cr))) w 1))
 	collect cr))
 
 (defmethod creatures ((w world))
@@ -85,7 +85,7 @@
 	  do
 	  (let ((new-cr new-cr))
 	    ;;	  (setf *golem* new-cr)
-	    (schedule (lambda () (animate new-cr)) w 1))
+	    (schedule (lambda () (animate new-cr (creature-fn new-cr))) w 1))
 	  collect new-cr)))
 
 (defmethod advance-time ((world world))
@@ -115,7 +115,7 @@
   ;;TODO: at some point having creatures automatically recycled in here.
   )
 
-(defun make-new-world ()
+(defun make-new-world (&key init-creature-count)
   (let ((map (make-instance '2d-array-map
 			    :x-size (world-size *simulation*)
 			    :y-size (world-size *simulation*))))
@@ -133,7 +133,7 @@
 		 ))
 	;;setup energy drops
 	(schedule #'drop-energy-and-re-add world 1)
-	(populate-world world (initial-creature-count *simulation*)))
+	(populate-world world (or init-creature-count (initial-creature-count *simulation*))))
       world)))
 
 (defmethod drop-random-energy ((world world) frequency energy-to-add-max/spot )

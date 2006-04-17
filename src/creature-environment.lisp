@@ -130,7 +130,5 @@ of higher arity."
   (rlogger.debug "WOOHOO! Reproduction! ~a " golem)
   ;;reducing the energy of the creature is taken care of by the costly-creature-fn.
   (let ((cr (clone-with-mutation golem)))
-    (schedule #'(lambda ()
-		  (animate cr))
-	      (world golem)
-	      (function-time-cost 'dna:asexually-reproduce *simulation*))))
+    (reschedule cr (creature-fn cr)
+		(function-time-cost 'dna:asexually-reproduce *simulation*))))
