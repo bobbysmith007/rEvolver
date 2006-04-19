@@ -7,7 +7,8 @@
   (:documentation "A location on a map."))
 
 (defclass rEvolver-map ()
-  ((free-energy :initform 0 :accessor free-energy))
+  ((free-energy :initform 0 :accessor free-energy)
+   (creature-count :initform 0 :accessor creature-count))
   (:documentation "Generic map interface."))
 
 (defclass 2d-array-map (rEvolver-map)

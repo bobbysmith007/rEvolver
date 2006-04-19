@@ -79,7 +79,6 @@ of higher arity."
 				(progn
 				  (use-energy creature
 					      (function-energy-cost ',name *simulation*))
-				  (rlogger.dribble "Used energy, now going to resched.")
 				  (apply-time-cost ',name creature ,k (progn ,@body)))
 			      (error (e) (error 'CSE:code-error :original-error e)))))
 			 (error "I dont think we should ever get here if we are properly interrupting")

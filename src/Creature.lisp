@@ -14,7 +14,7 @@
    (max-energy :accessor max-energy :initform 0 :initarg :max-energy)
    
    (energy :accessor energy :initform 0 :initarg :energy)
-   (node :accessor node )
+   (node :accessor node :initform nil)
    (world :reader world :initarg :world)
    (dna :accessor dna-of :initarg :dna :initform (generate-tree (depth-bound *simulation*)))
    (creature-fn :accessor creature-fn :initform nil :initarg creature-fn)
@@ -25,8 +25,7 @@
 				       &allow-other-keys)
   (declare (ignore slots))
   (add-creature creature node)
-  (add-creature creature world)
-
+  
   (if (not max-energy)
       (setf (max-energy creature)
 	    (or energy (energy creature))))
@@ -85,11 +84,14 @@
 		  (tick-number (world creature))
 		  (animation-count creature))
     (setf *golem* creature))
+  (unless (node creature)
+    ;;we need to be able to remove them to keep correct counts.
+    ;;but maybe they already have been.
+    (break "Creature died while not on a node."))
   (when (node creature)
     ;;the creature 'decays' returning energy to the system
     (when (< 0 (energy creature))
       (add-energy (node creature) (energy creature)))
-    (remove-creature creature (world creature))
     (remove-creature creature (node creature)))
   (setf (energy creature) 0)
   (signal 'cse:escape :reason reason)
@@ -112,22 +114,21 @@
 
 (defmethod add-creature ((creature creature) (node node))
   "add a creature to a node."
-  (push creature (creatures-of node))
-  (setf (node creature) node))
+  (if (node creature)
+      (error "Creature is already on a node.")
+      (progn (push creature (creatures-of node))
+	     (setf (node creature) node)
+	     (incf (creature-count (revolver-map node)))))
+  )
 
 (defmethod remove-creature ((creature creature) (node node))
   "Take a creature out of a node."
-  (setf (creatures-of node) (delete creature (creatures-of node) :test #'eq))
-  (setf (node creature) nil))
+  (if (null (node creature))
+      (error "Can't remove a creature that isn't on a node.")
+      (progn (push creature (creatures-of node))
+	     (setf (node creature) node)
+	     (incf (creature-count (revolver-map node))))))
 
-(defmethod add-creature ((golem creature) (terra world))
-  (with-slots (creature-count) terra
-    (setf creature-count (1+ creature-count)))
-  )
-(defmethod remove-creature ((golem creature) (terra world))
-  (with-slots (creature-count) terra
-    (setf creature-count (1- creature-count)))
-  )
 
 (defmethod reschedule ((creature creature) continuation ticks &optional (reason nil))
   (unless (alivep creature)
@@ -184,3 +185,9 @@
   (format stream "#<(Creature :Id ~a :Energy ~a :AC ~A)>"
 	  (unique-id cr) (energy cr) (animation-count cr)))
 
+(defun find-creature (id world)
+  (some #'identity (map-nodes (lambda (node)
+				(find id
+				      (creatures-of node)
+				      :key #'unique-id))
+			      (world-map world))))

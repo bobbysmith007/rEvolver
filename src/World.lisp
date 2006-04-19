@@ -7,8 +7,7 @@
    (queue :initform '()
 	  :accessor queue
 	  :documentation "The what to do next queue. Leftist Min Priority Queue")
-   (creature-count :initform 0 :accessor creature-count)
-   
+      
    (population-infusions :initform 0 :accessor population-infusions)
    (repopulation-infusions :initform 0 :accessor repopulation-infusions)
    ))
@@ -77,10 +76,13 @@
     
     (loop for i to num
 	  for cr = (random-elt creatures)
-	  for new-cr = (clone-with-mutation cr :energy #'max-energy)
+	  for new-cr = (clone-with-mutation cr
+					    :energy #'max-energy
+					    :node (random-node (world-map *world*)))
 	  do
 	  (let ((new-cr new-cr))
-	    ;;	  (setf *golem* new-cr)
+	    
+	    
 	    (schedule (lambda () (animate new-cr (creature-fn new-cr))) w 1))
 	  collect new-cr)))
 
@@ -88,23 +90,23 @@
   "Advance a world a tick by advancing any creatures for that tick."
   (rlogger.info "Advancing the world from tick: ~a creature-count: ~a free-energy: ~a (~a/node)"
 		(tick-number world)
-		(creature-count world)
+		(creature-count (world-map world))
 		(free-energy (world-map world))
 		(truncate
 		 (/ (free-energy (world-map world))
 		    (* (world-size *simulation*)
 		       (world-size *simulation*)))))
-  (when (<= (creature-count world)
+  (when (<= (creature-count (world-map world))
 	    (* (initial-creature-count *simulation*) .10))
     ;;The point here is to reward the most rugged creatures by using them
     ;;as a base for the next generation
-    (when (> (creature-count world) 0)
+    (when (> (creature-count (world-map world)) 0)
       (repopulate-world world
 			(truncate (* .2 (- (initial-creature-count *simulation*)
-					   (creature-count world))))))
+					   (creature-count (world-map world)))))))
     ;;as well as some fresh ones.
     (populate-world world (- (initial-creature-count *simulation*)
-			     (creature-count world))))
+			     (creature-count (world-map world)))))
   
   (call-next-method) ;increment tick
   (process-queue-for-tick world)
