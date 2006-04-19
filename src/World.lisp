@@ -1,11 +1,7 @@
 (in-package :rEvolver)
 
 (defclass world (ticker)
-  ((possible-creatures :initform '()
-		       :allocation :class
-		       :accessor possible-creatures
-		       :documentation "List of classes of creatures that are allowed in this world")
-   (world-map :initarg :map
+  ((world-map :initarg :map
 	      :accessor world-map)
 
    (queue :initform '()
