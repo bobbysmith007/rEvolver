@@ -190,4 +190,4 @@
 				(find id
 				      (creatures-of node)
 				      :key #'unique-id))
-			      (world-map world))))
+			      (revolver-map world))))

@@ -17,7 +17,7 @@
 
 
 '(defun random-location ()
-  (let ((m (world-map *world*)))
+  (let ((m (revolver-map *world*)))
     (random-node m)))
 
 '(make-new-world)

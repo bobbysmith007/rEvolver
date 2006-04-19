@@ -130,12 +130,12 @@ We want to have a non-zero minimum so they can die from these functions.")
 		 (animation-count *golem*)
 		 (repopulation-infusions *world*)
 		 (population-infusions *world*)
-		 (free-energy (world-map *world*))
+		 (free-energy (revolver-map *world*))
 		 (truncate
-		  (/ (free-energy (world-map *world*))
+		  (/ (free-energy (revolver-map *world*))
 		     node-count))))
 (dna-of *golem*)
-(creatures (world-map *world*) )
+(creatures (revolver-map *world*) )
 (setf (log.level 'rlogger) 3)
 
 

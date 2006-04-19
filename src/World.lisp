@@ -1,8 +1,8 @@
 (in-package :rEvolver)
 
 (defclass world (ticker)
-  ((world-map :initarg :map
-	      :accessor world-map)
+  ((revolver-map :initarg :map
+	      :accessor revolver-map)
 
    (queue :initform '()
 	  :accessor queue
@@ -36,7 +36,7 @@
 				       :data action))))
 
 (defmethod random-location ((w world))
-  (let ((m (world-map w)))
+  (let ((m (revolver-map w)))
     (random-node m)))
 
 (defmethod populate-world ((w World) num)
@@ -63,7 +63,7 @@
 	collect cr))
 
 (defmethod creatures ((w world))
-  (creatures (world-map w)))
+  (creatures (revolver-map w)))
 
 (defmethod repopulate-world ((w World) num)
   (rlogger.info "[~a] Repopulating world with: ~a"
@@ -78,7 +78,7 @@
 	  for cr = (random-elt creatures)
 	  for new-cr = (clone-with-mutation cr
 					    :energy #'max-energy
-					    :node (random-node (world-map *world*)))
+					    :node (random-node (revolver-map *world*)))
 	  do
 	  (let ((new-cr new-cr))
 	    
@@ -90,23 +90,23 @@
   "Advance a world a tick by advancing any creatures for that tick."
   (rlogger.info "Advancing the world from tick: ~a creature-count: ~a free-energy: ~a (~a/node)"
 		(tick-number world)
-		(creature-count (world-map world))
-		(free-energy (world-map world))
+		(creature-count (revolver-map world))
+		(free-energy (revolver-map world))
 		(truncate
-		 (/ (free-energy (world-map world))
+		 (/ (free-energy (revolver-map world))
 		    (* (world-size *simulation*)
 		       (world-size *simulation*)))))
-  (when (<= (creature-count (world-map world))
+  (when (<= (creature-count (revolver-map world))
 	    (* (initial-creature-count *simulation*) .10))
     ;;The point here is to reward the most rugged creatures by using them
     ;;as a base for the next generation
-    (when (> (creature-count (world-map world)) 0)
+    (when (> (creature-count (revolver-map world)) 0)
       (repopulate-world world
 			(truncate (* .2 (- (initial-creature-count *simulation*)
-					   (creature-count (world-map world)))))))
+					   (creature-count (revolver-map world)))))))
     ;;as well as some fresh ones.
     (populate-world world (- (initial-creature-count *simulation*)
-			     (creature-count (world-map world)))))
+			     (creature-count (revolver-map world)))))
   
   (call-next-method) ;increment tick
   (process-queue-for-tick world)
@@ -135,7 +135,7 @@
       world)))
 
 (defmethod drop-random-energy ((world world) frequency energy-to-add-max/spot )
-  (let ((m (world-map world))
+  (let ((m (revolver-map world))
 	(sum 0))
     (dotimes (n (* frequency (x-size m) (y-size m)))
       (let* ((l (random-node m))
