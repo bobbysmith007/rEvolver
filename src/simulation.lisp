@@ -10,7 +10,7 @@
 	  :documentation "Our World.  The instance will be created in shared-initialize
                           using other values in our simulation.")
    (initial-creature-count
-    :accessor initial-creature-count :initarg :initial-creature-count :initform 128
+    :accessor initial-creature-count :initarg :initial-creature-count :initform 4
     :documentation
     "The world starts with this number of randomly generated tree structures" )
    
@@ -124,8 +124,8 @@ We want to have a non-zero minimum so they can die from these functions.")
   (rlogger.error "[~a] Creatures: ~a (~a/node)  Animation-record: ~a  population(~a,~a) free-energy: ~a (~a/node)"
 		 
 		 (tick-number *world*)
-		 (creature-count *world*)
-		 (float (/ (creature-count *world*)
+		 (creature-count (revolver-map *world*))
+		 (float (/ (creature-count (revolver-map *world*))
 		    node-count))
 		 (animation-count *golem*)
 		 (repopulation-infusions *world*)

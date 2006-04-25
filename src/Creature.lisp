@@ -1,6 +1,6 @@
 (in-package :rEvolver)
 
-;;(declaim (optimize (debug 3)))
+(declaim (optimize (debug 3)))
 
 (defclass creature ()
   ( 

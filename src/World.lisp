@@ -86,16 +86,29 @@
 	    (schedule (lambda () (animate new-cr (creature-fn new-cr))) w 1))
 	  collect new-cr)))
 
+(defmethod advance-time :around ((world world))
+  (let ((the-tick (tick-number world)))
+    (rlogger.info "Advancing tick: ~a creature-count: ~a free-energy: ~a (~a/node)"
+		  the-tick
+		  (creature-count (revolver-map world))
+		  (free-energy (revolver-map world))
+		  (truncate
+		   (/ (free-energy (revolver-map world))
+		      (* (world-size *simulation*)
+			 (world-size *simulation*)))))
+    (call-next-method)
+    (rlogger.info "Finished  tick: ~a creature-count: ~a free-energy: ~a (~a/node)"
+		  the-tick
+		  (creature-count (revolver-map world))
+		  (free-energy (revolver-map world))
+		  (truncate
+		   (/ (free-energy (revolver-map world))
+		      (* (world-size *simulation*)
+			 (world-size *simulation*)))))))
+
 (defmethod advance-time ((world world))
   "Advance a world a tick by advancing any creatures for that tick."
-  (rlogger.info "Advancing the world from tick: ~a creature-count: ~a free-energy: ~a (~a/node)"
-		(tick-number world)
-		(creature-count (revolver-map world))
-		(free-energy (revolver-map world))
-		(truncate
-		 (/ (free-energy (revolver-map world))
-		    (* (world-size *simulation*)
-		       (world-size *simulation*)))))
+  
   (when (<= (creature-count (revolver-map world))
 	    (* (initial-creature-count *simulation*) .10))
     ;;The point here is to reward the most rugged creatures by using them
