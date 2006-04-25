@@ -21,7 +21,7 @@
    (animation-count :accessor animation-count :initform 0)
    ))
 (defmethod initialize-instance :after ((creature creature) &rest slots
-				       &key node world max-energy energy creature-fn
+				       &key node  max-energy energy creature-fn
 				       &allow-other-keys)
   (declare (ignore slots))
   (add-creature creature node)
@@ -97,11 +97,6 @@
   (signal 'cse:escape :reason reason)
   creature)
 
-;(define-condition has-the-pox ( error)
-;  ((original-error :initarg :original-error :accessor original-error)))
-
-(defmethod got-the-pox ((creature creature) error)
-  (die creature "Got the Pox"))
 
 (defmethod use-energy ((creature creature) (amount (eql nil))) ())
 (defmethod use-energy ((creature creature) (amount function))
@@ -125,9 +120,10 @@
   "Take a creature out of a node."
   (if (null (node creature))
       (error "Can't remove a creature that isn't on a node.")
-      (progn (push creature (creatures-of node))
-	     (setf (node creature) node)
-	     (decf (creature-count (revolver-map node))))))
+      (progn
+	(setf (creatures-of node) (delete creature (creatures-of node))
+		   (node creature) nil)
+	(decf (creature-count (revolver-map node))))))
 
 
 (defmethod reschedule ((creature creature) continuation ticks &optional (reason nil))
@@ -150,34 +146,35 @@
 		   (tick-number (world creature))
 		   creature))
   
-  (handler-bind ((cse:code-error
-		  #'(lambda (er)
-		      (got-the-pox creature er)
-		      (return-from animate nil)))
-		 (cse:escape
+  (handler-bind ((cse:escape
 		  #'(lambda (esc);;the continuation should already have been set.
 		      (rlogger.dribble "[~a] ~a escaped because: ~a"
 				       (tick-number (world creature))
 				       creature
 				       (cse:reason esc) )
 		      (return-from animate (cse:reason esc)))))
-    ;;any animation costs something.
-    (use-energy creature (animation-cost *simulation*))
-    (incf (animation-count creature))
+    (handler-bind ((cse:code-error
+		    #'(lambda (er)
+			(die creature (cse::original-error er))
+			(break "after the pox")
+			(return-from animate nil))))
+      ;;any animation costs something.
+      (use-energy creature (animation-cost *simulation*))
+      (incf (animation-count creature))
       
-    (let ((rv (funcall cr-fn)))
-      (cond
-	((eq 'dna:eof rv)
-	 (rlogger.dribble "[~a] ~a succesfully reached end of dna. Scheduling reanimation."
-			  (tick-number (world creature))
-			  creature)
-	 (use-energy creature (rerun-cost *simulation*))
-	 (reschedule creature (creature-fn creature) (sleep-time *simulation*) 'dna:eof))
+      (let ((rv (funcall cr-fn)))
+	(cond
+	  ((eq 'dna:eof rv)
+	   (rlogger.dribble "[~a] ~a succesfully reached end of dna. Scheduling reanimation."
+			    (tick-number (world creature))
+			    creature)
+	   (use-energy creature (rerun-cost *simulation*))
+	   (reschedule creature (creature-fn creature) (sleep-time *simulation*) 'dna:eof))
 	    
-	(T (rlogger.error "[~a] Creature appeared to finish, but failed to return eof: ~a"
-			  (tick-number (world creature))
-			  rv)
-	   (got-the-pox creature "Failed to find EOF"))))))
+	  (T (rlogger.error "[~a] Creature appeared to finish, but failed to return eof: ~a"
+			    (tick-number (world creature))
+			    rv)
+	     (got-the-pox creature "Failed to find EOF")))))))
 
 
 

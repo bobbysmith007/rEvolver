@@ -23,6 +23,10 @@
 		    do
 		    (multiple-value-bind (current-node new-queue)
 			(pop-tree! (queue world))
+		      (rlogger.dribble "[~a] Creatures: ~a,~a"
+				       (tick-number world)
+				       (creature-count (revolver-map world))
+				       (length (creatures world)))
 		      (setf queue new-queue)
 		      (restart-case (funcall (data current-node))
 		       (continue-next-action () nil))))))
@@ -44,23 +48,22 @@
   (rlogger.info "[~a] Populating world with: ~a"
 		(tick-number w)
 		num)
-  (loop for i from 1 to num
-	for cr = (make-instance 'Creature
-				:energy (init-creature-max-energy *simulation*)
-				:world w 
-				:node (random-location w)
-				:mutation-rate (base-mutation-rate *simulation*)
-				:value-mutation-rate (base-value-mutation-rate *simulation*)
-				:mutation-depth (base-mutation-depth *simulation*)
-
-				;;DNA to move twice
-				;;:dna '(dna:gamma (dna:gamma dna:cons (dna:gamma dna:move nil)) (dna:gamma dna:move nil))
-				)
-	do
-	(let ((cr cr))
-;;	  (setf *golem* cr)
-	  (schedule (lambda () (animate cr (creature-fn cr))) w 1))
-	collect cr))
+  (mapc #'(lambda (cr)
+		     (schedule (lambda () (animate cr (creature-fn cr))) w 1)
+		     cr)
+	(loop for i from 1 to num
+	      for cr = (make-instance 'Creature
+				      :energy (init-creature-max-energy *simulation*)
+				      :world w 
+				      :node (random-location w)
+				      :mutation-rate (base-mutation-rate *simulation*)
+				      :value-mutation-rate (base-value-mutation-rate *simulation*)
+				      :mutation-depth (base-mutation-depth *simulation*)
+				      
+				      ;;DNA to move twice
+				      ;;:dna '(dna:gamma (dna:gamma dna:cons (dna:gamma dna:move nil)) (dna:gamma dna:move nil))
+				      )
+	      collect cr)))
 
 (defmethod creatures ((w world))
   (creatures (revolver-map w)))

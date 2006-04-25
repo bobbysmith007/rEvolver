@@ -64,8 +64,8 @@
 
 (defmethod map-nodes (fn (map 2d-array-map))
   (let ((list ()))
-    (loop for x from 0 to (x-size map)
-	  do (loop for y from 0 to (y-size map)
+    (loop for x from 0 to (1- (x-size map))
+	  do (loop for y from 0 to (1- (y-size map))
 		   do (push (funcall fn (find-node-xy map x y)) list)))
     (nreverse list)
     )
