@@ -23,10 +23,6 @@
 		    do
 		    (multiple-value-bind (current-node new-queue)
 			(pop-tree! (queue world))
-		      (rlogger.dribble "[~a] Creatures: ~a,~a"
-				       (tick-number world)
-				       (creature-count (revolver-map world))
-				       (length (creatures world)))
 		      (setf queue new-queue)
 		      (restart-case (funcall (data current-node))
 		       (continue-next-action () nil))))))

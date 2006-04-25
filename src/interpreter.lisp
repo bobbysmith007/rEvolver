@@ -113,10 +113,10 @@ up to whoever originally invoked the interpreter."
 		 "Interrupt the current machine by calling the interrupt's continutation
 		passing it the interpreter continuation and finally returning it's value to the top.
 		the result up to the whomever originally invoked the machine."
-		 (signal 'escape
-			 :reason
-			 (funcall (slot-value interrupt 'continuation)
-				  (build-rator-continuation)))))
+		 (let ((reason (funcall (slot-value interrupt 'continuation)
+				  (build-rator-continuation))))
+		   (signal 'escape
+			   :reason reason))))
 
 	(handler-bind ((interrupt #'handle-interrupt))
 	  (loop 

@@ -155,7 +155,7 @@
 		      (return-from animate (cse:reason esc)))))
     (handler-bind ((cse:code-error
 		    #'(lambda (er)
-			(die creature (cse::original-error er))
+			(die creature "Got the pox")
 			(break "after the pox")
 			(return-from animate nil))))
       ;;any animation costs something.

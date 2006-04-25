@@ -67,7 +67,7 @@
     (loop for x from 0 to (1- (x-size map))
 	  do (loop for y from 0 to (1- (y-size map))
 		   do (push (funcall fn (find-node-xy map x y)) list)))
-    (nreverse list)
+    (reverse list)
     )
   )
 
