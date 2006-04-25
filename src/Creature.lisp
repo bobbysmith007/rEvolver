@@ -127,7 +127,7 @@
       (error "Can't remove a creature that isn't on a node.")
       (progn (push creature (creatures-of node))
 	     (setf (node creature) node)
-	     (incf (creature-count (revolver-map node))))))
+	     (decf (creature-count (revolver-map node))))))
 
 
 (defmethod reschedule ((creature creature) continuation ticks &optional (reason nil))
