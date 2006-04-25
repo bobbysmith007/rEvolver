@@ -1,5 +1,5 @@
 (in-package :CSE)
-(declaim (optimize (debug 3)))
+;(declaim (optimize (debug 3)))
 (defun lookup (key environment)
   "Find a value in the environment by key."
   (let ((val (assoc key environment)))

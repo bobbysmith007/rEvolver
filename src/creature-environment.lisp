@@ -61,6 +61,7 @@ of higher arity."
 	 
 	 (funcall continuation cont-arg))
     (values name val))
+  
   )
 
 
@@ -75,13 +76,15 @@ of higher arity."
 			 (rlogger.dribble "Starting: ~a on ~a " ',name creature)
 			 (interrupt-interpreter/cc
 			  (lambda (,k)
-			    (handler-case
-				(progn
-				  (use-energy creature
-					      (function-energy-cost ',name *simulation*))
-				  (apply-time-costs ',name creature ,k (progn ,@body)))
-			      (error (e) (error 'CSE:code-error :original-error e)))))
-			 (error "I dont think we should ever get here if we are properly interrupting")
+			    (use-energy creature
+					(function-energy-cost ',name *simulation*))
+			    
+			    (apply-time-costs
+			     ',name creature
+			     ,k
+			     (handler-case (progn ,@body)
+			       (error (e) (error 'CSE:code-error :original-error e))))))
+			  (error "I dont think we should ever get here if we are properly interrupting")
 			 )))))
 
 	(pushenv 'dna:me creature)

@@ -1,6 +1,6 @@
 (in-package :rEvolver)
 
-(declaim (optimize (debug 3)))
+;(declaim (optimize (debug 3)))
 
 (defclass creature ()
   ( 
@@ -62,7 +62,7 @@
 					   mutation-rate value-mutation-rate)
        
        :dna new-dna
-       :creature-fn (unless dna-changed creature-fn)
+;       :creature-fn (unless dna-changed creature-fn)
        :world (or world (world golem))
        :node (or node (node golem))
        ))))

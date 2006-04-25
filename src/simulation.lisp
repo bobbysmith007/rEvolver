@@ -10,7 +10,7 @@
 	  :documentation "Our World.  The instance will be created in shared-initialize
                           using other values in our simulation.")
    (initial-creature-count
-    :accessor initial-creature-count :initarg :initial-creature-count :initform 4
+    :accessor initial-creature-count :initarg :initial-creature-count :initform 1024
     :documentation
     "The world starts with this number of randomly generated tree structures" )
    
