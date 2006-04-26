@@ -118,6 +118,17 @@ We want to have a non-zero minimum so they can die from these functions.")
 
 (defmethod next-id ((sim simulation))
   (funcall (slot-value sim '%next-id)))
+
+
+(defparameter *kill-sim* nil "Kill the running simulation cleanly")
+(defun runsim ( &rest keys &key (n 100) (new-world nil) &allow-other-keys )
+  (when new-world
+    (setf *world* (apply #'make-new-world (append keys '(:allow-other-keys t)))))
+  (dotimes (i n)
+    (if *kill-sim*
+	(return-from runsim)
+	(advance-time *world*))))
+
 #|
 (let ((node-count (* (world-size *simulation*)
 		      (world-size *simulation*))))
@@ -138,16 +149,6 @@ We want to have a non-zero minimum so they can die from these functions.")
 (creatures (revolver-map *world*) )
 (setf (log.level 'rlogger) 2)
 (setf *golem* nil)
-
-(defparameter *kill-sim* nil "Kill the running simulation cleanly")
-(defun runsim ( &rest keys &key (n 100) (new-world nil) &allow-other-keys )
-  (when new-world
-    (setf *world* (apply #'make-new-world (append keys '(:allow-other-keys t)))))
-  (dotimes (i n)
-    (if *kill-sim*
-	(return-from runsim)
-	(advance-time *world*))))
-
 
 (setf *world* (let ((map (make-instance '2d-array-map
 						  :x-size (world-size *simulation*)

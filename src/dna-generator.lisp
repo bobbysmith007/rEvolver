@@ -37,7 +37,7 @@ TODO: This should probably actually make some sort of struct rather than redicul
 (defun right-part (rewrites-to) (car rewrites-to))
 
 (defun get-rewrite-tokens (rewrites-to)
-  (declare (optimize (debug 3)))
+;  (declare (optimize (debug 3)))
   (let ((right-part (right-part rewrites-to)))
     (cond ((listp right-part)
 	   (remove-if-not
@@ -112,7 +112,7 @@ TODO: This should probably actually make some sort of struct rather than redicul
 				(processed-grammar revolver:creature-dna)
 				(rewrite-name '?Start)
 				(symbol-table nil))
-  (declare (optimize (debug 3)))
+;  (declare (optimize (debug 3)))
   
     (let* (;get all of the rewrite possibilities of the rule
 	   (possibilities (if (<= current-depth 0)

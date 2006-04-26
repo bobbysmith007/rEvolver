@@ -86,24 +86,33 @@
 	  collect new-cr)))
 
 (defmethod advance-time :around ((world world))
-  (let ((the-tick (tick-number world)))
-    (rlogger.info "Advancing tick: ~a creature-count: ~a free-energy: ~a (~a/node)"
-		  the-tick
-		  (creature-count (revolver-map world))
-		  (free-energy (revolver-map world))
-		  (truncate
-		   (/ (free-energy (revolver-map world))
-		      (* (world-size *simulation*)
-			 (world-size *simulation*)))))
+  (let ((the-tick (tick-number world))
+	(node-count (* (world-size *simulation*)
+		      (world-size *simulation*))))
+ 
+    (rlogger.error "[~a] Creatures: ~a (~a/node)  Animation-record: ~a  population(~a,~a) free-energy: ~a (~a/node)"
+		 
+		   the-tick
+		   (creature-count (revolver-map *world*))
+		   (float (/ (creature-count (revolver-map *world*))
+			     node-count))
+		   (if *golem* (animation-count *golem*) 0)
+		   (repopulation-infusions *world*)
+		   (population-infusions *world*)
+		   (free-energy (revolver-map *world*))
+		   (truncate
+		    (/ (free-energy (revolver-map *world*))
+		       node-count)))
     (call-next-method)
-    (rlogger.info "Finished  tick: ~a creature-count: ~a free-energy: ~a (~a/node)"
-		  the-tick
-		  (creature-count (revolver-map world))
-		  (free-energy (revolver-map world))
-		  (truncate
-		   (/ (free-energy (revolver-map world))
-		      (* (world-size *simulation*)
-			 (world-size *simulation*)))))))
+;    (rlogger.info "Finished  tick: ~a creature-count: ~a free-energy: ~a (~a/node)"
+;		  the-tick
+;		  (creature-count (revolver-map world))
+;		  (free-energy (revolver-map world))
+;		  (truncate
+;		   (/ (free-energy (revolver-map world))
+;		      (* (world-size *simulation*)
+;			 (world-size *simulation*)))))
+    ))
 
 (defmethod advance-time ((world world))
   "Advance a world a tick by advancing any creatures for that tick."
@@ -151,8 +160,7 @@
 	(sum 0))
     (dotimes (n (* frequency (x-size m) (y-size m)))
       (let* ((l (random-node m))
-	     (e (random energy-to-add-max/spot))
-	     (actual-energy ))
+	     (e (random energy-to-add-max/spot)))
 	(incf sum (add-energy l e))))
     (rlogger.info "[~a] Dropped Energy: ~a"
 			       (tick-number world)

@@ -18,7 +18,5 @@
 (defmethod advance-time ((ticker ticker))
   (incf (tick-number ticker)))
 
-(defgeneric add (creature world)
-  (:documentation "Add a creature to a world."))
 
 (defparameter revolver:Creature-dna nil)
