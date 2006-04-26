@@ -90,7 +90,7 @@
 	(node-count (* (world-size *simulation*)
 		      (world-size *simulation*))))
  
-    (rlogger.error "[~a] Creatures: ~a (~a/node)  Animation-record: ~a  population(~a,~a) free-energy: ~a (~a/node)"
+    (rlogger.info "[~a] Creatures: ~a (~a/node)  Animation-record: ~a  population(~a,~a) free-energy: ~a (~a/node)"
 		 
 		   the-tick
 		   (creature-count (revolver-map *world*))

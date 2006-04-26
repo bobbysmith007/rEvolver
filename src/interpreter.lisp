@@ -172,19 +172,19 @@ up to whoever originally invoked the interpreter."
 
 
 
-(defun make-interpreter (standardized-tree primary-environment &optional beta-reduction-cost)
+(defun make-interpreter (flattened-tree primary-environment &optional beta-reduction-cost)
   "Takes a standardized tree and returns a function that when invoked will
  commence interpret the tree in the primary environment. Reinnvokng the
  returned function will restart the interpretation.
 The beta-reduction is a function that can perform other side effects when any beta-reduction
  is performed by the interpreter."
-  (let ((flattened (flattener standardized-tree)))
-    (lambda ()
-      "This is root interpreter continuation."
-      (let ((frame (make-frame flattened primary-environment nil))
-	    (stack '()))
-	
-      (start-CSE-machine frame stack beta-reduction-cost)))))
+  
+  (lambda ()
+    "This is root interpreter continuation."
+    (let ((frame (make-frame flattened-tree primary-environment nil))
+	  (stack '()))
+      
+      (start-CSE-machine frame stack beta-reduction-cost))))
 
 
 (defun lchild (tree)
@@ -196,20 +196,15 @@ The beta-reduction is a function that can perform other side effects when any be
 
 (defun flattener (tree)
   (labels ((rflat (tree )
-	     (if (and tree (listp tree))
-		 (let ((node (root tree)))
-		   (cond
-		     ((listp node)
-		      (append (rflat (rchild tree))
-			      (rflat (lchild tree))
-			      (rflat node)))
-		     ((eq node 'dna:lambda)
-		      (list (make-lambda (lchild tree) (rflat (rchild tree)))))
-		     ((eq node 'dna:gamma)
-		      (append (rflat (rchild tree))
-			      (rflat (lchild tree))
-			      '(dna:gamma)))
-		     (T (error "Found node ~a internally on a standardized tree." node))))
-		 (list tree))))
-    (append (rflat tree ) (list 'dna:eof))))
+	     (cond
+	       ((atom tree) (list tree))
+
+	       ((eq (root tree) 'dna:lambda)
+		(list (make-lambda (lchild tree) (rflat (rchild tree)))))
+	       ((eq (root tree) 'dna:gamma)
+		(nconc (rflat (rchild tree))
+		       (rflat (lchild tree))
+		       (list 'dna:gamma)))
+	       (T (error "Found node ~a internally on a standardized tree." node)))))
+    (nconc (rflat tree ) (list 'dna:eof))))
 

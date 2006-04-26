@@ -17,11 +17,12 @@
    (node :accessor node :initform nil)
    (world :reader world :initarg :world)
    (dna :accessor dna-of :initarg :dna :initform (generate-tree (depth-bound *simulation*)))
-   (creature-fn :accessor creature-fn :initform nil :initarg creature-fn)
+   (flattened-tree :accessor flattened-tree-of :initform nil )
+   (creature-fn :accessor creature-fn :initform nil )
    (animation-count :accessor animation-count :initform 0)
    ))
 (defmethod initialize-instance :after ((creature creature) &rest slots
-				       &key node  max-energy energy creature-fn
+				       &key node  max-energy energy flattened-tree
 				       &allow-other-keys)
   (declare (ignore slots))
   (add-creature creature node)
@@ -30,13 +31,14 @@
       (setf (max-energy creature)
 	    (or energy (energy creature))))
   
-    (setf (creature-fn creature)
-	  (or creature-fn
-	      (make-interpreter (dna-of creature)
-				(creature-environment creature)
-				#'(lambda ()
-				    (use-energy creature
-						(beta-reduction-cost *simulation*))))))
+    (setf
+     (flattened-tree-of creature) (cse::flattener (dna-of creature))
+     (creature-fn creature) (make-interpreter (flattened-tree-of creature)
+					      (creature-environment creature)
+					      #'(lambda ()
+						  (use-energy creature
+							      (beta-reduction-cost *simulation*))))
+	  )
   )
 
 
@@ -45,7 +47,7 @@
 (defmethod clone-with-mutation ((golem creature)
 				&key (energy #'energy) (world nil) (node nil))
   (with-slots (dna max-energy mutation-rate mutation-depth
-		   value-mutation-rate creature-fn)
+		   value-mutation-rate flattened-tree)
       golem
     (multiple-value-bind (new-dna dna-changed)
 	(maybe-mutate-tree dna mutation-rate mutation-depth)
@@ -62,7 +64,7 @@
 					   mutation-rate value-mutation-rate)
        
        :dna new-dna
-;       :creature-fn (unless dna-changed creature-fn)
+       :flattened-tree (unless dna-changed flattened-tree)
        :world (or world (world golem))
        :node (or node (node golem))
        ))))
