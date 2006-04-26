@@ -14,17 +14,17 @@
     :documentation
     "The world starts with this number of randomly generated tree structures" )
    
-   (world-size :accessor world-size :initarg :worldsize :initform 64
+   (world-size :accessor world-size :initarg :worldsize :initform 60
 	       :documentation "The size of one side of the map")
    ;;Energy drop details
    (node-energy-frequency
-    :accessor node-energy-frequency :initarg :node-energy-frequency :initform .25
+    :accessor node-energy-frequency :initarg :node-energy-frequency :initform .16
     :documentation "What percentage of nodes should get energy dropped on them.")
    (node-energy-max
-    :accessor node-energy-max :initarg :node-energy-max :initform 512
+    :accessor node-energy-max :initarg :node-energy-max :initform 2048
     :documentation "(random node-energy-max) will be dropped on nodes.")
    (drop-energy-turns
-    :accessor drop-energy-turns :initarg :drop-energy-turns :initform 4
+    :accessor drop-energy-turns :initarg :drop-energy-turns :initform 24
     :documentation "The period between energy drops.")
 
    
@@ -55,7 +55,7 @@
 We want to have a non-zero minimum so they can die from these functions.")
    
    (init-creature-max-energy
-    :accessor init-creature-max-energy :initarg :init-creature-max-energy :initform 256
+    :accessor init-creature-max-energy :initarg :init-creature-max-energy :initform 512
     :documentation "The max energy of newly generated creatures")
    
    (sleep-time
@@ -63,11 +63,11 @@ We want to have a non-zero minimum so they can die from these functions.")
     :documentation "How long to sleep after completing but before re-animating.")
    (rerun-cost
     :accessor rerun-cost :initarg :rerun-cost
-    :initform 4
+    :initform 32
     :documentation "The amount of energy that rerunning the program takes")
    
    (base-mutation-rate
-    :accessor base-mutation-rate :initarg :base-mutation-rate :initform .05
+    :accessor base-mutation-rate :initarg :base-mutation-rate :initform .08
     :documentation "What is the default 'Should I Mutate?' rate")
    (base-value-mutation-rate
     :accessor base-value-mutation-rate :initarg :base-value-mutation-rate :initform .05
@@ -78,20 +78,20 @@ We want to have a non-zero minimum so they can die from these functions.")
     :documentation "The depth bound of newly generated sub-trees")
 
    (animation-cost
-    :accessor animation-cost :initarg :animation-cost :initform 4
+    :accessor animation-cost :initarg :animation-cost :initform 8
     :documentation "How much energy any call to animate should cost. This is another failsafe.")
    (beta-reduction-cost
-    :initarg :beta-reduction-cost :accessor beta-reduction-cost :initform 2
+    :initarg :beta-reduction-cost :accessor beta-reduction-cost :initform 4
     :documentation "The energy a creature uses to beta-reduce its dna")
    (function-energy-costs
     :initarg :function-energy-costs
     :reader function-energy-costs
     :initform (list (cons 'dna:move
-			  (lambda (energy) (truncate (/ energy 16))))
-		    '(dna:feed . 8)
+			  (lambda (energy) (truncate (/ energy 8))))
+		    '(dna:feed . 16)
 		    '(dna:energy? . 4)
 		    (cons 'dna:asexually-reproduce
-			  ;;each creature get's half the (original- min)
+			  ;;eabch creature get's half the (original- min)
 			  ;; lost due to entropy
 			  (lambda (energy)
 			    (truncate (/ (+ energy
@@ -101,10 +101,10 @@ We want to have a non-zero minimum so they can die from these functions.")
    (function-time-costs
     :initarg :function-time-costs
     :reader function-time-costs
-    :initform '((dna:move . 5)
-		(dna:feed . 3)
-		(dna:energy? . 2)
-		(dna:asexually-reproduce . 7)))
+    :initform '((dna:move . 7)
+		(dna:feed . 5)
+		(dna:energy? . 3)
+		(dna:asexually-reproduce . 11)))
    
    ))
 
