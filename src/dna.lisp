@@ -90,6 +90,7 @@
      (?Terminal ->
       ((nil => nil)
        (t => t)
+       (zero => 0)
        (*gened-sym* => *gened-sym*)
        (Me => Me)
       ;Environment

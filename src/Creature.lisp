@@ -19,10 +19,13 @@
    (dna :accessor dna-of :initarg :dna :initform (generate-tree (depth-bound *simulation*)))
    (flattened-tree :accessor flattened-tree-of :initform nil )
    (creature-fn :accessor creature-fn :initform nil )
+
+   ;;some stats
+   (birthday :accessor birthday-of)
    (animation-count :accessor animation-count :initform 0)
    ))
 (defmethod initialize-instance :after ((creature creature) &rest slots
-				       &key node  max-energy energy flattened-tree
+				       &key world node max-energy energy flattened-tree
 				       &allow-other-keys)
   (declare (ignore slots))
   (add-creature creature node)
@@ -32,7 +35,8 @@
 	    (or energy (energy creature))))
   
     (setf
-     (flattened-tree-of creature) (cse::flattener (dna-of creature))
+     (birthday-of creature) (tick-number world)
+     (flattened-tree-of creature) (or flattened-tree (cse::flattener (dna-of creature)))
      (creature-fn creature) (make-interpreter (flattened-tree-of creature)
 					      (creature-environment creature)
 					      #'(lambda ()
@@ -135,9 +139,6 @@
   
   (schedule (lambda ()
 	      "The rescheduling lambda"
-	      (unless (alivep creature)
-		(break "The creature died between when it was rescheduled (for: ~a) and when the continuation was called:~a "
-		       reason creature))
 	      (animate creature continuation))
 	    (world creature)
 	    ticks))
@@ -157,7 +158,7 @@
 		      (return-from animate (cse:reason esc)))))
     (handler-bind ((cse:code-error
 		    #'(lambda (er)
-			(die creature "Got the pox")
+			(die creature er)
 			(break "after the pox")
 			(return-from animate nil))))
       ;;any animation costs something.
@@ -176,13 +177,13 @@
 	  (T (rlogger.error "[~a] Creature appeared to finish, but failed to return eof: ~a"
 			    (tick-number (world creature))
 			    rv)
-	     (got-the-pox creature "Failed to find EOF")))))))
+	     (error 'cse:code-error :original-error "Failed to find eof.")))))))
 
 
 
 (defmethod print-object ((cr creature) stream)
-  (format stream "#<(Creature :Id ~a :Energy ~a :AC ~A)>"
-	  (unique-id cr) (energy cr) (animation-count cr)))
+  (format stream "#<(Creature :Id ~a :DOB ~a :Energy ~a :AC ~A)>"
+	  (unique-id cr) (birthday-of cr) (energy cr) (animation-count cr)))
 
 (defun find-creature (id world)
   (some #'identity (map-nodes (lambda (node)

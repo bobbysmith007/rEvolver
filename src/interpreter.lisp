@@ -205,6 +205,6 @@ The beta-reduction is a function that can perform other side effects when any be
 		(nconc (rflat (rchild tree))
 		       (rflat (lchild tree))
 		       (list 'dna:gamma)))
-	       (T (error "Found node ~a internally on a standardized tree." node)))))
+	       (T (error "Found node ~a internally on a standardized tree." (root tree))))))
     (nconc (rflat tree ) (list 'dna:eof))))
 
