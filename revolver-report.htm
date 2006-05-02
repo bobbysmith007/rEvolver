@@ -19,12 +19,31 @@
 <hr>
 <a name="abstract"></a>
 <h2>Abstract</h2>
-<p></p>
+
+<p>The idea behind the rEvolver program was to provide an engine
+wherein to have fun with, and learn about genetic programming, as well
+as expanding our understanding of many different software construction
+and programming language concepts.  In rEvolver we generate
+"Creatures", which are vehicle for running DNA (a small, lambda
+calculus based program).  The DNA language is generated from a grammer
+like specification, and interpretted by a slightly modified CSE
+machine.  The CSE machine interpretter was modified to allow
+continuations, which we use to allow programs to be paused for a
+while.  This pausing of creature dna, allows us to interleave creature
+actions and simulate things taking time in our system. </p>
+
     
 <hr>
 <a name="generation"></a>
-<h2>Creature Language and Generation</h2>
-<p></p>
+<h2>Creature Language (DNA) and Generation</h2>
+
+<p>Our DNA language was based upon the lambda calculus and was built
+strongly in the principal of providing the bare minimum resources for
+interesting code. We started with abstraction ops {lambda and gamma},
+list operations {cons, car and cdr}, boolean functions{or, if, },and
+environment functions{move, look, feed, and energy}.  After getting
+all of these operations in order, we also added </p>
+
     
 <hr>
 <a name="interpretation"></a>
