@@ -93,7 +93,7 @@
   (unless (node creature)
     ;;we need to be able to remove them to keep correct counts.
     ;;but maybe they already have been.
-    (break "Creature died while not on a node."))
+    (break "~a died while not on a node." creature))
   (when (node creature)
     ;;the creature 'decays' returning energy to the system
     (when (< 0 (energy creature))
