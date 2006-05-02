@@ -50,27 +50,27 @@
    (creature-minimum-energy
     :accessor creature-minimum-energy
     :initarg :creature-minimum-energy
-    :initform 32
+    :initform 64
     :documentation "A lot of the costs are fractions of the current energy.
 We want to have a non-zero minimum so they can die from these functions.")
    
    (init-creature-max-energy
-    :accessor init-creature-max-energy :initarg :init-creature-max-energy :initform 512
+    :accessor init-creature-max-energy :initarg :init-creature-max-energy :initform 1024
     :documentation "The max energy of newly generated creatures")
    
    (sleep-time
-    :accessor sleep-time :initarg :sleep-time :initform 2
+    :accessor sleep-time :initarg :sleep-time :initform 3
     :documentation "How long to sleep after completing but before re-animating.")
    (rerun-cost
     :accessor rerun-cost :initarg :rerun-cost
-    :initform 32
+    :initform 64
     :documentation "The amount of energy that rerunning the program takes")
    
    (base-mutation-rate
-    :accessor base-mutation-rate :initarg :base-mutation-rate :initform .08
+    :accessor base-mutation-rate :initarg :base-mutation-rate :initform .04
     :documentation "What is the default 'Should I Mutate?' rate")
    (base-value-mutation-rate
-    :accessor base-value-mutation-rate :initarg :base-value-mutation-rate :initform .05
+    :accessor base-value-mutation-rate :initarg :base-value-mutation-rate :initform .08
     :documentation
     "What is the default max amount of change in a value that is mutated")
    (base-mutation-depth
@@ -78,20 +78,20 @@ We want to have a non-zero minimum so they can die from these functions.")
     :documentation "The depth bound of newly generated sub-trees")
 
    (animation-cost
-    :accessor animation-cost :initarg :animation-cost :initform 8
+    :accessor animation-cost :initarg :animation-cost :initform 16
     :documentation "How much energy any call to animate should cost. This is another failsafe.")
    (beta-reduction-cost
-    :initarg :beta-reduction-cost :accessor beta-reduction-cost :initform 4
+    :initarg :beta-reduction-cost :accessor beta-reduction-cost :initform 8
     :documentation "The energy a creature uses to beta-reduce its dna")
    (function-energy-costs
     :initarg :function-energy-costs
     :reader function-energy-costs
     :initform (list (cons 'dna:move
 			  (lambda (energy) (truncate (/ energy 8))))
-		    '(dna:feed . 16)
-		    '(dna:energy? . 4)
+		    '(dna:feed . 32)
+		    '(dna:energy? . 8)
 		    (cons 'dna:asexually-reproduce
-			  ;;eabch creature get's half the (original- min)
+			  ;;each creature get's half the (original- min)
 			  ;; lost due to entropy
 			  (lambda (energy)
 			    (truncate (/ (+ energy
@@ -103,7 +103,7 @@ We want to have a non-zero minimum so they can die from these functions.")
     :reader function-time-costs
     :initform '((dna:move . 7)
 		(dna:feed . 5)
-		(dna:energy? . 3)
+		(dna:energy? . 1)
 		(dna:asexually-reproduce . 11)))
    
    ))

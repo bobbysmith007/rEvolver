@@ -147,7 +147,8 @@
   (unless (alivep creature)
     (rlogger.error "[~a] Apparently we tried to animate a dead creature or something. ~a"
 		   (tick-number (world creature))
-		   creature))
+		   creature)
+    (return-from animate nil))
   
   (handler-bind ((cse:escape
 		  #'(lambda (esc);;the continuation should already have been set.

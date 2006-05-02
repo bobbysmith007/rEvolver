@@ -10,14 +10,18 @@
   (acons key datum environment))
 
 
-(defstruct (closure (:constructor make-lambda (name control)))
+(defstruct (unclosed-lambda (:constructor make-unclosed-lambda (name control)))
   "A closure needs to keep track of the variable name, the function body (control)
  and what environment it is closed. Since right now this object is created as an
  unclosed function that is later fixed to an environment the contstructor only
  takes the name and control."
-  environment
   name
   control)
+
+(defstruct (closure (:constructor make-closure (unclosed-lambda environment)))
+  "A lambda in an environment"
+  unclosed-lambda
+  environment)
 
 
 (defstruct (frame (:constructor make-frame
@@ -32,11 +36,12 @@
   "Most of the new frames are going to be created when we evaluate a closed fun.
 This function creates a new frame that will evaluate the body of the closure,
 with the environment it was closed to plus the name+argument pair."
-  (make-frame (closure-control closure)
-	      (append-to-environment (closure-name closure)
-				     value
-				     (closure-environment closure))
-	      previous))
+  (let ((unclosed-lambda (closure-unclosed-lambda closure)))
+    (make-frame (unclosed-lambda-control unclosed-lambda)
+		(append-to-environment (unclosed-lambda-name unclosed-lambda)
+				       value
+				       (closure-environment closure))
+		previous)))
 
 (defun peek-op (frame)
   (first (frame-control frame)))
@@ -129,9 +134,8 @@ up to whoever originally invoked the interpreter."
 		    (cond
 		
 		      ;;cse rule 2 stack a lambda
-		      ((closure-p op)
-		       (setf (closure-environment op) (frame-environment frame))
-		       (push-stack op))
+		      ((unclosed-lambda-p op)
+		       (push-stack (make-closure op (frame-environment frame))))
 		
 		      ((eq op 'dna:gamma)
 		       (let* ((rator (pop-stack))
@@ -200,7 +204,7 @@ The beta-reduction is a function that can perform other side effects when any be
 	       ((atom tree) (list tree))
 
 	       ((eq (root tree) 'dna:lambda)
-		(list (make-lambda (lchild tree) (rflat (rchild tree)))))
+		(list (make-unclosed-lambda (lchild tree) (rflat (rchild tree)))))
 	       ((eq (root tree) 'dna:gamma)
 		(nconc (rflat (rchild tree))
 		       (rflat (lchild tree))
