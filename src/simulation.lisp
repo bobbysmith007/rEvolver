@@ -89,6 +89,8 @@ We want to have a non-zero minimum so they can die from these functions.")
     :initform (list (cons 'dna:move
 			  (lambda (energy) (truncate (/ energy 8))))
 		    '(dna:feed . 32)
+		    '(dna:look-at . 2)
+		    '(dna:creatures . 2)
 		    '(dna:energy? . 8)
 		    (cons 'dna:asexually-reproduce
 			  ;;each creature get's half the (original- min)
@@ -103,7 +105,9 @@ We want to have a non-zero minimum so they can die from these functions.")
     :reader function-time-costs
     :initform '((dna:move . 7)
 		(dna:feed . 5)
+		(dna:look-at . 2)
 		(dna:energy? . 1)
+		(dna:creatures . 2)
 		(dna:asexually-reproduce . 11)))
    
    ))
