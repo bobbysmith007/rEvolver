@@ -31,6 +31,7 @@
    #:EOF
    #:gamma
    #:lambda
+   #:look-at
    #:move
    #:feed
    #:energy
@@ -39,6 +40,7 @@
    #:car
    #:cdr
    #:or
+   #:creatures
    #:if
    #:not
    #:eq

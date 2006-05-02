@@ -67,11 +67,18 @@
 	       =>
 	       (gamma energy ?Expression))
        
-;Environment
-;(move (?Expression (type . 'node) (return . )) => move)
-;(energy? (?Expression (type . 'node) (return . boolean)) => energy?)
-;(feed  (?Expression (type . 'node)) => feed)
-;(look (?Expression (type . 'node)) => look)  
+       ;Environment
+       (move ?Expression
+	     => (gamma move ?expression))
+       (energy? ?Expression
+	     => (gamma energy? ?expression))
+       (energy ?Expression
+	     => (gamma energy ?expression))
+       (feed ?Expression
+	     => (gamma feed ?expression))
+       (creatures ?expression
+	     => (gamma creatures ?expression))
+
        
        (?Terminal)
        ))
@@ -94,15 +101,10 @@
        (*gened-sym* => *gened-sym*)
        (Me => Me)
       ;Environment
-       (move
+       (look-at
 	=>
-	(gamma move nil))
-       (energy?
-	=>
-	(gamma energy? nil))
-       (feed
-	=>
-	(gamma feed nil))
+	(gamma look-at nil))
+
        (asexually-reproduce
 	=>
 	(gamma asexually-reproduce nil))
