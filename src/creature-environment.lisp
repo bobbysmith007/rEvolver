@@ -117,8 +117,8 @@ of higher arity."
 				(energy (node creature)))
 	(costly-cr-env-function dna:energy (thing)
 				(etypecase thing
-				  (node (energy thing))
-				  (creature (energy creature))))
+				  ((or creature node) (energy thing))
+				  ))
  
 	(costly-cr-env-function dna:asexually-reproduce ()
 				(asexually-reproduce creature)
