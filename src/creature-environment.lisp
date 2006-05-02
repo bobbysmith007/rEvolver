@@ -101,7 +101,7 @@ of higher arity."
 				  (add-creature creature new-loc)
 				  (node creature)))
  
-	(costly-cr-env-function dna:feed (thing) 
+	(costly-cr-env-function dna:feed () 
 				(with-slots (node world max-energy energy) creature
 				  (let* ((energy-gleened
 					  (take-energy node
@@ -134,13 +134,3 @@ of higher arity."
   (let ((cr (clone-with-mutation golem)))
     (reschedule cr (creature-fn cr)
 		(function-time-cost 'dna:asexually-reproduce *simulation*))))
-
-(defmethod feed ((golem creature) (wimp creature))
-  ;;if they aren't on the same node then they got away.
-  (unless (eq (node golem) (node wimp))
-    (let ((transfer (funcall (creature-canibalism (energy wimp)))))
-    (use-energy wimp transfer)
-    (incf (energy golem) transfer))
-    ))
-(defmethod feed ((golem creature) (node node))
-  (error "feed on a node is unimplimented"))

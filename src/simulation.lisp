@@ -83,10 +83,6 @@ We want to have a non-zero minimum so they can die from these functions.")
    (beta-reduction-cost
     :initarg :beta-reduction-cost :accessor beta-reduction-cost :initform 8
     :documentation "The energy a creature uses to beta-reduce its dna")
-
-   (creature-canibalism :initarg :creature-canibalism :accessor creature-canibalism
-			:initform #'(lambda (energy) (truncate (/ energy 4))))
-   
    (function-energy-costs
     :initarg :function-energy-costs
     :reader function-energy-costs
