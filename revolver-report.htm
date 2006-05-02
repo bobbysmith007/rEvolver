@@ -40,25 +40,40 @@ actions and simulate things taking time in our system. </p>
 <p>Our DNA language was based upon the lambda calculus and was built
 strongly in the principal of providing the bare minimum resources for
 interesting code. We started with abstraction ops {lambda and gamma},
-list operations {cons, car and cdr}, boolean functions{or, if, },and
-environment functions{move, look, feed, and energy}.  After getting
-all of these operations in order, we also added </p>
+list operations {cons, car and cdr}, boolean functions{or, if, and
+equal},and environment functions{move, look, feed, and energy}.  After
+getting all of these operations in order, we also added arithmatic
+operators{binary +, unary -, and <}. </p>
 
     
 <hr>
 <a name="interpretation"></a>
 <h2>CSE Machine Evaluation of Creatures</h2>
-<p></p>
+
+<p>We built a standard CSE machine style evaluator, but added a way to
+capture the current continuation of any running creature and store
+that as a lambda to be called at a later time.  This use of
+continuations allows us to pause the creature's evaluation and resume
+it at a later time. </p>
     
 <hr>
 <a name="simulation"></a>
 <h2>Specification and Execution of a Simulation</h2>
-<p></p>
+
+<p>In rEvolver, all of the constants about the way the world works are
+specified in a singleton simulation object. This object could be
+cloned or inherited from to change the simulation in a controlled
+manner.  The simulation also has some functions associated with it
+such as runsim, which (of course) runs a sumiluation.  There is a
+world object which contains the map.  Currently our map is simply a
+two dimentional grid with movement arcs along the adjacent
+(non-diagonal) nodes.  </p>
     
 <hr>
 <a name="future"></a>
 <h2>Plans for Future Improvements</h2>
-<p></p>
+
+<p>Add the ability to eat other creatures.</p>
 
 <hr>
 <a name="conclusion"></a>
