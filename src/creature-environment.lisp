@@ -82,8 +82,10 @@ of higher arity."
 			    (apply-time-costs
 			     ',name creature
 			     ,k
-			     (handler-case (progn ,@body)
-			       (error (e) (error 'CSE:code-error :original-error e))))))
+			     (progn ,@body)
+;			     (handler-case (progn ,@body)
+;			       (error (e) (error 'CSE:code-error :original-error e)))
+			     )))
 			  (error "I dont think we should ever get here if we are properly interrupting")
 			 )))))
 
@@ -112,30 +114,15 @@ of higher arity."
 					       (max-energy creature))))
 				    (setf energy new-creature-energy )))
 				(energy creature))
-	(costly-cr-env-function dna:energy? ()
-				"Get the current energy of the node the creature is on."
-				(energy (node creature)))
 	(costly-cr-env-function dna:energy (thing)
-				(etypecase thing
-v v v v v v v
+				(typecase thing
 				  ((or creature node) (energy thing))
+				  (null (energy (node creature)))
 				  ))
-	
+
 	(costly-cr-env-function dna:look-at ()
 				"get the list of adjacent nodes"
 				(adjacent-nodes-of (node creature)))
-*************
-v v v v v v v
-				  ((or creature node) (energy thing))
-				  ))
-*************
-				  (node (energy thing))
-				  (creature (energy creature))))
-	(costly-cr-env-function dna:look-at ()
-				"get the list of adjacent nodes"
-				(adjacent-nodes-of (node creature)))
-^ ^ ^ ^ ^ ^ ^
-^ ^ ^ ^ ^ ^ ^
  
 	(costly-cr-env-function dna:asexually-reproduce ()
 				(asexually-reproduce creature)

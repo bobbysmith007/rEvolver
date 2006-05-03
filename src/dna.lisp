@@ -62,22 +62,17 @@
        (type? ?Expression ?Type
 	      =>
 	      (gamma (gamma eq ?Expression) ?Type))
-       ;;inspection
-       (energy ?Expression
-	       =>
-	       (gamma energy ?Expression))
        
        ;Environment
        (move ?Expression
 	     => (gamma move ?expression))
-       (energy? ?Expression
-	     => (gamma energy? ?expression))
        (energy ?Expression
 	     => (gamma energy ?expression))
+       (energy => (gamma energy nil))
        (feed ?Expression
 	     => (gamma feed ?expression))
-       (creatures ?expression
-	     => (gamma creatures ?expression))
+;       (creatures ?expression
+;	     => (gamma creatures ?expression))
 
        
        (?Terminal)
