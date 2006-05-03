@@ -88,7 +88,7 @@ We want to have a non-zero minimum so they can die from these functions.")
     :reader function-energy-costs
     :initform (list (cons 'dna:move
 			  (lambda (energy) (truncate (/ energy 12))))
-		    '(dna:feed . 24)
+		    '(dna:feed . 127)
 		    '(dna:look-at . 2)
 		    '(dna:creatures . 2)
 		    '(dna:energy? . 8)
@@ -96,9 +96,9 @@ We want to have a non-zero minimum so they can die from these functions.")
 			  ;;each creature get's half the (original- min)
 			  ;; lost due to entropy
 			  (lambda (energy)
-			    (truncate (/ (+ energy
-					    (creature-minimum-energy *simulation*))
-					 2))))))
+			    (+ (creature-minimum-energy *simulation*)
+			       (truncate (/ energy
+					    2)))))))
    
    (function-time-costs
     :initarg :function-time-costs
@@ -151,7 +151,7 @@ We want to have a non-zero minimum so they can die from these functions.")
 		     node-count))))
 (dna-of *golem*)
 (creatures (revolver-map *world*) )
-(setf (log.level 'rlogger) 3)
+(setf (log.level 'rlogger) 2)
 (setf *golem* nil)
 (setf *kill-sim* nil)
 
