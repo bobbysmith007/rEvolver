@@ -21,17 +21,17 @@
     :accessor node-energy-frequency :initarg :node-energy-frequency :initform .16
     :documentation "What percentage of nodes should get energy dropped on them.")
    (node-energy-max
-    :accessor node-energy-max :initarg :node-energy-max :initform 2048
+    :accessor node-energy-max :initarg :node-energy-max :initform 3072
     :documentation "(random node-energy-max) will be dropped on nodes.")
    (drop-energy-turns
-    :accessor drop-energy-turns :initarg :drop-energy-turns :initform 24
+    :accessor drop-energy-turns :initarg :drop-energy-turns :initform 32
     :documentation "The period between energy drops.")
 
    
    
    ;;;;generation specs
    (depth-bound
-    :accessor depth-bound :initarg :depth-bound :initform 12
+    :accessor depth-bound :initarg :depth-bound :initform 10
     :documentation "The depth to force rewriting termination")
    (left-branch-chance
     :accessor left-branch-chance :initarg :left-branch-chance :initform 10
@@ -55,7 +55,7 @@
 We want to have a non-zero minimum so they can die from these functions.")
    
    (init-creature-max-energy
-    :accessor init-creature-max-energy :initarg :init-creature-max-energy :initform 1024
+    :accessor init-creature-max-energy :initarg :init-creature-max-energy :initform 2048
     :documentation "The max energy of newly generated creatures")
    
    (sleep-time
@@ -74,21 +74,21 @@ We want to have a non-zero minimum so they can die from these functions.")
     :documentation
     "What is the default max amount of change in a value that is mutated")
    (base-mutation-depth
-    :accessor base-mutation-depth :initarg :base-mutation-depth :initform 6
+    :accessor base-mutation-depth :initarg :base-mutation-depth :initform 5
     :documentation "The depth bound of newly generated sub-trees")
 
    (animation-cost
-    :accessor animation-cost :initarg :animation-cost :initform 16
+    :accessor animation-cost :initarg :animation-cost :initform 8
     :documentation "How much energy any call to animate should cost. This is another failsafe.")
    (beta-reduction-cost
-    :initarg :beta-reduction-cost :accessor beta-reduction-cost :initform 8
+    :initarg :beta-reduction-cost :accessor beta-reduction-cost :initform 2
     :documentation "The energy a creature uses to beta-reduce its dna")
    (function-energy-costs
     :initarg :function-energy-costs
     :reader function-energy-costs
     :initform (list (cons 'dna:move
-			  (lambda (energy) (truncate (/ energy 8))))
-		    '(dna:feed . 32)
+			  (lambda (energy) (truncate (/ energy 12))))
+		    '(dna:feed . 24)
 		    '(dna:look-at . 2)
 		    '(dna:creatures . 2)
 		    '(dna:energy? . 8)
@@ -151,35 +151,8 @@ We want to have a non-zero minimum so they can die from these functions.")
 		     node-count))))
 (dna-of *golem*)
 (creatures (revolver-map *world*) )
-(setf (log.level 'rlogger) 2)
+(setf (log.level 'rlogger) 3)
 (setf *golem* nil)
+(setf *kill-sim* nil)
 
-(setf *world* (let ((map (make-instance '2d-array-map
-						  :x-size (world-size *simulation*)
-						  :y-size (world-size *simulation*))))
-			  
-			  (let ((world (make-instance 'world :map map)))
-			    (drop-random-energy world
-						(node-energy-frequency *simulation*)
-						(node-energy-max *simulation*))
-			    (labels ((drop-energy-and-re-add ()
-				       (drop-random-energy world
-							   (node-energy-frequency *simulation*)
-							   (node-energy-max *simulation*))
-				       (schedule #'drop-energy-and-re-add world
-						 (drop-energy-turns *simulation*))
-				       ))
-			      ;;setup energy drops
-			      (schedule #'drop-energy-and-re-add world 1))
-			    (setf *golem* (make-instance 'Creature
-				:energy (init-creature-max-energy *simulation*)
-				:world world
-				:node (random-location world)
-				:mutation-rate (base-mutation-rate *simulation*)
-				:value-mutation-rate (base-value-mutation-rate *simulation*)
-				:mutation-depth (base-mutation-depth *simulation*)
-				:dna '(dna:gamma (dna:gamma dna:cons (dna:gamma dna:move nil)) (dna:gamma dna:move nil))
-				)) 
-			    (reschedule *golem* (creature-fn *golem*) 1)
-			    world))
 |#
