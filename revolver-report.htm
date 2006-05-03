@@ -21,15 +21,15 @@
 <a name="abstract"></a>
 <h2>Abstract</h2>
 
-<p>The idea behind the rEvolver program was to provide an engine
-wherein to have fun with, and learn about genetic programming, as well
-as expanding our understanding of many different software construction
-and programming language concepts.  In rEvolver we generate
-"Creatures", which are vehicle for running DNA (a small, lambda
-calculus based program).  The DNA language is generated from a grammar
-like specification, and interpreted by a slightly modified CSE
-machine.  The interpreter was modified to allow
-delimited continuations, which we use to allow programs to be paused for a
+<p>The rEvolver program provides a platform with which to have fun and
+learn about genetic programming. A genetic programming simulation
+offers good problems on which to try out many different software
+construction and programming language concepts.  In rEvolver we
+generate "Creatures", which are vehicles for running DNA (a small,
+lambda calculus based program).  The DNA language is generated from a
+grammar, and interpreted by a slightly modified CSE
+machine.  The interpreter was modified to allow delimited
+continuations, which we use to allow programs to be paused for a
 while.  This pausing of creature DNA, allows us to interleave creature
 actions and simulate things taking time in our system.</p>
 
@@ -44,7 +44,7 @@ evolve to stay alive, and to have fun.</p>
 <h2>Creature Language (DNA) and Generation</h2>
 
 <p>Our DNA language was based upon the lambda calculus and was built
-strongly in the principal of providing the bare minimum resources for
+strongly in the principal of providing only basic resources for
 interesting code. We started with abstraction {lambda and gamma},
 construction/destruction {cons, car and cdr}, boolean {or, if, and
 equal},and environment functions{move, look, feed,
@@ -53,8 +53,8 @@ operations in order, we also added arithmetic operators{binary +,
 unary -, and &lt;}.  Future operators that we hope to implement
 include sexual reproduction and some facility where by communication
 could be achieved.  We hope that by providing a minimum set of
-maximally orthogonal functions will bring the time necessary to
-generate interesting programs down.</p>
+maximally orthogonal functions will bring down the time necessary to
+generate interesting programs.</p>
 
 <p>Mutation of these programs occurs along two axes.  One controls
 the mutation rate constants (how often we mutate, how much values
@@ -89,15 +89,17 @@ their remaining energy to their current node (for other creatures to
 scavenge), and removing them from the map.  Once a creature has
 finished "dying", it sends a message to the log and returns.  The next
 scheduled task can then take place.  To handle the great die-offs that
-accompany many of the early generations of generated creatures, we set
-up the simulation to repopulate the world when we get below some
+accompany many of the early generations of creatures, we set
+up the simulation to repopulate the world when it falls below some
 fraction of the initially created creatures.  This repopulation is a
 mixture new of random creatures and clones the creatures that were
-alive in the world when it became necessary to repopulate. Typically
-after the program has been running steadily for a few hundred/thousand
-(depending on the world constants) turns, the program never needs to
-repopulate. This is a confirmation that the system is meeting our base
-minimum goal, of producing programs that evolve to stay alive.
+alive in the world when it became necessary to repopulate. 
+
+Typically after the program has been running steadily for a few
+hundred/thousand (depending on the world constants) turns, the program
+never needs to repopulate. This is a confirmation that the system is
+meeting our base minimum goal, of producing programs that evolve to
+stay alive. 
 </p>
     
 <hr>
@@ -126,9 +128,8 @@ and evolve creatures that are rewarded for solving the problem. </p>
 simulated worlds, the execution of these for some amount of time, as
 well as the population or repopulation with creatures.  A running
 simulation can be stopped (without destroying the simulation), saved,
-and restarted again at a later time. We do this by using the
-facilities of the LISP implementation we have chosen(Steel Bank Common
-Lisp). </p>
+and restarted again at a later time, because common lisp has
+facilities to support saving memory images. </p>
     
 <hr>
 
@@ -141,7 +142,7 @@ and herbivores.</p>
 
 <p>Add the ability to write and read data to the environment (and
 possibly other creatures).  At first this would probably just be
-setting or reading a symbol on the creatures current node, but this
+setting or reading a symbol on the creature's current node, but this
 itself might be enough for creatures to form some kind of
 communication.  The goal of this would be to allow for group (flock)
 behavior to evolve. </p>
@@ -151,8 +152,9 @@ set goals.  Currently, while the system exposes all the necessary
 information, there is no tracking of how many different species we
 have had in the world.  Because we are not storing this information
 currently, we have no way to systematically observe which genealogies
-are the most successful.  Currently "eye-balling" the creatures DNA
-has been sufficient for our debugging purposes, as well as providing
+are the most successful. </p>
+
+<p> Currently "eye-balling" the creatures DNA has been sufficient for our debugging purposes, as well as providing
 sometimes humorous insight to the state of our world.  One example, of
 this is what we have taken to calling "algae" which flourishes when
 there is an over abundance of energy on most of the nodes of the
@@ -191,7 +193,7 @@ our initial language rather than playing with many different languages.
 <h2>Conclusion</h2>
 
 <p>This project has provided a great avenue for learning the ins and
-outs of genetic programming.  Also after implementing a form of
+outs of genetic programming. After implementing a form of
 continuations and using them fairly extensively along one vector, we
 feel we have gained a good grasp of their usefulness.  As stated
 above, we feel that we met our initial goal of creating a system where
