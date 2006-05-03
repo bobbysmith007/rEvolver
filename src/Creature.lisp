@@ -22,7 +22,7 @@
 
    ;;some stats
    (birthday :accessor birthday-of)
-   (animation-count :accessor animation-count :initform 0)
+   (animation-count :accessor animation-count :initform 0) 
    ))
 (defmethod initialize-instance :after ((creature creature) &rest slots
 				       &key world node max-energy energy flattened-tree
@@ -33,16 +33,16 @@
   (if (not max-energy)
       (setf (max-energy creature)
 	    (or energy (energy creature))))
-  
-    (setf
-     (birthday-of creature) (tick-number world)
-     (flattened-tree-of creature) (or flattened-tree (cse::flattener (dna-of creature)))
-     (creature-fn creature) (make-interpreter (flattened-tree-of creature)
-					      (creature-environment creature)
-					      #'(lambda ()
-						  (use-energy creature
-							      (beta-reduction-cost *simulation*))))
-	  )
+
+  (setf
+   (birthday-of creature) (tick-number world)
+   (flattened-tree-of creature) (or flattened-tree (cse::flattener (dna-of creature)))
+   (creature-fn creature) (make-interpreter (flattened-tree-of creature)
+					    (creature-environment creature)
+					    #'(lambda ()
+						(use-energy creature
+							    (beta-reduction-cost *simulation*))))
+   )
   )
 
 
@@ -55,23 +55,25 @@
       golem
     (multiple-value-bind (new-dna dna-changed)
 	(maybe-mutate-tree dna mutation-rate mutation-depth)
-      (make-instance
-       'creature
-       :max-energy (maybe-mutate-value max-energy
-				       mutation-rate value-mutation-rate )
-       :energy (funcall energy golem) 
-       :mutation-rate (maybe-mutate-value mutation-rate
-					  mutation-rate value-mutation-rate)
-       :value-mutation-rate (maybe-mutate-value value-mutation-rate
-						mutation-rate value-mutation-rate)
-       :mutation-depth (maybe-mutate-value mutation-depth
-					   mutation-rate value-mutation-rate)
-       
-       :dna new-dna
-       :flattened-tree (unless dna-changed flattened-tree)
-       :world (or world (world golem))
-       :node (or node (node golem))
-       ))))
+      (let ((new-cr (make-instance
+		     'creature
+		     :max-energy (maybe-mutate-value max-energy
+						     mutation-rate value-mutation-rate )
+		     :energy (funcall energy golem) 
+		     :mutation-rate (maybe-mutate-value mutation-rate
+							mutation-rate value-mutation-rate)
+		     :value-mutation-rate (maybe-mutate-value value-mutation-rate
+							      mutation-rate value-mutation-rate)
+		     :mutation-depth (maybe-mutate-value mutation-depth
+							 mutation-rate value-mutation-rate)
+		     
+		     :dna new-dna
+		     :flattened-tree (unless dna-changed flattened-tree)
+		     :world (or world (world golem))
+		     :node (or node (node golem))
+		     )))
+	
+      new-cr))))
 
 (defmethod alivep ((creature creature))
   (and (world creature)

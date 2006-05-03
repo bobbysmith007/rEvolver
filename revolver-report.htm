@@ -4,7 +4,8 @@
     <title>Revolver Report</title>
   </head>
 
-  <body>
+  <body >
+<div style="width:800px">
     <h1>Revolver Report</h1>
     <h3>Nathan J. Bird</h3>
     <h3>F. Russell Tyndall Jr.</h3>
@@ -30,7 +31,12 @@ like specification, and interpretted by a slightly modified CSE
 machine.  The interpretter was modified to allow
 delimitted continuations, which we use to allow programs to be paused for a
 while.  This pausing of creature dna, allows us to interleave creature
-actions and simulate things taking time in our system. </p>
+actions and simulate things taking time in our system.</p>
+
+<p>The major goals of this project are: to learn about genetic
+programming, to learn about programming languages, their design, and
+their computer generation, to create an environment where creatures
+evolve to stay alive, and to have fun.</p>
 
     
 <hr>
@@ -39,29 +45,67 @@ actions and simulate things taking time in our system. </p>
 
 <p>Our DNA language was based upon the lambda calculus and was built
 strongly in the principal of providing the bare minimum resources for
-interesting code. We started with abstraction ops {lambda and gamma},
-list operations {cons, car and cdr}, boolean functions{or, if, and
-equal},and environment functions{move, look, feed, and energy}.  After
-getting all of these operations in order, we also added arithmatic
-operators{binary +, unary -, and <}. </p>
+interesting code. We started with abstraction {lambda and gamma},
+construction/destruction {cons, car and cdr}, boolean {or, if, and
+equal},and environment functions{move, look, feed,
+assexually-reproduce and energy}.  After getting all of these
+operations in order, we also added arithmatic operators{binary +,
+unary -, and &lt;}.  Future operators that we hope to implement
+include sexual reproduction and some facility where by communication
+could be achieved.  We hope that by providing a minimum set of
+maximally orthoginal functions will bring the time neccessary to
+generate interesting programs down.</p>
+
+<p>Mutation of these programs occurs along two axises.  One controls
+the mutation rate constants (how often we mutate, how much values
+change by), and the other controls our chance of mutating when we
+reproduce (this is one of the values that is mutated).  If we choose
+to mutate when we reproduce, we choose a random node in the creature's
+DNA and replace that subtree with a newly generated subtree.
+</p>
+
 
     
 <hr>
 <a name="interpretation"></a>
 <h2>CSE Machine Evaluation of Creatures</h2>
 
-<p>We built a standard CSE machine style evaluator that first flattens the 
-standardized tree intro control structures, then interprets the control structures.
-The machine also has the ability to, when requested, build up a lambda closure that
-represents the continuation of the interpreter's computation. This does not catch anything on the
-lisp stack, just the stack, remaining control, and environment references of the running CSE machine.
-This lambda is scheduled to be run at a later point, simulating time passing as the creature performs some action.
+<p>We built a standard CSE machine style evaluator that first flattens
+the standardized tree into control structures, then interprets the
+control structures.  The machine also has the ability to, when
+requested, build up a lambda closure that represents the continuation
+of the interpreter's computation. This does not catch anything on the
+lisp stack, just the stack, remaining control, and environment
+references of the running CSE machine.  This lambda is scheduled to be
+run at a later point, simulating time passing as the creature performs
+some action.
  </p>
+
+<p>Because we are are running random programs, there are a lot of
+programs with errors (naturally).  To cope with these errors, we use
+the CL signaling system to interrupt the creature's execution and
+"kill" the creature.  Killing the creature consists of transfering
+their remaining energy to their current node (for other creatures to
+scavenge), and removing them from the map.  Once a creature has
+finished "dying", it sends a message to the log and returns.  The next
+scheduled task can then take place.  To handle the great die-offs that
+accompany manyof the early generations of generated creatures, we set
+up the simulation to repopulate the world when we get below some
+fraction of the initially created creatures.  This repoluation is a
+mixture new of random creatures and clones the creatures that were
+alive in the world when it became neccessary to repopulate. Typically
+after the program has been running steadily for a few hundred/thousand
+(depending on the world constants) turns, the program never needs to
+repopulate. This is a confirmation that the system is meeting our base
+minimum goal, of producing programs that evolve to stay alive.
+</p>
     
 <hr>
-<a name="simulation"></a> <h2>Specification and Execution of a
-Simulation</h2>
-<p>The grammar of the creatures dna is specified in one file. A function then walks it to produce a
+<a name="simulation"></a>
+<h2>Specification and Execution of a Simulation</h2>
+
+<p>The grammar of the creatures dna is specified in one file. A
+function then walks it (randomly choosing branches) to produce a
 standardized tree consumable by the CSE machine.</p>
 
 <p>In rEvolver, all of the constants about the way the world works are
@@ -69,26 +113,38 @@ specified in a singleton simulation object. This object could be
 cloned or inherited from to change the simulation in a controlled
 manner. </p> 
 
-<p>A simple world map keeps track of where the creatures and energy are.
-The map presents a graph based interface to the rest of the program, but is implemented as a 
-2 dimensional array for simplicity, with edges between adjacent (by index) nodes.
- A graph based representation was chosen because this provides
-a very general system for representing worlds with varying topologies.</p>
+<p>A simple world map keeps track of where the creatures and energy
+are.  The map presents a graph based interface to the rest of the
+program, but is implemented as a 2 dimensional array for simplicity,
+with edges between adjacent (by index) nodes.  A graph based
+representation was chosen because this provides a very general system
+for representing worlds with varying topologies.  A graph might also
+(in the future), allow us to cast other problems into this framework,
+and evolve creatures that are rewarded for solving the problem. </p>
 
-There are helper functions which assist in the creation of new simulated worlds, the
-execution of these for some amount of time, as well as the population
-or repopulation with creatures. </p>
+<p>There are helper functions which assist in the creation of new
+simulated worlds, the execution of these for some amount of time, as
+well as the population or repopulation with creatures.  A running
+simulation can be stopped (without destroying the simulation), saved,
+and restarted again at a later time. We do this by using the
+facilities of the LISP implementation we have chosen(Steel Bank Common
+Lisp). </p>
     
 <hr>
 
 <a name="future"></a>
 <h2>Plans for Future Improvements</h2>
 
-<p>Add the ability to eat other creatures. Hopefully this will spur more competition.</p>
-<p>Add the ability to write and read data to the environment (and possibly other creatures). 
-At first this would probably just be setting or reading a symbol on the creatures current node,
-but this itself might be enough for creatures to form some kind of communication. </p>
+<p>Add the ability to eat other creatures. Hopefully this will spur
+more competition and possibly lead to what could be seen as carnivores
+and herbivores.</p>
 
+<p>Add the ability to write and read data to the environment (and
+possibly other creatures).  At first this would probably just be
+setting or reading a symbol on the creatures current node, but this
+itself might be enough for creatures to form some kind of
+communication.  The goal of this would be to allow for group (flock)
+behavior to evolve </p>
 
 
 <hr>
@@ -99,6 +155,6 @@ but this itself might be enough for creatures to form some kind of communication
 outs of genetic programming.  Also after implementing a form of
 continuations and using them fairly extensivly along one vector, we
 feel we have gained a good grasp of their usefulness. </p>
-    
+</div>    
   </body>
 </html>
