@@ -61,6 +61,8 @@ This lambda is scheduled to be run at a later point, simulating time passing as 
 <hr>
 <a name="simulation"></a> <h2>Specification and Execution of a
 Simulation</h2>
+<p>The grammar of the creatures dna is specified in one file. A function then walks it to produce a
+standardized tree consumable by the CSE machine.</p>
 
 <p>In rEvolver, all of the constants about the way the world works are
 specified in a singleton simulation object. This object could be
@@ -78,11 +80,16 @@ execution of these for some amount of time, as well as the population
 or repopulation with creatures. </p>
     
 <hr>
+
 <a name="future"></a>
 <h2>Plans for Future Improvements</h2>
 
-<p>Add the ability to eat other creatures. Add the ability to write
-and read data to the environment (and possibly other creatures).</p>
+<p>Add the ability to eat other creatures. Hopefully this will spur more competition.</p>
+<p>Add the ability to write and read data to the environment (and possibly other creatures). 
+At first this would probably just be setting or reading a symbol on the creatures current node,
+but this itself might be enough for creatures to form some kind of communication. </p>
+
+
 
 <hr>
 <a name="conclusion"></a>
