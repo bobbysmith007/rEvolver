@@ -144,8 +144,47 @@ possibly other creatures).  At first this would probably just be
 setting or reading a symbol on the creatures current node, but this
 itself might be enough for creatures to form some kind of
 communication.  The goal of this would be to allow for group (flock)
-behavior to evolve </p>
+behavior to evolve. </p>
 
+<p>Add species tracking and identification of creatures fullfilling
+set goals.  Currently, while the system exposes all the neccessary
+information, there is no tracking of how many different species we
+have had in the world.  Because we are not storing this information
+currently, we have no way to systematically observe which geneaologies
+are the most successful.  Currently "eye-balling" the creatures DNA
+has been sufficient for our debuggin purposes, as well as providing
+sometimes humorous insite to the state of our world.  One example, of
+this is what we have taken to calling "algea" which flourishes when
+there is an over abundance of energy on most of the nodes of the
+world.  The algea program is one that only contains a call(s) to feed.
+This creature is (not)surprisingly resilient in some environments.  On
+the other end of the spectrum, we have also seen creatures that are
+surving very well (reproducing and running alot) that have code trees
+too deep to discenrn at a glance.  Tracking the speciation would give
+us a much better metric for the success of any set of creatures over
+the hunt and check method we are currently using.  </p>
+
+<p>Fiddle with the constants in the simulation to create the most
+interesting creatures.  One of the most time consuming aspects of this
+project has been running thousands of turns with different simulation
+constants.  We have gone from inhospitable wastelands to algea-filled,
+enrgy-rich worlds. Finding a best happy medium would be great</p>
+
+<p>We would also like to try both a purer language (just the S and K
+combinators and gamma/lambda) and a more powerful language.  It might
+be interesting to add higher level constructs to the environment (for
+example, if energy? then feed) rather than relying on random
+combinations to arrive at these).  On the other hand, with a purer
+core, it might be easier to evolve those constructs, due to the
+decrease in complexity (hopefully maximizing orthogonality of
+constucts).  Also there is something strangly aluring about having
+only four constructs out which all else must be derived.  The main
+draw back to this approach would probably be the immence amount of
+iteration neccessary to evolve anything interesting and high level out
+of only S,K, lambda and gamma (how long are most strands of DNA).
+Unfortunatly, due to time constraints we have mostly just worked with
+our initial language rather than playing with many differnt languages.
+</p>
 
 <hr>
 <a name="conclusion"></a>
@@ -154,7 +193,8 @@ behavior to evolve </p>
 <p>This project has provided a great avenue for learning the ins and
 outs of genetic programming.  Also after implementing a form of
 continuations and using them fairly extensivly along one vector, we
-feel we have gained a good grasp of their usefulness. </p>
-</div>    
+feel we have gained a good grasp of their usefulness.  As stated
+above, we feel that we met our initial goal of creating a system where
+in programs would evolve to "stay-alive". </p> </div>
   </body>
 </html>
