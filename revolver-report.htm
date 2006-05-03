@@ -27,8 +27,8 @@ and programming language concepts.  In rEvolver we generate
 "Creatures", which are vehicle for running DNA (a small, lambda
 calculus based program).  The DNA language is generated from a grammer
 like specification, and interpretted by a slightly modified CSE
-machine.  The CSE machine interpretter was modified to allow
-continuations, which we use to allow programs to be paused for a
+machine.  The interpretter was modified to allow
+delimitted continuations, which we use to allow programs to be paused for a
 while.  This pausing of creature dna, allows us to interleave creature
 actions and simulate things taking time in our system. </p>
 
@@ -50,24 +50,32 @@ operators{binary +, unary -, and <}. </p>
 <a name="interpretation"></a>
 <h2>CSE Machine Evaluation of Creatures</h2>
 
-<p>We built a standard CSE machine style evaluator, but added a way to
-capture the current continuation of any running creature and store
-that as a lambda to be called at a later time.  This use of
-continuations allows us to pause the creature's evaluation and resume
-it at a later time. </p>
+<p>We built a standard CSE machine style evaluator that first flattens the 
+standardized tree intro control structures, then interprets the control structures.
+The machine also has the ability to, when requested, build up a lambda closure that
+represents the continuation of the interpreter's computation. This does not catch anything on the
+lisp stack, just the stack, remaining control, and environment references of the running CSE machine.
+This lambda is scheduled to be run at a later point, simulating time passing as the creature performs some action.
+ </p>
     
 <hr>
-<a name="simulation"></a>
-<h2>Specification and Execution of a Simulation</h2>
+<a name="simulation"></a> <h2>Specification and Execution of a
+Simulation</h2>
 
 <p>In rEvolver, all of the constants about the way the world works are
 specified in a singleton simulation object. This object could be
 cloned or inherited from to change the simulation in a controlled
-manner.  The simulation also has some functions associated with it
-such as runsim, which (of course) runs a sumiluation.  There is a
-world object which contains the map.  Currently our map is simply a
-two dimentional grid with movement arcs along the adjacent
-(non-diagonal) nodes.  </p>
+manner. </p> 
+
+<p>A simple world map keeps track of where the creatures and energy are.
+The map presents a graph based interface to the rest of the program, but is implemented as a 
+2 dimensional array for simplicity, with edges between adjacent (by index) nodes.
+ A graph based representation was chosen because this provides
+a very general system for representing worlds with varying topologies.</p>
+
+There are helper functions which assist in the creation of new simulated worlds, the
+execution of these for some amount of time, as well as the population
+or repopulation with creatures. </p>
     
 <hr>
 <a name="future"></a>
