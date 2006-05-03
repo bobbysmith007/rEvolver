@@ -26,11 +26,11 @@ wherein to have fun with, and learn about genetic programming, as well
 as expanding our understanding of many different software construction
 and programming language concepts.  In rEvolver we generate
 "Creatures", which are vehicle for running DNA (a small, lambda
-calculus based program).  The DNA language is generated from a grammer
-like specification, and interpretted by a slightly modified CSE
-machine.  The interpretter was modified to allow
-delimitted continuations, which we use to allow programs to be paused for a
-while.  This pausing of creature dna, allows us to interleave creature
+calculus based program).  The DNA language is generated from a grammar
+like specification, and interpreted by a slightly modified CSE
+machine.  The interpreter was modified to allow
+delimited continuations, which we use to allow programs to be paused for a
+while.  This pausing of creature DNA, allows us to interleave creature
 actions and simulate things taking time in our system.</p>
 
 <p>The major goals of this project are: to learn about genetic
@@ -48,15 +48,15 @@ strongly in the principal of providing the bare minimum resources for
 interesting code. We started with abstraction {lambda and gamma},
 construction/destruction {cons, car and cdr}, boolean {or, if, and
 equal},and environment functions{move, look, feed,
-assexually-reproduce and energy}.  After getting all of these
-operations in order, we also added arithmatic operators{binary +,
+asexually-reproduce and energy}.  After getting all of these
+operations in order, we also added arithmetic operators{binary +,
 unary -, and &lt;}.  Future operators that we hope to implement
 include sexual reproduction and some facility where by communication
 could be achieved.  We hope that by providing a minimum set of
-maximally orthoginal functions will bring the time neccessary to
+maximally orthogonal functions will bring the time necessary to
 generate interesting programs down.</p>
 
-<p>Mutation of these programs occurs along two axises.  One controls
+<p>Mutation of these programs occurs along two axes.  One controls
 the mutation rate constants (how often we mutate, how much values
 change by), and the other controls our chance of mutating when we
 reproduce (this is one of the values that is mutated).  If we choose
@@ -81,10 +81,10 @@ run at a later point, simulating time passing as the creature performs
 some action.
  </p>
 
-<p>Because we are are running random programs, there are a lot of
+<p>Because we are running random programs, there are a lot of
 programs with errors (naturally).  To cope with these errors, we use
 the CL signaling system to interrupt the creature's execution and
-"kill" the creature.  Killing the creature consists of transfering
+"kill" the creature.  Killing the creature consists of transferring
 their remaining energy to their current node (for other creatures to
 scavenge), and removing them from the map.  Once a creature has
 finished "dying", it sends a message to the log and returns.  The next
@@ -93,7 +93,7 @@ accompany manyof the early generations of generated creatures, we set
 up the simulation to repopulate the world when we get below some
 fraction of the initially created creatures.  This repoluation is a
 mixture new of random creatures and clones the creatures that were
-alive in the world when it became neccessary to repopulate. Typically
+alive in the world when it became necessary to repopulate. Typically
 after the program has been running steadily for a few hundred/thousand
 (depending on the world constants) turns, the program never needs to
 repopulate. This is a confirmation that the system is meeting our base
@@ -146,29 +146,29 @@ itself might be enough for creatures to form some kind of
 communication.  The goal of this would be to allow for group (flock)
 behavior to evolve. </p>
 
-<p>Add species tracking and identification of creatures fullfilling
-set goals.  Currently, while the system exposes all the neccessary
+<p>Add species tracking and identification of creatures fulfilling
+set goals.  Currently, while the system exposes all the necessary
 information, there is no tracking of how many different species we
 have had in the world.  Because we are not storing this information
-currently, we have no way to systematically observe which geneaologies
+currently, we have no way to systematically observe which genealogies
 are the most successful.  Currently "eye-balling" the creatures DNA
-has been sufficient for our debuggin purposes, as well as providing
-sometimes humorous insite to the state of our world.  One example, of
-this is what we have taken to calling "algea" which flourishes when
+has been sufficient for our debugging purposes, as well as providing
+sometimes humorous insight to the state of our world.  One example, of
+this is what we have taken to calling "algae" which flourishes when
 there is an over abundance of energy on most of the nodes of the
-world.  The algea program is one that only contains a call(s) to feed.
+world.  The algae program is one that only contains a call(s) to feed.
 This creature is (not)surprisingly resilient in some environments.  On
 the other end of the spectrum, we have also seen creatures that are
-surving very well (reproducing and running alot) that have code trees
-too deep to discenrn at a glance.  Tracking the speciation would give
+surviving very well (reproducing and running alot) that have code trees
+too deep to discern at a glance.  Tracking the speciation would give
 us a much better metric for the success of any set of creatures over
 the hunt and check method we are currently using.  </p>
 
 <p>Fiddle with the constants in the simulation to create the most
 interesting creatures.  One of the most time consuming aspects of this
 project has been running thousands of turns with different simulation
-constants.  We have gone from inhospitable wastelands to algea-filled,
-enrgy-rich worlds. Finding a best happy medium would be great</p>
+constants.  We have gone from inhospitable wastelands to algae-filled,
+energy-rich worlds. Finding a best happy medium would be great</p>
 
 <p>We would also like to try both a purer language (just the S and K
 combinators and gamma/lambda) and a more powerful language.  It might
@@ -177,13 +177,13 @@ example, if energy? then feed) rather than relying on random
 combinations to arrive at these).  On the other hand, with a purer
 core, it might be easier to evolve those constructs, due to the
 decrease in complexity (hopefully maximizing orthogonality of
-constucts).  Also there is something strangly aluring about having
+constructs).  Also there is something strangely alluring about having
 only four constructs out which all else must be derived.  The main
-draw back to this approach would probably be the immence amount of
-iteration neccessary to evolve anything interesting and high level out
+draw back to this approach would probably be the immense amount of
+iteration necessary to evolve anything interesting and high level out
 of only S,K, lambda and gamma (how long are most strands of DNA).
-Unfortunatly, due to time constraints we have mostly just worked with
-our initial language rather than playing with many differnt languages.
+Unfortunately, due to time constraints we have mostly just worked with
+our initial language rather than playing with many different languages.
 </p>
 
 <hr>
@@ -192,7 +192,7 @@ our initial language rather than playing with many differnt languages.
 
 <p>This project has provided a great avenue for learning the ins and
 outs of genetic programming.  Also after implementing a form of
-continuations and using them fairly extensivly along one vector, we
+continuations and using them fairly extensively along one vector, we
 feel we have gained a good grasp of their usefulness.  As stated
 above, we feel that we met our initial goal of creating a system where
 in programs would evolve to "stay-alive". </p> </div>
