@@ -10,17 +10,7 @@
 (defparameter +drop-energy-turns+ 10)
 (defvar *world* '())
 
-'(defun make-new-world ()
-  (let ((m (make-instance '2d-array-map :x-size +world-size+ :y-size +world-size+)))
-    (drop-random-energy m .3 100)
-    (setf *world* (make-instance 'world :map m))))
-
-
-'(defun random-location ()
-  (let ((m (revolver-map *world*)))
-    (random-node m)))
-
-'(make-new-world)
+'(setf *world* (make-new-world))
 
 '(defvar golem ())
 '(setf golem (loop for i to 10
@@ -35,7 +25,8 @@
 
 ;(rlogger.info "Made new Golem dna: ~a" (dna-of golem))
 
-;(animate golem)
+#|
+(animate golem)
 (advance-time *world*)
-
+|#
 

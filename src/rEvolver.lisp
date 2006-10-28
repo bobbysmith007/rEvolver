@@ -1,5 +1,7 @@
 (in-package :rEvolver)
-(defvar *debug-level* +info+ )
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defvar *debug-level* +info+ ))
+
 ;;;;Define the loggers we will be using
 (deflogger rlogger ()
   :level *debug-level*
