@@ -2,6 +2,7 @@
 
 (deflogger logger ()
   :level +error+
+  :compile-time-level +dribble+
   :appender (make-instance 'verbose-stream-log-appender :stream t))
 
 (defun process-grammar-definition (grammar)

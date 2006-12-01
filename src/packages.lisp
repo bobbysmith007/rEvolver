@@ -64,7 +64,7 @@
 	  :net.acceleration.data-structures.trees
           :arnesi
 	  :CSE)
-  (:shadowing-import-from :net.acceleration.data-structures.trees #:parent
+  (:shadowing-import-from :net.acceleration.data-structures.trees #:queue #:dequeue 
     )
   (:shadow #:Y)
   (:export #:creature-DNA

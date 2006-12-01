@@ -4,7 +4,7 @@
   ((revolver-map :initarg :map
 	      :accessor revolver-map)
 
-   (queue :initform '()
+   (queue :initform (make-instance 'pairing-heap)
 	  :accessor queue
 	  :documentation "The what to do next queue. Leftist Min Priority Queue")
       
@@ -17,23 +17,20 @@
 		  ;; then take it off the front and process each creature
  
 		  (loop
-		    while (and queue
-			       (= tick
-				  (key queue))) 
+		      while (and (not (empty-p queue))
+				 (= tick
+				    (key (peek queue))))
+		    for node = (dequeue queue)
 		    do
-		    (multiple-value-bind (current-node new-queue)
-			(pop-tree! (queue world))
-		      (setf queue new-queue)
-		      (restart-case (funcall (data current-node))
-		       (continue-next-action () nil))))))
+		    (restart-case (funcall (data node))
+				  (continue-next-action () nil)))))
 
 (defgeneric schedule (action world ticks-from-now))
 
 (defmethod schedule (action (w world) ticks-from-now)
-  (setf (queue w) (meld (queue w)
-			(make-instance 'leftist-tree-node
-				       :key (+ ticks-from-now (tick-number w))
-				       :data action))))
+  (insert (queue w)
+	  (+ ticks-from-now (tick-number w))
+	  action))
 
 (defmethod random-location ((w world))
   (let ((m (revolver-map w)))
@@ -44,11 +41,9 @@
   (rlogger.info "[~a] Populating world with: ~a"
 		(tick-number w)
 		num)
-  (mapc #'(lambda (cr)
-		     (schedule (lambda () (animate cr (creature-fn cr))) w 1)
-		     cr)
-	(loop for i from 1 to num
-	      for cr = (make-instance 'Creature
+ 
+	(loop repeat num
+	  do (let ((cr (make-instance 'Creature
 				      :energy (init-creature-max-energy *simulation*)
 				      :world w 
 				      :node (random-location w)
@@ -58,8 +53,10 @@
 				      
 				      ;;DNA to move twice
 				      ;;:dna '(dna:gamma (dna:gamma dna:cons (dna:gamma dna:move nil)) (dna:gamma dna:move nil))
-				      )
-	      collect cr)))
+				      )))
+	       (schedule #'(lambda ()
+			     (animate cr (creature-fn cr))) w 1))
+	  ))
 
 (defmethod creatures ((w world))
   (creatures (revolver-map w)))

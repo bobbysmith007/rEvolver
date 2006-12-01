@@ -3,7 +3,7 @@
 (defparameter +initial-creature-count+ 50
   "The number of random creatures to initially populate the world with.")
 
-(defparameter +world-size+ 20)
+(defparameter +world-size+ 32)
 
 (defparameter +energy-frequency+ .3)
 (defparameter +energy-max+ 100)

@@ -131,7 +131,22 @@ We want to have a non-zero minimum so they can die from these functions.")
   (dotimes (i n)
     (if *kill-sim*
 	(return-from runsim)
-	(advance-time *world*))))
+	(advance-time *world*)))
+  (let ((node-count (* (world-size *simulation*)
+		      (world-size *simulation*))))
+  (rlogger.error "[~a] Creatures: ~a (~a/node)  Animation-record: ~a  population(~a,~a) free-energy: ~a (~a/node)"
+		 
+		 (tick-number *world*)
+		 (creature-count (revolver-map *world*))
+		 (float (/ (creature-count (revolver-map *world*))
+		    node-count))
+		 (animation-count *golem*)
+		 (repopulation-infusions *world*)
+		 (population-infusions *world*)
+		 (free-energy (revolver-map *world*))
+		 (truncate
+		  (/ (free-energy (revolver-map *world*))
+		     node-count)))))
 
 #|
 (let ((node-count (* (world-size *simulation*)
@@ -150,8 +165,8 @@ We want to have a non-zero minimum so they can die from these functions.")
 		  (/ (free-energy (revolver-map *world*))
 		     node-count))))
 (dna-of *golem*)
-(creatures (revolver-map *world*) )
-(setf (log.level 'rlogger) 2)
+(length (creatures (revolver-map *world*) ))
+(setf (log.level 'rlogger) 3)
 (setf *golem* nil)
 (setf *kill-sim* nil)
 
