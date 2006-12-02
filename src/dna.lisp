@@ -31,17 +31,18 @@
        (or ?Expression ?Expression
 	   =>
 	   (gamma (gamma or ?Expression) ?Expression))
+       
 
        ;;arithmetic
-       (- ?Expression
-	    =>
-	    (gamma - ?Expression))
-       (< ?Expression ?Expression
-	   =>
-	   (gamma (gamma < ?Expression) ?Expression))
-       (+ ?Expression ?Expression
-	   =>
-	   (gamma (gamma + ?Expression) ?Expression))
+;       (- ?Expression
+;	    =>
+;	    (gamma - ?Expression))
+;       (< ?Expression ?Expression
+;	   =>
+;	   (gamma (gamma < ?Expression) ?Expression))
+;       (+ ?Expression ?Expression
+;	   =>
+;	   (gamma (gamma + ?Expression) ?Expression))
        
        (if ?Expression ?Expression ?Expression
 	   =>
@@ -59,9 +60,9 @@
 	    =>
 	    (gamma (gamma equal ?Expression) ?Expression))
        
-       (type? ?Expression ?Type
-	      =>
-	      (gamma (gamma eq ?Expression) ?Type))
+;       (type? ?Expression ?Type
+;	      =>
+;	      (gamma (gamma eq ?Expression) ?Type))
        
        ;Environment
        (move ?Expression
@@ -77,13 +78,13 @@
        
        (?Terminal)
        ))
-     (?Type ->
-      ((node => node)
-       (function => function)
-       (list => list)
-       (atom => atom)
-       (number => number)
-       ))
+     ;(?Type ->
+;      ((node => node)
+;       (function => function)
+;       (list => list)
+;       (atom => atom)
+;       (number => number)
+;       ))
      
      (?Symbol ->
       ((gensym => gensym)
@@ -104,5 +105,6 @@
 	=>
 	(gamma asexually-reproduce nil))
        
-       (?Type))))))
+       ;(?Type)
+       )))))
 

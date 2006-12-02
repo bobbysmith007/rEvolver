@@ -94,7 +94,7 @@ of higher arity."
 				(let* ((previous-node (node creature))
 				      ;;if the creature didn't specify then pick a random direction.
 				      (new-loc (or (and node
-							(subtypep (type-of node) 'node )
+							(typep node 'node )
 							node) ;; so that the  correct value is returned
 						   (random-elt
 						    (adjacent-nodes-of previous-node)))))
@@ -107,8 +107,7 @@ of higher arity."
 				(with-slots (node world max-energy energy) creature
 				  (let* ((energy-gleened
 					  (take-energy node
-						       (- (max-energy creature)
-							  energy)))
+						       (- max-energy energy)))
 					 (new-creature-energy
 					  (min (+ energy energy-gleened)
 					       (max-energy creature))))
