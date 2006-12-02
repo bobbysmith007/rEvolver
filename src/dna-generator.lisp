@@ -66,7 +66,10 @@ TODO: This should probably actually make some sort of struct rather than redicul
   (when list
 	(random-elt list)))
 
-(defun get-child-nodes (processed-grammar rewrite-tokens current-depth symbol-table)
+(defun get-child-nodes (processed-grammar
+			rewrite-tokens
+			current-depth
+			symbol-table)
   (mapcar
    (lambda (new-expansion)
      (let ((new-sub-tree
@@ -76,12 +79,12 @@ TODO: This should probably actually make some sort of struct rather than redicul
 			   symbol-table)))
        
        (cond ((eq new-sub-tree 'dna::gensym)
-	      (car (push (gensym) symbol-table)))
+	      (car (push (gensym "DNA") symbol-table))) ;??? why push
 	     ((eq new-sub-tree 'dna::*gened-sym*)
 	      ;; When we have gensym
 	      (or (random-elt symbol-table)
 		  (when (eq 'dna::?symbol new-expansion)
-		      (gensym))
+		    (gensym))
 		  'dna:nil))
 	     (T new-sub-tree))))
    rewrite-tokens))
@@ -113,9 +116,7 @@ TODO: This should probably actually make some sort of struct rather than redicul
 				(processed-grammar revolver:creature-dna)
 				(rewrite-name '?Start)
 				(symbol-table nil))
-;  (declare (optimize (debug 3)))
-  
-    (let* (;get all of the rewrite possibilities of the rule
+    (let* (;;get all of the rewrite possibilities of the rule
 	   (possibilities (if (<= current-depth 0)
 			      (possibilities processed-grammar 'dna::?Terminal)
 			      (possibilities processed-grammar rewrite-name)))
@@ -128,9 +129,14 @@ TODO: This should probably actually make some sort of struct rather than redicul
 	   (write-part (write-part chosen))
 	   	   
 	   ;; get all the subtrees neccessary for this
-	   (child-nodes (get-child-nodes processed-grammar rewrite-tokens current-depth symbol-table) )
+	   (child-nodes (get-child-nodes processed-grammar
+					 rewrite-tokens
+					 current-depth
+					 symbol-table) )
 	   (write-tree (or (if (atom write-part) write-part
-			       (depth-first-expression-replace write-part rewrite-tokens child-nodes))
+			       (depth-first-expression-replace write-part
+							       rewrite-tokens
+							       child-nodes))
 			   (if  (listp child-nodes)
 				(car child-nodes)
 				child-nodes))))
