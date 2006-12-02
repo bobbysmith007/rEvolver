@@ -125,28 +125,35 @@ We want to have a non-zero minimum so they can die from these functions.")
 
 
 (defparameter *kill-sim* nil "Kill the running simulation cleanly")
-(defun runsim ( &rest keys &key (n 100) (new-world nil) &allow-other-keys )
-  (when new-world
-    (setf *world* (apply #'make-new-world (append keys '(:allow-other-keys t)))))
-  (dotimes (i n)
-    (if *kill-sim*
-	(return-from runsim)
-	(advance-time *world*)))
-  (let ((node-count (* (world-size *simulation*)
-		      (world-size *simulation*))))
+
+(defun report-world-state (node-count)
   (rlogger.error "[~a] Creatures: ~a (~a/node)  Animation-record: ~a  population(~a,~a) free-energy: ~a (~a/node)"
 		 
 		 (tick-number *world*)
 		 (creature-count (revolver-map *world*))
 		 (float (/ (creature-count (revolver-map *world*))
 		    node-count))
-		 (animation-count *golem*)
+		 (and *golem* (animation-count *golem*))
 		 (repopulation-infusions *world*)
 		 (population-infusions *world*)
 		 (free-energy (revolver-map *world*))
 		 (truncate
 		  (/ (free-energy (revolver-map *world*))
-		     node-count)))))
+		     node-count))))
+(defun runsim ( &rest keys &key (n 100) (new-world nil) &allow-other-keys )
+  (when new-world
+    (setf *world* (apply #'make-new-world (append keys '(:allow-other-keys t)))))
+  (let ((node-count (* (world-size *simulation*)
+		       (world-size *simulation*))))
+    (report-world-state node-count)
+    (dotimes (i n)
+      (when (= 0 (mod i 5000))
+	(report-world-state node-count))
+      (if *kill-sim*
+	  (return-from runsim)
+	  (advance-time *world*)))
+ 
+    (report-world-state node-count)))
 
 #|
 (let ((node-count (* (world-size *simulation*)
