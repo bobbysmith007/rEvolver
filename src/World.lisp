@@ -4,7 +4,7 @@
   ((revolver-map :initarg :map
 	      :accessor revolver-map)
 
-   (queue :initform (make-instance 'pairing-heap)
+   (queue :initform (make-instance 'pairing-heap :buffer-size 0)
 	  :accessor queue
 	  :documentation "The what to do next queue. Leftist Min Priority Queue")
       
@@ -20,9 +20,9 @@
 		      while (and (not (empty-p queue))
 				 (= tick
 				    (key (peek queue))))
-		    for node = (dequeue queue)
+		    for (key data) = (multiple-value-list (dequeue queue))
 		    do
-		    (restart-case (funcall (data node))
+		    (restart-case (funcall data)
 				  (continue-next-action () nil)))))
 
 (defgeneric schedule (action world ticks-from-now))
