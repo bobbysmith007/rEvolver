@@ -15,16 +15,16 @@ TODO: This should probably actually make some sort of struct rather than redicul
    (lambda (grammar-spec)
      (cons (car grammar-spec)
 	   (let ((rewrites-into (caddr grammar-spec)))
-	   (if (listp rewrites-into)
-	       (mapcar
-		(lambda (right-part)
-		  (let ((loc (position 'dna::=> right-part )))
-		    (if loc
-			(cons (subseq right-part 0 loc)
-			      (subseq right-part (1+ loc) (length right-part)))
-			right-part )))
-		rewrites-into)
-	       rewrites-into))))
+	     (if (listp rewrites-into)
+		 (mapcar
+		  (lambda (right-part)
+		    (let ((loc (position 'dna::=> right-part )))
+		      (if loc
+			  (cons (subseq right-part 0 loc)
+				(subseq right-part (1+ loc) (length right-part)))
+			  right-part )))
+		  rewrites-into)
+		 rewrites-into))))
    grammar)
   )
 
