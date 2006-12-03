@@ -132,8 +132,9 @@ TODO: This should probably actually make some sort of struct rather than redicul
 	   (child-nodes (get-child-nodes processed-grammar
 					 rewrite-tokens
 					 current-depth
-					 symbol-table) )
-	   (write-tree (or (if (atom write-part) write-part
+					 symbol-table))
+	   (write-tree (or (if (atom write-part)
+			       write-part
 			       (depth-first-expression-replace write-part
 							       rewrite-tokens
 							       child-nodes))
