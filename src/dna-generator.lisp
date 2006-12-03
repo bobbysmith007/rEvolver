@@ -84,7 +84,7 @@ TODO: This should probably actually make some sort of struct rather than redicul
 	      ;; When we have gensym
 	      (or (random-elt symbol-table)
 		  (when (eq 'dna::?symbol new-expansion)
-		    (gensym))
+		    (car (push (gensym "DNA-GS") symbol-table)))
 		  'dna:nil))
 	     (T new-sub-tree))))
    rewrite-tokens))
