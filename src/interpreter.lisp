@@ -119,9 +119,8 @@ up to whoever originally invoked the interpreter."
 		passing it the interpreter continuation and finally returning it's value to the top.
 		the result up to the whomever originally invoked the machine."
 		 (let ((reason (funcall (slot-value interrupt 'continuation)
-				  (build-rator-continuation))))
-		   (signal 'escape
-			   :reason reason))))
+					(build-rator-continuation))))
+		   (signal 'escape :reason reason))))
 
 	(handler-bind ((interrupt #'handle-interrupt))
 	  (loop 
@@ -167,7 +166,7 @@ up to whoever originally invoked the interpreter."
 				    :name op
 				    :environment (frame-environment frame)))))
 		   
-		      (T (error "Unkwown operation on the control ~a" op))))))))
+		      (T (error "Unknown operation on the control ~a" op))))))))
     (escape (esc)
 	    ;;we resignal escape, hoping some outer handler is there,
 	    ;;if it isn't handled we return.

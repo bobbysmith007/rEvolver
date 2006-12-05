@@ -50,19 +50,17 @@ of higher arity."
 (defun apply-time-costs (name creature continuation cont-arg)
   "Based on operation name, continue the creature at the appropriate-time."
   (let ((val (function-time-cost name *simulation*)) )
-    (if  (and val (> val 0))
-	 (reschedule creature
-		     (lambda ()
+    (if  (and val (> val 0))		;if we have a time cost greater than 0
+	 (schedule #'(lambda ()
+		       "Rescheduling lambda"
 		       (rlogger.dribble "About to resume from ~a with ~a as the value."
 					name
-					cont-arg)
-		       (funcall continuation cont-arg))
-		     val name)
-	 
-	 (funcall continuation cont-arg))
-    (values name val))
-  
-  )
+					cont-args)
+		       (apply #'animate creature continuation cont-args))
+		   (world creature)
+		   val)
+	 (progn (rlogger.dribble "Time cost of 0 for ~a  run immediately" name )
+		(apply continuation cont-args)))))
 
 
 (defmethod creature-environment ((creature creature))
@@ -75,19 +73,13 @@ of higher arity."
 		       (curry ,args
 			 (rlogger.dribble "Starting: ~a on ~a " ',name creature)
 			 (interrupt-interpreter/cc
-			  (lambda (,k)
-			    (use-energy creature
-					(function-energy-cost ',name *simulation*))
+			  #'(lambda (,k)
+			      (use-energy creature
+					  (function-energy-cost ',name *simulation*))
 			    
-			    (apply-time-costs
-			     ',name creature
-			     ,k
-			     (progn ,@body)
-;			     (handler-case (progn ,@body)
-;			       (error (e) (error 'CSE:code-error :original-error e)))
-			     )))
-			  (error "I dont think we should ever get here if we are properly interrupting")
-			 )))))
+			      (apply-time-costs ',name creature
+						,k
+						(progn ,@body)))))))))
 
 	(pushenv 'dna:me creature)
 	(costly-cr-env-function dna:move (node) 

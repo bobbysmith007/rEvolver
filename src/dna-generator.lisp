@@ -146,7 +146,7 @@ TODO: This should probably actually make some sort of struct rather than redicul
       (logger.dribble "rewrite-tokens:~s " rewrite-tokens)
       (logger.dribble "write-part:~s " write-part)
       (logger.dribble "write-tree:~s " write-tree)
-      (logger.dribble "children:~s " child-nodes)
+      (logger.dribble " children:~s " child-nodes)
       (logger.dribble "current-depth:~s~%" current-depth)
       
 	write-tree
