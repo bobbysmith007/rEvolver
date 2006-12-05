@@ -18,10 +18,10 @@
 	       :documentation "The size of one side of the map")
    ;;Energy drop details
    (node-energy-frequency
-    :accessor node-energy-frequency :initarg :node-energy-frequency :initform .16
+    :accessor node-energy-frequency :initarg :node-energy-frequency :initform .14
     :documentation "What percentage of nodes should get energy dropped on them.")
    (node-energy-max
-    :accessor node-energy-max :initarg :node-energy-max :initform 3072
+    :accessor node-energy-max :initarg :node-energy-max :initform 2048
     :documentation "(random node-energy-max) will be dropped on nodes.")
    (drop-energy-turns
     :accessor drop-energy-turns :initarg :drop-energy-turns :initform 32
@@ -50,7 +50,7 @@
    (creature-minimum-energy
     :accessor creature-minimum-energy
     :initarg :creature-minimum-energy
-    :initform 64
+    :initform 128
     :documentation "A lot of the costs are fractions of the current energy.
 We want to have a non-zero minimum so they can die from these functions.")
    
@@ -78,10 +78,10 @@ We want to have a non-zero minimum so they can die from these functions.")
     :documentation "The depth bound of newly generated sub-trees")
 
    (animation-cost
-    :accessor animation-cost :initarg :animation-cost :initform 8
+    :accessor animation-cost :initarg :animation-cost :initform 16
     :documentation "How much energy any call to animate should cost. This is another failsafe.")
    (beta-reduction-cost
-    :initarg :beta-reduction-cost :accessor beta-reduction-cost :initform 2
+    :initarg :beta-reduction-cost :accessor beta-reduction-cost :initform 3
     :documentation "The energy a creature uses to beta-reduce its dna")
    (function-energy-costs
     :initarg :function-energy-costs
@@ -91,7 +91,7 @@ We want to have a non-zero minimum so they can die from these functions.")
 		    '(dna:feed . 127)
 		    '(dna:look-at . 2)
 		    '(dna:creatures . 2)
-		    '(dna:energy? . 8)
+		    '(dna:energy? . 4)
 		    (cons 'dna:asexually-reproduce
 			  ;;each creature get's half the (original- min)
 			  ;; lost due to entropy
@@ -104,7 +104,7 @@ We want to have a non-zero minimum so they can die from these functions.")
     :initarg :function-time-costs
     :reader function-time-costs
     :initform '((dna:move . 7)
-		(dna:feed . 5)
+		(dna:feed . 4)
 		(dna:look-at . 2)
 		(dna:energy? . 1)
 		(dna:creatures . 2)
@@ -140,9 +140,12 @@ We want to have a non-zero minimum so they can die from these functions.")
 		 (truncate
 		  (/ (free-energy (revolver-map *world*))
 		     node-count))))
-(defun runsim ( &rest keys &key (n 100) (new-world nil) &allow-other-keys )
+
+(defun runsim ( &rest keys &key (n 100) (new-world nil) init-creature-count &allow-other-keys )
   (when new-world
     (setf *world* (apply #'make-new-world (append keys '(:allow-other-keys t)))))
+  (when init-creature-count
+    (setf (initial-creature-count *simulation*) init-creature-count))
   (let ((node-count (* (world-size *simulation*)
 		       (world-size *simulation*))))
     (report-world-state node-count)
