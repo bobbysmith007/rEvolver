@@ -86,13 +86,6 @@
 		 (tick-number (world creature))
 		 creature
 		 reason)
-  (when (or (null *golem*)
-	    (> (animation-count creature)
-	       (animation-count *golem*)))
-    (rlogger.error "[~a] New animation-count record: ~a"
-		  (tick-number (world creature))
-		  (animation-count creature))
-    (setf *golem* creature))
   (unless (node creature)
     ;;we need to be able to remove them to keep correct counts.
     ;;but maybe they already have been.
@@ -137,9 +130,6 @@
 
 (defmethod reschedule ((creature creature) name continuation ticks
 		       &rest cont-args)
-  (unless (alivep creature)
-    (break "Why are you trying to reschedule a dead creature:~a?" creature))
-
   (schedule #'(lambda ()
 		"Rescheduling lambda"
 		(rlogger.dribble "About to resume from ~a with ~a"
@@ -166,6 +156,13 @@
 	;;any animation costs something.
 	(use-energy creature (animation-cost *simulation*))
 	(incf (animation-count creature))
+	(when (or (null *golem*)
+		  (> (animation-count creature)
+		     (animation-count *golem*)))
+	  (rlogger.error "[~a] New animation-count record: ~a"
+			 (tick-number (world creature))
+			 (animation-count creature))
+	  (setf *golem* creature))
       
 	(let ((rv (apply cr-fn args)))
 	  (rlogger.dribble "[~a] ~a EOF. The meaning of Life, The Universe & Everything: ~a"
