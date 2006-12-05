@@ -35,16 +35,16 @@
       (setf (max-energy creature)
 	    (or energy (energy creature))))
 
-  (setf
-   (birthday-of creature) (tick-number world)
-   (flattened-tree-of creature) (or flattened-tree (cse::flattener (dna-of creature)))
-   (creature-fn creature) (make-interpreter (flattened-tree-of creature)
-					    (creature-environment creature)
-					    #'(lambda ()
-						(use-energy creature
-							    (beta-reduction-cost *simulation*))))
-   )
-  )
+  (setf (birthday-of creature) (tick-number world))
+  (setf (flattened-tree-of creature) (or flattened-tree
+					 (cse::flattener (dna-of creature))))
+  (setf (creature-fn creature)
+	(make-interpreter
+	 (flattened-tree-of creature)
+	 (creature-environment creature)
+	 #'(lambda ()
+	     (use-energy creature
+			 (beta-reduction-cost *simulation*))))))
 
 
 (defgeneric asexually-reproduce (golem))
@@ -127,61 +127,61 @@
 
 (defmethod remove-creature ((creature creature) (node node))
   "Take a creature out of a node."
-  (if (null (node creature))
-      (error "Can't remove a creature that isn't on a node.")
-      (progn
-	(setf (creatures-of node) (delete creature (creatures-of node))
-		   (node creature) nil)
-	(decf (creature-count (revolver-map node))))))
+  (unless (node creature)
+    (error "Can't remove a creature that isn't on a node."))
+ 
+  (setf (creatures-of node) (delete creature (creatures-of node)))
+  (setf (node creature) nil)
+  (decf (creature-count (revolver-map node))))
 
 
-(defmethod reschedule ((creature creature) continuation ticks &optional (reason nil))
+(defmethod reschedule ((creature creature) name continuation ticks
+		       &rest cont-args)
   (unless (alivep creature)
     (break "Why are you trying to reschedule a dead creature:~a?" creature))
-  
-  
-  (schedule (lambda ()
-	      "The rescheduling lambda"
-	      (animate creature continuation))
-	    (world creature)
-	    ticks))
 
-(defmethod animate ((creature creature) (cr-fn function))
+  (schedule #'(lambda ()
+		"Rescheduling lambda"
+		(rlogger.dribble "About to resume from ~a with ~a"
+					name
+					cont-args)
+		(apply #'animate creature continuation cont-args))
+	    (world creature)
+	    ticks)
+  (signal 'cse:escape))
+
+(defmethod animate ((creature creature) (cr-fn function) &rest args)
   (unless (alivep creature)
     (rlogger.error "[~a] Apparently we tried to animate a dead creature or something. ~a"
 		   (tick-number (world creature))
 		   creature)
     (return-from animate nil))
   
-  (handler-bind ((cse:escape
-		  #'(lambda (esc);;the continuation should already have been set.
-		      (rlogger.dribble "[~a] ~a escaped because: ~a"
-				       (tick-number (world creature))
-				       creature
-				       (cse:reason esc) )
-		      (return-from animate (cse:reason esc)))))
-    (handler-bind ((cse:code-error
-		    #'(lambda (er)
-			(die creature er)
-			(break "after the pox")
-			(return-from animate nil))))
-      ;;any animation costs something.
-      (use-energy creature (animation-cost *simulation*))
-      (incf (animation-count creature))
+  (handler-case 
+      (handler-bind ((cse:code-error
+		      #'(lambda (er)
+			  (die creature er)
+			  (break "after the pox")
+			  (return-from animate nil))))
+	;;any animation costs something.
+	(use-energy creature (animation-cost *simulation*))
+	(incf (animation-count creature))
       
-      (let ((rv (funcall cr-fn)))
-	(cond
-	  ((eq 'dna:eof rv)
-	   (rlogger.dribble "[~a] ~a succesfully reached end of dna. Scheduling reanimation."
-			    (tick-number (world creature))
-			    creature)
-	   (use-energy creature (rerun-cost *simulation*))
-	   (reschedule creature (creature-fn creature) (sleep-time *simulation*) 'dna:eof))
-	    
-	  (T (rlogger.error "[~a] Creature appeared to finish, but failed to return eof: ~a"
-			    (tick-number (world creature))
-			    rv)
-	     (error 'cse:code-error :original-error "Failed to find eof.")))))))
+	(let ((rv (apply cr-fn args)))
+	  (rlogger.dribble "[~a] ~a EOF. The meaning of Life, The Universe & Everything: ~a"
+			      (tick-number (world creature))
+			      creature
+			      rv)
+	  (die creature)
+	  ))
+    (cse:escape (esc)
+		;;the continuation should already have been set
+		;; so we're done here.
+ 
+		(rlogger.dribble "[~a] ~a escaped because: ~a"
+				 (tick-number (world creature))
+				 creature
+				 (cse:reason esc) ))))
 
 
 

@@ -91,7 +91,9 @@ TODO: This should probably actually make some sort of struct rather than redicul
 
 (defun depth-first-expression-replace (list symbol-list value-list)
   "Replaces tokens from symbol-list with values from value-list in the list
-  (depth-first-expression-replace '(gamma (gamma cons ?expression) ?expression) '(?Expression ?Expression) '(a b))
+  (depth-first-expression-replace
+	'(gamma (gamma cons ?expression) ?expression)
+	'(?Expression ?Expression) '(a b))
   dna::=> '(gamma (gamma cons a) b) "
   (labels ((depth-first-expression-replace (list)
 	     (unless (null list)
@@ -126,31 +128,33 @@ TODO: This should probably actually make some sort of struct rather than redicul
 	   (rewrite-tokens (get-rewrite-tokens chosen))
 
 	   ;; what tree-node to build
-	   (write-part (write-part chosen))
-	   	   
-	   ;; get all the subtrees neccessary for this
-	   (child-nodes (get-child-nodes processed-grammar
-					 rewrite-tokens
-					 current-depth
-					 symbol-table))
-	   (write-tree (or (if (atom write-part)
-			       write-part
-			       (depth-first-expression-replace write-part
-							       rewrite-tokens
-							       child-nodes))
-			   (if  (listp child-nodes)
-				(car child-nodes)
-				child-nodes))))
+	   (write-part (write-part chosen)))
+      (if (null rewrite-tokens)
+	  write-part
+	  (let* (
+		;; get all the subtrees neccessary for this
+		(child-nodes (get-child-nodes processed-grammar
+					      rewrite-tokens
+					      current-depth
+					      symbol-table))
+		(write-tree (or (if (atom write-part)
+				    write-part
+				    (depth-first-expression-replace write-part
+								    rewrite-tokens
+								    child-nodes))
+				(if  (listp child-nodes)
+				     (car child-nodes)
+				     child-nodes))))
 
-      (logger.dribble "chosen:~s " chosen)      
-      (logger.dribble "rewrite-tokens:~s " rewrite-tokens)
-      (logger.dribble "write-part:~s " write-part)
-      (logger.dribble "write-tree:~s " write-tree)
-      (logger.dribble " children:~s " child-nodes)
-      (logger.dribble "current-depth:~s~%" current-depth)
+	    (logger.dribble "chosen:~s " chosen)      
+	    (logger.dribble "rewrite-tokens:~s " rewrite-tokens)
+	    (logger.dribble "write-part:~s " write-part)
+	    (logger.dribble "write-tree:~s " write-tree)
+	    (logger.dribble " children:~s " child-nodes)
+	    (logger.dribble "current-depth:~s~%" current-depth)
       
-	write-tree
-      ))
+	    write-tree
+	    ))))
 
 (defun make-path-decision ( tree )
   "returns the location of the replacement (:root 0 :left 1 :right 2)"

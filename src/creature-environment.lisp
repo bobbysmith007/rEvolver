@@ -47,18 +47,11 @@ of higher arity."
 		'(dna:eof dna:node dna:function dna:list dna:atom dna:number)))
       env)))
 
-(defun apply-time-costs (name creature continuation cont-arg)
+(defun apply-time-costs (name creature continuation &rest cont-args)
   "Based on operation name, continue the creature at the appropriate-time."
-  (let ((val (function-time-cost name *simulation*)) )
-    (if  (and val (> val 0))		;if we have a time cost greater than 0
-	 (schedule #'(lambda ()
-		       "Rescheduling lambda"
-		       (rlogger.dribble "About to resume from ~a with ~a as the value."
-					name
-					cont-args)
-		       (apply #'animate creature continuation cont-args))
-		   (world creature)
-		   val)
+  (let ((ticks (function-time-cost name *simulation*)) )
+    (if  (and ticks (> ticks 0))		;if we have a time cost greater than 0
+	 (apply #'reschedule creature name continuation ticks cont-args)
 	 (progn (rlogger.dribble "Time cost of 0 for ~a  run immediately" name )
 		(apply continuation cont-args)))))
 
@@ -126,5 +119,6 @@ of higher arity."
   (rlogger.debug "WOOHOO! Reproduction! ~a " golem)
   ;;reducing the energy of the creature is taken care of by the costly-creature-fn.
   (let ((cr (clone-with-mutation golem)))
-    (reschedule cr (creature-fn cr)
-		(function-time-cost 'dna:asexually-reproduce *simulation*))))
+    (handler-case (reschedule cr 'birth (creature-fn cr)
+			      (function-time-cost 'dna:asexually-reproduce *simulation*))
+      (cse:escape () cr))))

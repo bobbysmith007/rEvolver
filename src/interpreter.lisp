@@ -92,9 +92,8 @@ up to whoever originally invoked the interpreter."
 		   (setf frame (frame-previous frame))
 		   (unless frame
 		     (return-from start-CSE-machine
-		       (progn		;(break "Done, about to return." stack)
-			 (values (first stack)
-				 (rest stack)))))))
+		       (values (first stack)
+			       (rest stack))))))
 	   
 	       (push-stack (val)
 		 (setf stack (cons val stack)))
@@ -118,9 +117,9 @@ up to whoever originally invoked the interpreter."
 		 "Interrupt the current machine by calling the interrupt's continutation
 		passing it the interpreter continuation and finally returning it's value to the top.
 		the result up to the whomever originally invoked the machine."
-		 (let ((reason (funcall (slot-value interrupt 'continuation)
-					(build-rator-continuation))))
-		   (signal 'escape :reason reason))))
+		 (let ((val (funcall (slot-value interrupt 'continuation)
+				     (build-rator-continuation))))
+		   (return-from start-CSE-machine val))))
 
 	(handler-bind ((interrupt #'handle-interrupt))
 	  (loop 
@@ -150,7 +149,8 @@ up to whoever originally invoked the interpreter."
 			       ;;the push will be handled by the build-rator-continuation stuff.
 			       ((functionp rator)
 				(push-stack (funcall rator rand)))
-			       (T (error 'invalid-gamma-application
+			       (T ;(break "~a ~a" rator rand)
+				  (error 'invalid-gamma-application
 					 :rator rator
 					 :rand rand)))))
 
@@ -167,27 +167,42 @@ up to whoever originally invoked the interpreter."
 				    :environment (frame-environment frame)))))
 		   
 		      (T (error "Unknown operation on the control ~a" op))))))))
-    (escape (esc)
-	    ;;we resignal escape, hoping some outer handler is there,
-	    ;;if it isn't handled we return.
-	    (signal esc)
-	    (return-from start-CSE-machine (reason esc)))))
+    ;(escape (esc)
+;	    ;;we resignal escape, hoping some outer handler is there,
+;	    ;;if it isn't handled we return.
+;	    (signal esc)
+;	    (return-from start-CSE-machine (reason esc)))
+    ))
 
 
 
-(defun make-interpreter (flattened-tree primary-environment &optional beta-reduction-cost)
+(defun make-interpreter (flattened-tree primary-environment
+					&optional beta-reduction-cost)
   "Takes a standardized tree and returns a function that when invoked will
  commence interpret the tree in the primary environment. Reinnvokng the
  returned function will restart the interpretation.
 The beta-reduction is a function that can perform other side effects when any beta-reduction
  is performed by the interpreter."
   
-  (lambda ()
-    "This is root interpreter continuation."
-    (let ((frame (make-frame flattened-tree primary-environment nil))
-	  (stack '()))
-      
-      (start-CSE-machine frame stack beta-reduction-cost))))
+  (labels ((root ()
+	     "This is root interpreter continuation."
+	     (let ((frame (make-frame
+			   flattened-tree
+			   primary-environment
+			   nil
+			  ))
+		   (stack '()))
+	       (start-CSE-machine frame stack beta-reduction-cost)))
+	   ;(root (fn)
+;	     "This is root interpreter continuation."
+;	     (let ((frame (make-frame
+;			   flattened-tree
+;			   primary-environment
+;			   (make-frame '(dna:gamma) nil nil)))
+;		   (stack (list fn)))
+;	       (start-CSE-machine frame stack beta-reduction-cost)))
+	   )
+    #'root))
 
 
 (defun lchild (tree)
@@ -203,11 +218,13 @@ The beta-reduction is a function that can perform other side effects when any be
 	       ((atom tree) (list tree))
 
 	       ((eq (root tree) 'dna:lambda)
-		(list (make-unclosed-lambda (lchild tree) (rflat (rchild tree)))))
+		(list (make-unclosed-lambda (lchild tree)
+					    (rflat (rchild tree)))))
 	       ((eq (root tree) 'dna:gamma)
-		(nconc (rflat (rchild tree))
-		       (rflat (lchild tree))
+		(nconc (rflat (rchild tree)) ;operator
+		       (rflat (lchild tree)) ;operand
 		       (list 'dna:gamma)))
-	       (T (error "Found node ~a internally on a standardized tree." (root tree))))))
-    (nconc (rflat tree ) (list 'dna:eof))))
+	       (T (error "Found node ~a internally on a standardized tree."
+			 (root tree))))))
+    (rflat tree )))
 

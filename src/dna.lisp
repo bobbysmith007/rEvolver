@@ -3,13 +3,18 @@
 ;;; A grammar specification for the DNA language
 (CL:setf revolver:Creature-DNA
   (revolver::process-grammar-definition
-   '((revolver::?Start -> ((?Expression)))
+   
+   '((revolver::?Start ->
+      ((y-comb ?Lambda
+		=> (gamma (lambda fn (gamma fn fn)) ?Lambda))))
+     (?Lambda ->
+      ((lambda ?Symbol ?Expression
+	       =>
+	       (lambda ?Symbol ?Expression))))
      (?Expression ->
       (;function defintion and application
        
-       (lambda ?Symbol ?Expression
-	       =>
-	       (lambda ?Symbol ?Expression))
+       (?Lambda)
        
        (gamma ?Expression ?Expression
 	       =>
@@ -91,9 +96,8 @@
        (*gened-sym* => *gened-sym*)))
      
      (?Terminal ->
-      ((nil => nil)
-       (t => t)
-       (zero => 0)
+      ((t => t)
+       ;(zero => 0)
        (*gened-sym* => *gened-sym*)
        (Me => Me)
       ;Environment

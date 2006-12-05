@@ -23,7 +23,13 @@
 		    for (key data) = (multiple-value-list (dequeue queue))
 		    do
 		    (restart-case (funcall data)
-				  (continue-next-action () nil)))))
+				  (continue-next-action () nil))
+;		    (let ((cc (creature-count (revolver-map world)))
+;			  (qs (net.acceleration.data-structures.trees::size (queue world))))
+;			(when (< (abs *diff*) (abs (- cc qs)))
+;			  (setf *diff* (- cc qs))
+;			  (rlogger.error "!!!Damn. cc:~a qs:~a diff:~a" cc qs *diff*)))
+		    )))
 
 (defgeneric schedule (action world ticks-from-now))
 
@@ -131,7 +137,10 @@
   ;;TODO: at some point having creatures automatically recycled in here.
   )
 
+(defvar *diff* 0)
+
 (defun make-new-world (&key init-creature-count)
+  (setf *diff* 0)
   (let ((map (make-instance '2d-array-map
 			    :x-size (world-size *simulation*)
 			    :y-size (world-size *simulation*))))
