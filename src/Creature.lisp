@@ -16,7 +16,8 @@
    (energy :accessor energy :initform 0 :initarg :energy)
    (node :accessor node :initform nil)
    (world :reader world :initarg :world)
-   (dna :accessor dna-of :initarg :dna :initform (generate-tree (depth-bound *simulation*)))
+   (dna :accessor dna-of :initarg :dna
+	:initform (generate-tree (depth-bound *simulation*)))
    (flattened-tree :accessor flattened-tree-of :initform nil )
    (creature-fn :accessor creature-fn :initform nil )
 
