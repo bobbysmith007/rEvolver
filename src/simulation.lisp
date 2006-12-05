@@ -14,14 +14,14 @@
     :documentation
     "The world starts with this number of randomly generated tree structures" )
    
-   (world-size :accessor world-size :initarg :worldsize :initform 60
+   (world-size :accessor world-size :initarg :worldsize :initform 40
 	       :documentation "The size of one side of the map")
    ;;Energy drop details
    (node-energy-frequency
-    :accessor node-energy-frequency :initarg :node-energy-frequency :initform .14
+    :accessor node-energy-frequency :initarg :node-energy-frequency :initform .16
     :documentation "What percentage of nodes should get energy dropped on them.")
    (node-energy-max
-    :accessor node-energy-max :initarg :node-energy-max :initform 2048
+    :accessor node-energy-max :initarg :node-energy-max :initform 3000
     :documentation "(random node-energy-max) will be dropped on nodes.")
    (drop-energy-turns
     :accessor drop-energy-turns :initarg :drop-energy-turns :initform 32
@@ -31,7 +31,7 @@
    
    ;;;;generation specs
    (depth-bound
-    :accessor depth-bound :initarg :depth-bound :initform 10
+    :accessor depth-bound :initarg :depth-bound :initform 8
     :documentation "The depth to force rewriting termination")
    (left-branch-chance
     :accessor left-branch-chance :initarg :left-branch-chance :initform 10
@@ -81,13 +81,13 @@ We want to have a non-zero minimum so they can die from these functions.")
     :accessor animation-cost :initarg :animation-cost :initform 16
     :documentation "How much energy any call to animate should cost. This is another failsafe.")
    (beta-reduction-cost
-    :initarg :beta-reduction-cost :accessor beta-reduction-cost :initform 3
+    :initarg :beta-reduction-cost :accessor beta-reduction-cost :initform 4
     :documentation "The energy a creature uses to beta-reduce its dna")
    (function-energy-costs
     :initarg :function-energy-costs
     :reader function-energy-costs
     :initform (list (cons 'dna:move
-			  (lambda (energy) (truncate (/ energy 12))))
+			  (lambda (energy) (truncate (/ energy 14))))
 		    '(dna:feed . 127)
 		    '(dna:look-at . 2)
 		    '(dna:creatures . 2)
@@ -105,10 +105,10 @@ We want to have a non-zero minimum so they can die from these functions.")
     :reader function-time-costs
     :initform '((dna:move . 7)
 		(dna:feed . 4)
-		(dna:look-at . 2)
-		(dna:energy? . 1)
-		(dna:creatures . 2)
-		(dna:asexually-reproduce . 11)))
+		(dna:look-at . 3)
+		(dna:energy? . 0)
+		(dna:creatures . 4)
+		(dna:asexually-reproduce . 16)))
    
    ))
 

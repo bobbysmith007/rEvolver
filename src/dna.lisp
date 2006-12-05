@@ -42,9 +42,9 @@
 ;       (- ?Expression
 ;	    =>
 ;	    (gamma - ?Expression))
-;       (< ?Expression ?Expression
-;	   =>
-;	   (gamma (gamma < ?Expression) ?Expression))
+       (< ?Expression ?Expression
+	   =>
+	   (gamma (gamma < ?Expression) ?Expression))
 ;       (+ ?Expression ?Expression
 ;	   =>
 ;	   (gamma (gamma + ?Expression) ?Expression))
@@ -97,7 +97,7 @@
      
      (?Terminal ->
       ((t => t)
-       ;(zero => 0)
+       (zero => 0)
        (*gened-sym* => *gened-sym*)
        (Me => Me)
       ;Environment
