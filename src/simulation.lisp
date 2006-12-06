@@ -1,7 +1,7 @@
 (in-package :rEvolver)
 (defvar *simulation*)
 (defvar *golem* 'nil)
-(defvar *world*)
+(defvar *world* nil)
 (defclass simulation ()
   (
    ;;;; WORLD BITS
@@ -96,9 +96,9 @@ We want to have a non-zero minimum so they can die from these functions.")
 			  ;;each creature get's half the (original- min)
 			  ;; lost due to entropy
 			  (lambda (energy)
-			    (+ (creature-minimum-energy *simulation*)
+			    (+ (* 2 (creature-minimum-energy *simulation*)
 			       (truncate (/ energy
-					    2)))))))
+					    2))))))))
    
    (function-time-costs
     :initarg :function-time-costs
@@ -108,7 +108,7 @@ We want to have a non-zero minimum so they can die from these functions.")
 		(dna:look-at . 3)
 		(dna:energy? . 0)
 		(dna:creatures . 4)
-		(dna:asexually-reproduce . 16)))
+		(dna:asexually-reproduce . 12)))
    
    ))
 
@@ -142,7 +142,7 @@ We want to have a non-zero minimum so they can die from these functions.")
 		     node-count))))
 
 (defun runsim ( &rest keys &key (n 100) (new-world nil) init-creature-count &allow-other-keys )
-  (when new-world
+  (when (or new-world (not (boundp *world*)))
     (setf *world* (apply #'make-new-world (append keys '(:allow-other-keys t)))))
   (when init-creature-count
     (setf (initial-creature-count *simulation*) init-creature-count))
