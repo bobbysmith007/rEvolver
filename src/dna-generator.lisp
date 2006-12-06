@@ -1,9 +1,9 @@
 (in-package :rEvolver)
-
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (deflogger logger ()
   :level +error+
   :compile-time-level +dribble+
-  :appender (make-instance 'verbose-stream-log-appender :stream t))
+  :appender (make-instance 'verbose-stream-log-appender :stream t)))
 
 (defun process-grammar-definition (grammar)
   "Removes the arrows and makes them nice nested a-lists.
