@@ -69,6 +69,16 @@
   (:shadow #:Y)
   (:export #:creature-DNA
 	   #:*simulation*
+	   #:*world*
+	   #:*simulation*
+	   #:*golem*
+	   #:creature-count
+	   #:population-infusions
+	   #:repopulation-infusions
+	   #:revolver-map
+	   #:tick-number
+	   #:free-energy
+	   #:animation-count
 	   ))
 
 

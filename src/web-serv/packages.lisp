@@ -3,7 +3,7 @@
 
 (defpackage :revolver.web-serv
   (:documentation "The acceleration data-structures.trees suite.")
-  (:use :common-lisp)
+  (:use :common-lisp :ucw :revolver :yaclml)
   (:export
    
    ))

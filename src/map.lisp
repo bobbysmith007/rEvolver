@@ -71,6 +71,9 @@
     )
   )
 
+(defmethod node-energy% ((node node))
+  (round (* 100 (/ (energy node) (node-energy-max *simulation*)))))
+
 (defmethod creatures ((map 2d-array-map))
   (kmrcl:flatten (map-nodes (lambda (node)
 			      (creatures-of node))
